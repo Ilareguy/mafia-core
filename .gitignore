@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+# Python virtual environment
+/tools/venv/
+
+# Build directory
+/build/
+
+/.idea/
