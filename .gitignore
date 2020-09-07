@@ -33,8 +33,7 @@
 
 # Python virtual environment
 /tools/venv/
+/tools/cache/
 
 # Build directory
 /build/
-
-

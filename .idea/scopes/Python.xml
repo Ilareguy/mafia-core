@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Python" pattern="file[mafia-core]:tools//*&amp;&amp;!file:CMakeLists.txt" />
+</component>

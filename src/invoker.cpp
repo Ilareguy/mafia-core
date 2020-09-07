@@ -9,15 +9,10 @@
  *       \/_/ \/_/\/_/\/_/\/_/    \/_____/ \/_/\/_/
  *
  *                  The Mafia project
-#if ($HEADER_COMMENTS && $ORGANIZATION_NAME && $ORGANIZATION_NAME != "")
- * 	Copyright (c) $YEAR ${ORGANIZATION_NAME}#if (!$ORGANIZATION_NAME.endsWith(".")).#end All rights reserved.
-#end
  *
  ********************************************************
  *
-#if ($HEADER_COMMENTS)
- * File created by $USER_NAME on ${DATE}.
-#end 
+ * File created by Anthony Ilareguy on 2020-09-07.
  * [File Description]
  *
  ********************************************************
@@ -26,3 +21,4 @@
  *
  ********************************************************/
 
+#include "invoker.h"
