@@ -20,10 +20,11 @@
 #########################################################
 
 import urllib.request
+import json
 from os.path import isfile
 from urllib.error import URLError
-import json
 from .sqf_utils import validate_name
+from lxml import html
 
 CACHE_DIRECTORY = 'cache/'
 CACHE_FUNCTION_DIRECTORY = CACHE_DIRECTORY + 'functions/'
@@ -33,14 +34,20 @@ SQF_FUNCTIONS_CACHED_FILE = CACHE_DIRECTORY + 'sqf_functions.json'
 
 
 class SQFFunction(object):
-    def __init__(self, name, parameters=None):
+    def __init__(self, name, description, introduced_version, parameters=None):
         self.name = name
+        self.description = description
+        self.introduced_version = introduced_version
         if parameters is None:
             parameters = {}
 
 
 def fetch_sqf_functions():
     functions = {}
+
+    ##################################################
+    # Fetch a list of function names
+    ##################################################
 
     if not isfile(SQF_FUNCTIONS_CACHED_FILE):
         # Cached data doesn't exist yet; fetch now
@@ -67,17 +74,21 @@ def fetch_sqf_functions():
         if link['ns'] == 0 and validate_name(function_name):
             functions[function_name] = SQFFunction(function_name)
 
+    ##################################################
+    # Fetch raw details about each function
+    ##################################################
+
     # Parse each function. This may be time-consuming on first runs
     for function_object in functions.values():
-        function_cached_path = CACHE_FUNCTION_DIRECTORY + function_object.name + '.json'
+        function_raw_cache_path = CACHE_FUNCTION_DIRECTORY + function_object.name + '.json'
 
-        if not isfile(function_cached_path):
+        if not isfile(function_raw_cache_path):
             # File not cached yet; do it now
             function_url = BI_WIKI_URL + f'action=parse&page={function_object.name}&format=json&prop=text'
             try:
                 print(f'No cached data for {function_object.name}; fetching now... ')
                 with urllib.request.urlopen(function_url) as response:
-                    with open(function_cached_path, "w+b") as file:
+                    with open(function_raw_cache_path, "w+b") as file:
                         file.write(response.read())
                     print('Fetch successful.')
             except URLError as e:
@@ -86,12 +97,26 @@ def fetch_sqf_functions():
 
         try:
             # Get a handle to cached data
-            with open(function_cached_path) as function_file_handle:
-                data = json.load(function_file_handle)
+            with open(function_raw_cache_path) as function_raw_cache_file_handle:
+                function_raw_data = json.load(function_raw_cache_file_handle)
                 print(f'Successfully loaded JSON data for function {function_object.name}!')
         except OSError as e:
-            print(f'Could not open "{function_cached_path}" for reading. Exception: {e}')
+            print(f'Could not open "{function_raw_cache_path}" for reading. Exception: {e}')
             continue
+
+        ##################################################
+        # Parse specific details about each function
+        ##################################################
+        function_html_tree = html.fromstring(function_raw_data['parse']['text']['*'])
+        function_object.description = function_html_tree.cssselect('dd:nth-child(2)') # first entry should be description
+        function_object.introduced_version = function_html_tree.cssselect('span.release')
+        function_object.parameters = function_html_tree.cssselect('dd.param') # param name
+        function_object.parameters = function_html_tree.cssselect('dd.param a') # param type
+
+        # https://docs.python-guide.org/scenarios/scrape/
+        # https://lxml.de/cssselect.html
+        # https://www.w3schools.com/cssref/css_selectors.asp
+        # https://try.jsoup.org/
 
 
 if __name__ == '__main__':
