@@ -23,7 +23,7 @@ import urllib.request
 import json
 from os.path import isfile
 from urllib.error import URLError
-from .sqf_utils import validate_name
+from . import sqf_utils
 from lxml import html
 
 CACHE_DIRECTORY = 'cache/'
@@ -34,7 +34,7 @@ SQF_FUNCTIONS_CACHED_FILE = CACHE_DIRECTORY + 'sqf_functions.json'
 
 
 class SQFFunction(object):
-    def __init__(self, name, description, introduced_version, parameters=None):
+    def __init__(self, name=None, description=None, introduced_version=None, parameters=None):
         self.name = name
         self.description = description
         self.introduced_version = introduced_version
@@ -71,7 +71,7 @@ def fetch_sqf_functions():
     # Parse function names
     for link in data['parse']['links']:
         function_name = link['*']
-        if link['ns'] == 0 and validate_name(function_name):
+        if link['ns'] == 0 and sqf_utils.validate_name(function_name):
             functions[function_name] = SQFFunction(function_name)
 
     ##################################################
@@ -107,11 +107,11 @@ def fetch_sqf_functions():
         ##################################################
         # Parse specific details about each function
         ##################################################
-        function_html_tree = html.fromstring(function_raw_data['parse']['text']['*'])
-        function_object.description = function_html_tree.cssselect('dd:nth-child(2)') # first entry should be description
-        function_object.introduced_version = function_html_tree.cssselect('span.release')
-        function_object.parameters = function_html_tree.cssselect('dd.param') # param name
-        function_object.parameters = function_html_tree.cssselect('dd.param a') # param type
+        #function_html_tree = html.fromstring(function_raw_data['parse']['text']['*'])
+        #function_object.description = function_html_tree.cssselect('dd:nth-child(2)') # first entry should be description
+        #function_object.introduced_version = function_html_tree.cssselect('span.release')
+        #function_object.parameters = function_html_tree.cssselect('dd.param') # param name
+        #function_object.parameters = function_html_tree.cssselect('dd.param a') # param type
 
         # https://docs.python-guide.org/scenarios/scrape/
         # https://lxml.de/cssselect.html

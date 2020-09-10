@@ -37,3 +37,6 @@
 
 # Build directory
 /build/
+
+# Arma package files
+*.pbo
