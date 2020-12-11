@@ -21,11 +21,11 @@
 import re
 import urllib.request
 import json
-from io import StringIO
 from json import JSONEncoder
 from os.path import isfile
 from urllib.error import URLError
 from lxml import etree
+from io import StringIO
 
 ##################################################
 # Consts
@@ -41,8 +41,6 @@ SQF_FUNCTIONS = 'action=parse&pageid=12689&format=json&prop=links'
 ##################################################
 # Lazy-initialized
 ##################################################
-_sqf_function_parameters_regex = None
-
 
 ##################################################
 # Classes
@@ -202,7 +200,7 @@ def fetch_sqf_functions(trace_predicate=print):
         try:
             if not isfile(function_raw_cache_path):
                 # Fetch and cache raw data about this function
-                function_url = BI_WIKI_URL + f'action=parse&page={function_name}&format=json&prop=text'
+                function_url = BI_WIKI_URL + f'action=parse&page={function_name}&format=json&prop=parsetree'
                 trace_predicate(f'No cached data for {function_name}; fetching now... ')
                 with urllib.request.urlopen(function_url) as response:
                     with open(function_raw_cache_path, "w+b") as file:
@@ -242,57 +240,37 @@ def fetch_sqf_functions(trace_predicate=print):
 
 
 def _parse_function_data(name, file):
-    global _sqf_function_parameters_regex
-    if _sqf_function_parameters_regex is None:
-        # Start by compiling SQF function param regex
-        _sqf_function_parameters_regex = re.compile(r'^(?P<param_name>[a-zA-Z0-9_][a-zA-Z0-9_]+) *: *(?P<param_type>['
-                                                    r'a-zA-Z0-9_\s]+) *- *(?P<param_description>.+)$')
+    # Load raw data
     function_raw_data = json.load(file)
 
     if 'error' in function_raw_data:
         # This function has no valid entry in the wiki, and therefore no usable data for us.
         raise NoWikiEntryError()
 
-    # Parse the entry HTML to find and parse relevant elements
-    html_parser = etree.HTMLParser()
-    tree = etree.parse(StringIO(function_raw_data['parse']['text']['*']), html_parser)
+    # Fetch function data
+    xtree = etree.parse(StringIO(function_raw_data['parse']['parsetree']['*']))
+    description = _parse_description(xtree)
 
-    # with open('test.html', 'wb') as f:
-    #     f.write(etree.tostring(tree.getroot(), pretty_print=True, method="html"))
+    return None
 
-    # To test xpath, http://xpather.com/ and https://devhints.io/xpath both have proven very useful
-    introduced_version = ''.join(tree.xpath('.//*[self::span][@class="release"]//text()')).strip()
-    description = ''.join(tree.xpath('.//*[self::dt][text()="Description:"]/following-sibling::dd//text()')).strip()
-    syntax = ''.join(tree.xpath('.//*[self::dt][text()="Syntax:"]/following-sibling::dd[1]//text()')).strip()
-    parameters_tree = tree.xpath('.//*[self::dt][text()="Parameters:"]/following-sibling::dd[@class="param"]')
-    parameters = []
 
-    for i in range(len(parameters_tree)):
-        # A bit slow and sketchy but works
-        param_raw_text = ''.join(tree.xpath(f'.//*[self::dt][text()="Parameters:"]/following-sibling::dd'
-                                            f'[@class="param"][{i + 1}]//text()')).strip()
+def _parse_description(xtree):
+    """
+    Parses the SQF command description from the given xtree using xpath.
+    :param xtree:
+    :return: String containing the description if found; None otherwise.
+    """
+    try:
+        return xtree.xpath('//root/template/part[name[@index="3"]]/value/text()')[0]
+    except IndexError:
+        pass
 
-        if param_raw_text.startswith('['):
-            # Array list of right-arg names? Skip this
-            continue
+    try:
+        return xtree.xpath('//root/template/part[name[text()[contains(.,\'descr\')]]]/value/text()')[0]
+    except IndexError:
+        pass
 
-        m = _sqf_function_parameters_regex.search(param_raw_text)
-
-        if m is None:
-            continue
-
-        param_name = m.group('param_name').strip()
-        param_type = m.group('param_type').strip()
-        param_desc = m.group('param_description')
-        if param_desc is None:
-            param_desc = ''
-        parameters.append(SQFFunctionParameter(name=param_name, sqftype=param_type, description=param_desc))
-
-    return SQFFunction(name,
-                       description=description,
-                       introduced_version=introduced_version,
-                       syntax=syntax,
-                       parameters=parameters)
+    return None
 
 
 def validate_sqf_function_name(name):
