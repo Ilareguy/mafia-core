@@ -33,7 +33,7 @@ from io import StringIO
 SQF_FUNCTION_NAME_REGEX = '^[a-zA-Z0-9_][a-zA-Z0-9_]{2,}$'
 CACHE_DIRECTORY = 'cache/'
 CACHE_FUNCTION_DIRECTORY = CACHE_DIRECTORY + 'functions/'
-SQF_FUNCTIONS_STRUCTURE_CACHED_FILE = CACHE_DIRECTORY + 'sqf_functions_structured.json'
+SQF_FUNCTIONS_STRUCTURE_CACHED_FILE = 'commands.json'
 SQF_FUNCTIONS_RAW_CACHED_FILE = CACHE_DIRECTORY + 'sqf_functions_raw.json'
 BI_WIKI_URL = 'https://community.bistudio.com/wikidata/api.php?'
 SQF_FUNCTIONS = 'action=parse&pageid=12689&format=json&prop=links'
@@ -249,9 +249,8 @@ def _parse_function_data(name, file):
 
     # Fetch function data
     xtree = etree.parse(StringIO(function_raw_data['parse']['parsetree']['*']))
-    description = _parse_description(xtree)
 
-    return None
+    return SQFFunction(name=name, description=_parse_description(xtree))
 
 
 def _parse_description(xtree):
@@ -261,12 +260,12 @@ def _parse_description(xtree):
     :return: String containing the description if found; None otherwise.
     """
     try:
-        return xtree.xpath('//root/template/part[name[@index="3"]]/value/text()')[0]
+        return xtree.xpath('//root/template/part[name[@index="3"]]/value/text()')[0].strip()
     except IndexError:
         pass
 
     try:
-        return xtree.xpath('//root/template/part[name[text()[contains(.,\'descr\')]]]/value/text()')[0]
+        return xtree.xpath('//root/template/part[name[text()[contains(.,\'descr\')]]]/value/text()')[0].strip()
     except IndexError:
         pass
 
