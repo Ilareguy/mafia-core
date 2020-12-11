@@ -250,15 +250,12 @@ def _parse_function_data(name, file):
     # Fetch function data
     xtree = etree.parse(StringIO(function_raw_data['parse']['parsetree']['*']))
 
-    return SQFFunction(name=name, description=_parse_description(xtree))
+    return SQFFunction(name=name,
+                       description=_parse_description(xtree),
+                       syntax=_parse_syntax(xtree))
 
 
 def _parse_description(xtree):
-    """
-    Parses the SQF command description from the given xtree using xpath.
-    :param xtree:
-    :return: String containing the description if found; None otherwise.
-    """
     try:
         return xtree.xpath('//root/template/part[name[@index="3"]]/value/text()')[0].strip()
     except IndexError:
@@ -269,6 +266,20 @@ def _parse_description(xtree):
     except IndexError:
         pass
 
+    return None
+
+def _parse_syntax(xtree):
+    try:
+        return xtree.xpath('//root/template/part[name[@index="4"]]/value/text()')[0].strip()
+    except IndexError:
+        pass
+
+    try:
+        return xtree.xpath('//root/template/part[name[text()[contains(.,\'s1\')]]]/value/text()')[0].strip()
+    except IndexError:
+        pass
+
+    # Rendu ici: There are two edge-cases where neither of these xpaths find the syntax value.
     return None
 
 
