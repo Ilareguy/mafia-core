@@ -30,26 +30,26 @@ from io import StringIO
 ##################################################
 # Consts
 ##################################################
-SQF_FUNCTION_NAME_REGEX = '^[a-zA-Z0-9_][a-zA-Z0-9_]{2,}$'
+SQF_COMMAND_NAME_REGEX = '^[a-zA-Z0-9_][a-zA-Z0-9_]{2,}$'
 CACHE_DIRECTORY = 'cache/'
-CACHE_FUNCTION_DIRECTORY = CACHE_DIRECTORY + 'functions/'
-SQF_FUNCTIONS_STRUCTURE_CACHED_FILE = 'commands.json'
-SQF_FUNCTIONS_RAW_CACHED_FILE = CACHE_DIRECTORY + 'sqf_functions_raw.json'
+CACHE_COMMAND_DIRECTORY = CACHE_DIRECTORY + 'commands/'
+SQF_COMMANDS_STRUCTURE_CACHED_FILE = 'commands.json'
+SQF_COMMANDS_RAW_CACHED_FILE = CACHE_DIRECTORY + 'sqf_commands_raw.json'
 BI_WIKI_URL = 'https://community.bistudio.com/wikidata/api.php?'
-SQF_FUNCTIONS = 'action=parse&pageid=12689&format=json&prop=links'
+SQF_COMMANDS = 'action=parse&pageid=12689&format=json&prop=links'
 
 with open('command_overrides.json') as overrides_file:
-    FUNCTION_OVERRIDES = json.load(overrides_file)
+    COMMAND_OVERRIDES = json.load(overrides_file)
 
 with open('command_ignores.json') as ignores_file:
-    FUNCTION_IGNORES = json.load(ignores_file)
-    FUNCTION_IGNORES = [x.upper() for x in FUNCTION_IGNORES]
+    COMMAND_IGNORES = json.load(ignores_file)
+    COMMAND_IGNORES = [x.upper() for x in COMMAND_IGNORES]
 
 
 ##################################################
 # Classes
 ##################################################
-class SQFFunction(object):
+class SQFCommand(object):
     def __init__(self, name=None, description=None, introduced_version=None, syntax=None, parameters=None):
         self.name = name
         self.description = description
@@ -61,7 +61,7 @@ class SQFFunction(object):
 
         # Find overrides
         try:
-            overrides_detail = FUNCTION_OVERRIDES[self.name]
+            overrides_detail = COMMAND_OVERRIDES[self.name]
             print(f"Overriding data for command \"{self.name}\".")
             for key, value in overrides_detail.items():
                 setattr(self, key, value)
@@ -80,7 +80,7 @@ class SQFFunction(object):
             super().__init__(*args, **kwargs)
 
         def default(self, obj):
-            param_encoder = SQFFunctionParameter.JSONEncoder()
+            param_encoder = SQFCommandParameter.JSONEncoder()
             params_out = []
 
             for p in obj.parameters:
@@ -95,7 +95,7 @@ class SQFFunction(object):
             }
 
 
-class SQFFunctionParameter(object):
+class SQFCommandParameter(object):
     def __init__(self, name=None, description=None, sqftype=None):
         self.name = name
         self.description = description
@@ -113,26 +113,26 @@ class SQFFunctionParameter(object):
             }
 
 
-class UnknownSQFFunction(SQFFunction):
+class UnknownSQFCommand(SQFCommand):
     """
-    Some SQF functions have no entry in the wiki. In such cases, the SQFFunctions object will contain an instance of
-    this class instead of SQFFunction.
+    Some SQF commands have no entry in the wiki. In such cases, the SQFCommands object will contain an instance of
+    this class instead of SQFCommand.
     """
 
     def __init__(self, name):
         super().__init__(name)
 
 
-class SQFFunctions(JSONEncoder):
+class SQFCommands(JSONEncoder):
     def __init__(self):
         super().__init__()
-        self.functions = {}
+        self.commands = {}
 
     def get(self, name):
-        return self.functions[name]
+        return self.commands[name]
 
-    def add(self, name, function):
-        self.functions[name] = function
+    def add(self, name, command):
+        self.commands[name] = command
 
     class JSONEncoder(JSONEncoder):
         def __init__(self, *args, **kwargs):
@@ -140,8 +140,8 @@ class SQFFunctions(JSONEncoder):
 
         def default(self, obj):
             out = []
-            encoder = SQFFunction.JSONEncoder()
-            for f in obj.functions.values():
+            encoder = SQFCommand.JSONEncoder()
+            for f in obj.commands.values():
                 out.append(encoder.default(f))
             return out
 
@@ -157,131 +157,131 @@ class NoWikiEntryError(Exception):
     pass
 
 
-def fetch_sqf_functions():
+def fetch_sqf_commands():
     """
-    Retrieves an SQFFunctions instance containing structured data about all known SQF functions.
+    Retrieves an SQFCommands instance containing structured data about all known SQF commands.
     On first runs, or after the cache is cleared, this function will make numerous web requests to retrieve fresh data
     from BI's wiki.
 
     Execution is done is several steps:
-        First, a list of all known SQF functions is fetched and stored as "sqf_functions_raw.json" in the cache
+        First, a list of all known SQF commands is fetched and stored as "sqf_commands_raw.json" in the cache
         directory.
 
-        Then, raw data about each function is fetched from BI's wiki and stored in the function cache directory.
+        Then, raw data about each command is fetched from BI's wiki and stored in the commands cache directory.
 
         Finally, when all that raw data is available, structured usable data is built and stored in
-        "sqf_functions_structured.json" in the cache directory.
+        "commands.json" in the cache directory.
 
-    The function then returns a SQFFunctions object containing all that data.
+    The function then returns a SQFCommands object containing all that data.
 
-    :return: A SQFFunctions instance.
+    :return: A SQFCommands instance.
     """
 
-    raw_functions = []
-    structured_functions = SQFFunctions()
+    raw_commands = []
+    structured_commands = SQFCommands()
 
     ##################################################
-    # Fetch a list of function names
+    # Fetch a list of command names
     ##################################################
 
-    if not isfile(SQF_FUNCTIONS_RAW_CACHED_FILE):
+    if not isfile(SQF_COMMANDS_RAW_CACHED_FILE):
         # Cached data doesn't exist yet; fetch now
         try:
-            with urllib.request.urlopen(BI_WIKI_URL + SQF_FUNCTIONS) as response:
-                with open(SQF_FUNCTIONS_RAW_CACHED_FILE, "w+b") as file:
+            with urllib.request.urlopen(BI_WIKI_URL + SQF_COMMANDS) as response:
+                with open(SQF_COMMANDS_RAW_CACHED_FILE, "w+b") as file:
                     file.write(response.read())
         except URLError as e:
-            print(f'Could not fetch functions list from wiki. Exception: {e}')
+            print(f'Could not fetch commands list from wiki. Exception: {e}')
             return
 
     try:
         # Get a handle to cached data
-        with open(SQF_FUNCTIONS_RAW_CACHED_FILE) as sqf_functions_file:
-            data = json.load(sqf_functions_file)
+        with open(SQF_COMMANDS_RAW_CACHED_FILE) as sqf_commands_file:
+            data = json.load(sqf_commands_file)
 
     except OSError as e:
-        print(f'Could not open "{SQF_FUNCTIONS_RAW_CACHED_FILE}" for reading. Exception: {e}')
+        print(f'Could not open "{SQF_COMMANDS_RAW_CACHED_FILE}" for reading. Exception: {e}')
         return
 
-    # Parse function names
+    # Parse command names
     for link in data['parse']['links']:
-        function_name = link['*']
+        command_name = link['*']
         # There are some edge-cases in the commands list
-        if function_name == 'setPylonLoadOut':
-            function_name = 'setPylonLoadout'
-        elif function_name == 'setWantedRpmRTD':
-            function_name = 'setWantedRPMRTD'
+        if command_name == 'setPylonLoadOut':
+            command_name = 'setPylonLoadout'
+        elif command_name == 'setWantedRpmRTD':
+            command_name = 'setWantedRPMRTD'
 
-        if link['ns'] == 0 and validate_sqf_function_name(function_name):
-            raw_functions.append(function_name)
+        if link['ns'] == 0 and validate_sqf_command_name(command_name):
+            raw_commands.append(command_name)
 
     ##################################################
-    # Build structured data about each function.
+    # Build structured data about each command.
     # This may be time-consuming on first runs
     ##################################################
-    for function_name in raw_functions:
-        if function_name.upper() in FUNCTION_IGNORES:
-            print(f"Ignoring command \"{function_name}\".")
+    for command_name in raw_commands:
+        if command_name.upper() in COMMAND_IGNORES:
+            print(f"Ignoring command \"{command_name}\".")
             continue  # Do not process this command
 
-        function_raw_cache_path = CACHE_FUNCTION_DIRECTORY + function_name.upper() + '.json'
+        command_raw_cache_path = CACHE_COMMAND_DIRECTORY + command_name.upper() + '.json'
 
         try:
-            if not isfile(function_raw_cache_path):
-                # Fetch and cache raw data about this function
-                function_url = BI_WIKI_URL + f'action=parse&page={function_name}&format=json&prop=parsetree'
-                print(f'No cached data for {function_name}; fetching now... ')
-                with urllib.request.urlopen(function_url) as response:
-                    with open(function_raw_cache_path, "w+b") as file:
+            if not isfile(command_raw_cache_path):
+                # Fetch and cache raw data about this command
+                command_url = BI_WIKI_URL + f'action=parse&page={command_name}&format=json&prop=parsetree'
+                print(f'No cached data for {command_name}; fetching now... ')
+                with urllib.request.urlopen(command_url) as response:
+                    with open(command_raw_cache_path, "w+b") as file:
                         file.write(response.read())
                     print('Fetch successful.')
 
         # Can't open wiki article
         except URLError as e:
-            print(f'Could not fetch data for command {function_name} from wiki. Exception: {e}')
+            print(f'Could not fetch data for command {command_name} from wiki. Exception: {e}')
             continue
 
         # Can't open cache file
         except OSError as e:
-            print(f'Could not open "{function_raw_cache_path}" for writing. Exception: {e}')
+            print(f'Could not open "{command_raw_cache_path}" for writing. Exception: {e}')
             continue
 
         # We have raw data. Now build something useful
         try:
-            with open(function_raw_cache_path) as function_raw_cache_file_handle:
-                structured_functions.add(function_name,
-                                         _parse_function_data(function_name, function_raw_cache_file_handle))
+            with open(command_raw_cache_path) as command_raw_cache_file_handle:
+                structured_commands.add(command_name,
+                                        _parse_command_data(command_name, command_raw_cache_file_handle))
 
         except OSError as e:
-            print(f'Could not open "{function_raw_cache_path}" for reading. Exception: {e}')
-            # structured_functions.add(function_name, UnknownSQFFunction(function_name))
+            print(f'Could not open "{command_raw_cache_path}" for reading. Exception: {e}')
+            # structured_commands.add(command_name, UnknownSQFCommand(command_name))
             continue
 
         except NoWikiEntryError:
-            print(f'Command \"{function_name}\" has no entry in the wiki!')
-            # structured_functions.add(function_name, UnknownSQFFunction(function_name))
+            print(f'Command \"{command_name}\" has no entry in the wiki!')
+            # structured_commands.add(command_name, UnknownSQFCommand(command_name))
             continue
 
-    with open(SQF_FUNCTIONS_STRUCTURE_CACHED_FILE, "w") as out:
-        json.dump(structured_functions, out, cls=SQFFunctions.JSONEncoder, indent=4)
+    with open(SQF_COMMANDS_STRUCTURE_CACHED_FILE, "w") as out:
+        json.dump(structured_commands, out, cls=SQFCommands.JSONEncoder, indent=4)
 
-    return structured_functions
+    return structured_commands
 
 
-def _parse_function_data(name, file):
+def _parse_command_data(name, file):
     # Load raw data
-    function_raw_data = json.load(file)
+    command_raw_data = json.load(file)
 
-    if 'error' in function_raw_data:
-        # This function has no valid entry in the wiki, and therefore no usable data for us.
+    if 'error' in command_raw_data:
+        # This command has no valid entry in the wiki, and therefore no usable data for us.
         raise NoWikiEntryError()
 
-    # Fetch function data
-    xtree = etree.parse(StringIO(function_raw_data['parse']['parsetree']['*']))
+    # Fetch command data
+    xtree = etree.parse(StringIO(command_raw_data['parse']['parsetree']['*']))
 
-    return SQFFunction(name=name,
-                       description=_parse_description(xtree),
-                       syntax=_parse_syntax(xtree))
+    return SQFCommand(name=name,
+                      description=_parse_description(xtree),
+                      syntax=_parse_syntax(xtree))
 
 
 def _parse_description(xtree):
@@ -309,10 +309,9 @@ def _parse_syntax(xtree):
     except IndexError:
         pass
 
-        # Rendu ici: There are two edge-cases where neither of these xpaths find the syntax value.
-        return None
+    return None
 
 
-def validate_sqf_function_name(name):
-    # Evaluates whether or not the given name is a valid SQF function name.
-    return re.match(SQF_FUNCTION_NAME_REGEX, name) is not None
+def validate_sqf_command_name(name):
+    # Evaluates whether or not the given name is a valid SQF command name.
+    return re.match(SQF_COMMAND_NAME_REGEX, name) is not None
