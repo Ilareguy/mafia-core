@@ -27,6 +27,8 @@ from urllib.error import URLError
 from lxml import etree
 from io import StringIO
 
+# @TODO: Parsing params for `remoteExec` and other commands not working.
+
 ##################################################
 # Consts
 ##################################################
@@ -49,40 +51,58 @@ with open('command_ignores.json') as ignores_file:
 # Lazy-init
 ##################################################
 SQF_COMMAND_PARAM_REGEX = None
+SQF_COMMAND_RETURNS_REGEX = None
 
 
 ##################################################
 # Classes
 ##################################################
 class SQFCommand(object):
-    def __init__(self, name=None, description=None, introduced_version=None, syntax=None, parameters=None):
+    def __init__(self, name=None, description=None, introduced_version=None, syntax=None, parameters=None,
+                 returns=None):
         self.name = name
         self.description = description
         self.introduced_version = introduced_version
         self.syntax = syntax
         self.parameters = parameters
+        self.returns = returns
 
         # Fill overridden data, if any
         self._find_overrides()
 
         # Check for empty parameters
         if self.description == "" or self.description is None:
-            print(f"Command \"{self.name}\" has empty description.")
+            print(f"Command `{self.name}` has empty description.")
 
         if self.syntax == "" or self.syntax is None:
-            print(f"Command \"{self.name}\" has empty syntax.")
+            print(f"Command `{self.name}` has empty syntax.")
 
         if self.parameters is None:
             # This is a problem! Empty parameters (i.e. `[]`) is fine; but None means no data could be fetched.
-            print(f"Command \"{self.name}\" has no parameters data!")
+            print(f"Command `{self.name}` has no parameters data!")
             self.parameters = []
+
+        if self.returns is None:
+            # This is a problem! Must be of type `SQFCommandReturn`. None means it couldn't be parsed.
+            print(f"Command `{self.name}` has no return type specified!")
+            self.returns = SQFCommandReturn()
 
     def _find_overrides(self):
         try:
             overrides_detail = COMMAND_OVERRIDES[self.name]
             print(f"Overriding data for command \"{self.name}\".")
             for key, value in overrides_detail.items():
-                setattr(self, key, value)
+                if key == "parameters":
+                    params = []
+                    for param in value:
+                        params.append(SQFCommandParameter(name=param['name'],
+                                                          description=param['description'],
+                                                          sqf_type=param['sqf_type']))
+                    setattr(self, key, params)
+                elif key == 'returns':
+                    setattr(self, key, SQFCommandReturn(description=value['description'], sqf_type=value['sqf_type']))
+                else:
+                    setattr(self, key, value)
         except KeyError:
             pass  # No override data for this command
 
@@ -92,7 +112,9 @@ class SQFCommand(object):
 
         def default(self, obj):
             param_encoder = SQFCommandParameter.JSONEncoder()
+            return_encoder = SQFCommandReturn.JSONEncoder()
             params_out = []
+            returns = return_encoder.default(obj.returns)
 
             for p in obj.parameters:
                 params_out.append(param_encoder.default(p))
@@ -102,7 +124,24 @@ class SQFCommand(object):
                 'description': obj.description,
                 'introduced_version': obj.introduced_version,
                 'syntax': obj.syntax,
-                'parameters': params_out
+                'parameters': params_out,
+                'returns': returns
+            }
+
+
+class SQFCommandReturn(object):
+    def __init__(self, description=None, sqf_type=None):
+        self.description = description
+        self.sqf_type = sqf_type
+
+    class JSONEncoder(JSONEncoder):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def default(self, obj):
+            return {
+                'description': obj.description,
+                'sqf_type': obj.sqf_type
             }
 
 
@@ -117,11 +156,14 @@ class SQFCommandParameter(object):
             super().__init__(*args, **kwargs)
 
         def default(self, obj):
-            return {
-                'name': obj.name,
-                'description': obj.description,
-                'sqf_type': obj.sqf_type
-            }
+            try:
+                return {
+                    'name': obj.name,
+                    'description': obj.description,
+                    'sqf_type': obj.sqf_type
+                }
+            except AttributeError:
+                pass
 
 
 class UnknownSQFCommand(SQFCommand):
@@ -289,11 +331,13 @@ def _parse_command_data(name, file):
 
     # Fetch command data
     xtree = etree.parse(StringIO(command_raw_data['parse']['parsetree']['*']))
+    returns = _parse_return_details(xtree)
 
     return SQFCommand(name=name,
                       description=_parse_description(xtree),
                       syntax=_parse_syntax(xtree),
-                      parameters=_parse_parameters(xtree, name))
+                      parameters=_parse_parameters(xtree),
+                      returns=returns)
 
 
 def _parse_description(xtree):
@@ -324,16 +368,17 @@ def _parse_syntax(xtree):
     return None
 
 
-def _parse_parameters(xtree, name):
+def _parse_parameters(xtree):
     class NotFound(BaseException):
         pass
 
     def xpath():
-
         try:
             return xtree.xpath('//root/template/part[name[text()[contains(.,\'p\')]]]/value/text()')
         except IndexError:
             pass
+
+        # Additional xpath()s can be added here later to match more specific cases.
 
         raise NotFound
 
@@ -351,13 +396,7 @@ def _parse_parameters(xtree, name):
         return None
 
     # Remove empty data returned by XPath
-    r = []
-    for p in params_raw:
-        stripped = p.strip()
-        if stripped != "":
-            r.append(stripped)
-    params_raw = r
-    del r
+    params_raw = _strip_and_remove_empties(params_raw)
 
     # Parse individual details
     params = []
@@ -374,6 +413,49 @@ def _parse_parameters(xtree, name):
     return params
 
 
+def _parse_return_details(xtree):
+    class NotFound(BaseException):
+        pass
+
+    def xpath():
+        try:
+            return xtree.xpath('//root/template/part[name[@index="5"]]/value/text()')[0]
+        except IndexError:
+            pass
+
+        # Additional xpath()s can be added here later to match more specific cases.
+
+        raise NotFound
+
+    # Compile regex if necessary
+    global SQF_COMMAND_RETURNS_REGEX
+    if SQF_COMMAND_RETURNS_REGEX is None:
+        SQF_COMMAND_RETURNS_REGEX = \
+            re.compile(r"^\[{0,2}(?P<type>[a-zA-B0-9]+)\]{0,2}",
+                       re.IGNORECASE)
+
+    # Acquire raw data from XPath
+    try:
+        returns_raw = xpath()
+    except NotFound:
+        return None
+    returns_raw = returns_raw.strip()
+
+    # Parse type and description
+    data = SQF_COMMAND_RETURNS_REGEX.search(returns_raw)
+
+    return SQFCommandReturn(description=returns_raw, sqf_type=None if data is None else data.group('type'))
+
+
 def validate_sqf_command_name(name):
     # Evaluates whether or not the given name is a valid SQF command name.
     return re.match(SQF_COMMAND_NAME_REGEX, name) is not None
+
+
+def _strip_and_remove_empties(arr):
+    r = []
+    for entry in arr:
+        stripped = entry.strip()
+        if stripped != "":
+            r.append(stripped)
+    return r

@@ -6,6 +6,15 @@
         "syntax": "vehicle '''getCompatiblePylonMagazines''' pylon\n\nor\n\nvehicleClass '''getCompatiblePylonMagazines''' pylon"
     },
     "set3DENMissionAttribute": {
-        "syntax" : "Set scenario attribute.\n\nAn attribute is identified by its property (data when it is engine-drive attribute) value in config. For the list of all attributes with their properties, see Setting Attributes."
+        "syntax": "Set scenario attribute.\n\nAn attribute is identified by its property (data when it is engine-drive attribute) value in config. For the list of all attributes with their properties, see Setting Attributes."
+    },
+    "estimatedTimeLeft": {
+        "parameters": [
+            {
+                "name": "seconds",
+                "description": "Estimated time in seconds (maximum 36000 (10 hours))",
+                "sqf_type": "Number"
+            }
+        ]
     }
 }
