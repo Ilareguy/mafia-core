@@ -25,13 +25,10 @@ import json
 
 
 if __name__ == '__main__':
-    def on_message(message):
-        print(message)
-
-    functions = fetch_sqf_functions(on_message)
+    functions = fetch_sqf_functions()
     exit(0)
 
-    with urllib.request.urlopen("https://community.bistudio.com/wikidata/api.php?action=parse&page=addWeapon&prop=parsetree&format=json") as response:
+    with urllib.request.urlopen("https://community.bistudio.com/wikidata/api.php?action=parse&page=set3DENMissionAttribute&format=json&prop=parsetree") as response:
         with open("output.json", "w+b") as file:
             file.write(response.read())
 

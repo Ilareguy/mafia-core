@@ -38,9 +38,13 @@ SQF_FUNCTIONS_RAW_CACHED_FILE = CACHE_DIRECTORY + 'sqf_functions_raw.json'
 BI_WIKI_URL = 'https://community.bistudio.com/wikidata/api.php?'
 SQF_FUNCTIONS = 'action=parse&pageid=12689&format=json&prop=links'
 
-##################################################
-# Lazy-initialized
-##################################################
+with open('command_overrides.json') as overrides_file:
+    FUNCTION_OVERRIDES = json.load(overrides_file)
+
+with open('command_ignores.json') as ignores_file:
+    FUNCTION_IGNORES = json.load(ignores_file)
+    FUNCTION_IGNORES = [x.upper() for x in FUNCTION_IGNORES]
+
 
 ##################################################
 # Classes
@@ -54,6 +58,22 @@ class SQFFunction(object):
         self.parameters = parameters
         if self.parameters is None:
             self.parameters = []
+
+        # Find overrides
+        try:
+            overrides_detail = FUNCTION_OVERRIDES[self.name]
+            print(f"Overriding data for command \"{self.name}\".")
+            for key, value in overrides_detail.items():
+                setattr(self, key, value)
+        except KeyError:
+            pass  # No override data for this command
+
+        # Check for empty parameters
+        if self.description == "" or self.description is None:
+            print(f"Command \"{self.name}\" has empty description.")
+
+        if self.syntax == "" or self.syntax is None:
+            print(f"Command \"{self.name}\" has empty syntax.")
 
     class JSONEncoder(JSONEncoder):
         def __init__(self, *args, **kwargs):
@@ -137,7 +157,7 @@ class NoWikiEntryError(Exception):
     pass
 
 
-def fetch_sqf_functions(trace_predicate=print):
+def fetch_sqf_functions():
     """
     Retrieves an SQFFunctions instance containing structured data about all known SQF functions.
     On first runs, or after the cache is cleared, this function will make numerous web requests to retrieve fresh data
@@ -154,7 +174,6 @@ def fetch_sqf_functions(trace_predicate=print):
 
     The function then returns a SQFFunctions object containing all that data.
 
-    :param trace_predicate: A function to be invoked for tracing during operation. Defaults to printing messages.
     :return: A SQFFunctions instance.
     """
 
@@ -172,7 +191,7 @@ def fetch_sqf_functions(trace_predicate=print):
                 with open(SQF_FUNCTIONS_RAW_CACHED_FILE, "w+b") as file:
                     file.write(response.read())
         except URLError as e:
-            trace_predicate(f'Could not fetch functions list from wiki. Exception: {e}')
+            print(f'Could not fetch functions list from wiki. Exception: {e}')
             return
 
     try:
@@ -181,12 +200,18 @@ def fetch_sqf_functions(trace_predicate=print):
             data = json.load(sqf_functions_file)
 
     except OSError as e:
-        trace_predicate(f'Could not open "{SQF_FUNCTIONS_RAW_CACHED_FILE}" for reading. Exception: {e}')
+        print(f'Could not open "{SQF_FUNCTIONS_RAW_CACHED_FILE}" for reading. Exception: {e}')
         return
 
     # Parse function names
     for link in data['parse']['links']:
         function_name = link['*']
+        # There are some edge-cases in the commands list
+        if function_name == 'setPylonLoadOut':
+            function_name = 'setPylonLoadout'
+        elif function_name == 'setWantedRpmRTD':
+            function_name = 'setWantedRPMRTD'
+
         if link['ns'] == 0 and validate_sqf_function_name(function_name):
             raw_functions.append(function_name)
 
@@ -195,26 +220,30 @@ def fetch_sqf_functions(trace_predicate=print):
     # This may be time-consuming on first runs
     ##################################################
     for function_name in raw_functions:
+        if function_name.upper() in FUNCTION_IGNORES:
+            print(f"Ignoring command \"{function_name}\".")
+            continue  # Do not process this command
+
         function_raw_cache_path = CACHE_FUNCTION_DIRECTORY + function_name.upper() + '.json'
 
         try:
             if not isfile(function_raw_cache_path):
                 # Fetch and cache raw data about this function
                 function_url = BI_WIKI_URL + f'action=parse&page={function_name}&format=json&prop=parsetree'
-                trace_predicate(f'No cached data for {function_name}; fetching now... ')
+                print(f'No cached data for {function_name}; fetching now... ')
                 with urllib.request.urlopen(function_url) as response:
                     with open(function_raw_cache_path, "w+b") as file:
                         file.write(response.read())
-                    trace_predicate('Fetch successful.')
+                    print('Fetch successful.')
 
         # Can't open wiki article
         except URLError as e:
-            trace_predicate(f'Could not fetch data for function {function_name} from wiki. Exception: {e}')
+            print(f'Could not fetch data for command {function_name} from wiki. Exception: {e}')
             continue
 
         # Can't open cache file
         except OSError as e:
-            trace_predicate(f'Could not open "{function_raw_cache_path}" for writing. Exception: {e}')
+            print(f'Could not open "{function_raw_cache_path}" for writing. Exception: {e}')
             continue
 
         # We have raw data. Now build something useful
@@ -224,12 +253,12 @@ def fetch_sqf_functions(trace_predicate=print):
                                          _parse_function_data(function_name, function_raw_cache_file_handle))
 
         except OSError as e:
-            trace_predicate(f'Could not open "{function_raw_cache_path}" for reading. Exception: {e}')
+            print(f'Could not open "{function_raw_cache_path}" for reading. Exception: {e}')
             # structured_functions.add(function_name, UnknownSQFFunction(function_name))
             continue
 
         except NoWikiEntryError:
-            trace_predicate(f'Could not parse data about function {function_name} because it has no entry in the wiki.')
+            print(f'Command \"{function_name}\" has no entry in the wiki!')
             # structured_functions.add(function_name, UnknownSQFFunction(function_name))
             continue
 
@@ -268,6 +297,7 @@ def _parse_description(xtree):
 
     return None
 
+
 def _parse_syntax(xtree):
     try:
         return xtree.xpath('//root/template/part[name[@index="4"]]/value/text()')[0].strip()
@@ -279,8 +309,8 @@ def _parse_syntax(xtree):
     except IndexError:
         pass
 
-    # Rendu ici: There are two edge-cases where neither of these xpaths find the syntax value.
-    return None
+        # Rendu ici: There are two edge-cases where neither of these xpaths find the syntax value.
+        return None
 
 
 def validate_sqf_function_name(name):

@@ -1,0 +1,11 @@
+{
+    "addAction": {
+        "description": "Adds an entry to the action menu of an object (scroll wheel menu). The action can only be activated when in proximity to the object (default 50m) '''and''' look at it. Adding an action to the player makes that action available to the player at all times.&lt;br&gt;\nThe appearance of onscreen text can be further tweaked with [[setUserActionText]]. For event handling of user interaction see [[inGameUISetEventHandler]]."
+    },
+    "getCompatiblePylonMagazines": {
+        "syntax": "vehicle '''getCompatiblePylonMagazines''' pylon\n\nor\n\nvehicleClass '''getCompatiblePylonMagazines''' pylon"
+    },
+    "set3DENMissionAttribute": {
+        "syntax" : "Set scenario attribute.\n\nAn attribute is identified by its property (data when it is engine-drive attribute) value in config. For the list of all attributes with their properties, see Setting Attributes."
+    }
+}

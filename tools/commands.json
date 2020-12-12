@@ -162,7 +162,7 @@
     },
     {
         "name": "addAction",
-        "description": "",
+        "description": "Adds an entry to the action menu of an object (scroll wheel menu). The action can only be activated when in proximity to the object (default 50m) '''and''' look at it. Adding an action to the player makes that action available to the player at all times.&lt;br&gt;\nThe appearance of onscreen text can be further tweaked with [[setUserActionText]]. For event handling of user interaction see [[inGameUISetEventHandler]].",
         "introduced_version": null,
         "syntax": "object [[addAction]] [title, script, arguments, priority, showWindow, hideOnUse, shortcut, condition, radius, unconscious, selection, memoryPoint]",
         "parameters": []
@@ -459,13 +459,6 @@
         "description": "Adds weapon item, including magazine, directly to the [[primaryWeapon]]. This is used for infantry weapons.",
         "introduced_version": null,
         "syntax": "unit '''addPrimaryWeaponItem''' item",
-        "parameters": []
-    },
-    {
-        "name": "addPublicVariableEventHandler",
-        "description": "",
-        "introduced_version": null,
-        "syntax": "varName '''addPublicVariableEventHandler''' code",
         "parameters": []
     },
     {
@@ -1089,13 +1082,6 @@
         "description": "Assigns the unit (in case of a vehicle, its commander) to the given team. Team is an option in group control (unit management) menu that allows to split player group in teams and then give bulk order to separate teams. In order to operate properly, the command requires specific conditions:\n* The command requires [[player]] to be fully initialised\n* The unit getting assigned must be either player himself or a unit in player's group\n* Units in player's group as well as player himself can all have different teams assigned\n* The colour of the assigned team for a unit is seen on the group management UI as well as squad radar\nThe possible team values (colours) are: \n* \"MAIN\" - (white)\n* \"RED\" - (red)\n* \"GREEN\" - (green)\n* \"BLUE\" - (blue)\n* \"YELLOW\"  - (yellow)\n'''NOTE''': In older version of the game the effect of this command is local",
         "introduced_version": null,
         "syntax": "unit '''assignTeam''' team",
-        "parameters": []
-    },
-    {
-        "name": "assignToAirport",
-        "description": "",
-        "introduced_version": null,
-        "syntax": "plane [[assignToAirport]] id",
         "parameters": []
     },
     {
@@ -3941,13 +3927,6 @@
         "parameters": []
     },
     {
-        "name": "difficultyEnabled",
-        "description": "",
-        "introduced_version": null,
-        "syntax": "'''difficultyEnabled''' flagName",
-        "parameters": []
-    },
-    {
         "name": "difficultyEnabledRTD",
         "description": "Returns [[true]] if Advanced Flight Model is enabled. Forcing of rotorlib simulation could be done with mission param [[Description.ext#forceRotorLibSimulation|forceRotorLibSimulation]]",
         "introduced_version": null,
@@ -5631,7 +5610,7 @@
         "name": "getCompatiblePylonMagazines",
         "description": "Get array of compatible pylon magazines",
         "introduced_version": null,
-        "syntax": "",
+        "syntax": "vehicle '''getCompatiblePylonMagazines''' pylon\n\nor\n\nvehicleClass '''getCompatiblePylonMagazines''' pylon",
         "parameters": []
     },
     {
@@ -11434,7 +11413,7 @@
         "name": "set3DENMissionAttribute",
         "description": "Set [[Eden_Editor:_Scenario_Atttributes|scenario attribute]].\n<br><br>\nAn attribute is identified by its <tt>property</tt> (<tt>data</tt> when it is engine-drive attribute) value in config. For the list of all attributes with their properties, see [[Eden_Editor:_Setting_Attributes#Attributes|Setting Attributes]].",
         "introduced_version": null,
-        "syntax": "",
+        "syntax": "Set scenario attribute.\n\nAn attribute is identified by its property (data when it is engine-drive attribute) value in config. For the list of all attributes with their properties, see Setting Attributes.",
         "parameters": []
     },
     {
@@ -12600,10 +12579,10 @@
         "parameters": []
     },
     {
-        "name": "setPylonLoadOut",
-        "description": null,
+        "name": "setPylonLoadout",
+        "description": "Adds/overrides loadout to a vehicle pylon. <tt>TransportPylonsComponent</tt> in vehicle config and <tt>pylonWeapon</tt> in the magazine config are required to run.",
         "introduced_version": null,
-        "syntax": null,
+        "syntax": "vehicle '''setPylonLoadout''' [pylon, magazine, forced, turret];",
         "parameters": []
     },
     {
@@ -13230,10 +13209,10 @@
         "parameters": []
     },
     {
-        "name": "setWantedRpmRTD",
-        "description": null,
+        "name": "setWantedRPMRTD",
+        "description": "Tell the helicopter engine RPMs to reach the given value within a period of time. The simulation will try to reach the RPMs, but it does not guarantee it will reach the precise value!\n* engine index 0: engine #1\n* engine index 1: engine #2\n* engine index 2: engine #3\n* engine index -1: all engines",
         "introduced_version": null,
-        "syntax": null,
+        "syntax": "helicopterRTD '''setWantedRPMRTD''' [value, time, engineIndex]",
         "parameters": []
     },
     {
@@ -13717,6 +13696,34 @@
         "description": "Check if the entity has enabled simulation. \n\n<br><br>",
         "introduced_version": null,
         "syntax": "'''simulationEnabled''' entity",
+        "parameters": []
+    },
+    {
+        "name": "lnbSetPictureColorRight",
+        "description": "Sets color of the right picture in a [[CT_LISTNBOX]].",
+        "introduced_version": null,
+        "syntax": "[[lnbSetPictureColorRight]] [idc, [row, column], color]",
+        "parameters": []
+    },
+    {
+        "name": "lnbSetPictureColorSelectedRight",
+        "description": "Sets the color of the right picture when it is selected.",
+        "introduced_version": null,
+        "syntax": "[[lnbSetPictureColorSelectedRight]] [idc, [row, column], color]",
+        "parameters": []
+    },
+    {
+        "name": "lnbTextRight",
+        "description": "Returns [[CT_LISTNBOX]]'s right aligned cell text.",
+        "introduced_version": null,
+        "syntax": "[[lnbTextRight]] [idc, [row, column]]",
+        "parameters": []
+    },
+    {
+        "name": "setEngineRpmRTD",
+        "description": "Sets the RPM of given engines.",
+        "introduced_version": null,
+        "syntax": "helicopter [[setEngineRpmRTD]] [rpm, engineIndex]",
         "parameters": []
     },
     {
@@ -14399,13 +14406,6 @@
         "parameters": []
     },
     {
-        "name": "titleCut",
-        "description": "",
-        "introduced_version": null,
-        "syntax": "[[titleCut]] [text, type, speed]",
-        "parameters": []
-    },
-    {
         "name": "titleFadeOut",
         "description": "Terminate the title effect and set duration of the fade out phase to the given time. Same as [[cutFadeOut]] but for the title layer.",
         "introduced_version": null,
@@ -14585,13 +14585,6 @@
         "description": "Always true",
         "introduced_version": null,
         "syntax": "'''true'''",
-        "parameters": []
-    },
-    {
-        "name": "try",
-        "description": null,
-        "introduced_version": null,
-        "syntax": "Defines a try-catch structure. This sets up an [[Exception handling|exception handling]] block. Any thrown exception in a try block is caught in a [[catch]] block. The structured exception block has the following form:\n<code>[[try]]\n{",
         "parameters": []
     },
     {
@@ -15761,6 +15754,13 @@
         "description": "Converts position in world space into screen (UI) space. If a specified position is not within the current screen view, an empty array is returned.",
         "introduced_version": null,
         "syntax": "[[worldToScreen]] position",
+        "parameters": []
+    },
+    {
+        "name": "tvSetSelectColor",
+        "description": "Sets the select color of given path.",
+        "introduced_version": null,
+        "syntax": "ctrl [[tvSetSelectColor]] [path, color]",
         "parameters": []
     }
 ]
