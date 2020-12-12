@@ -45,6 +45,11 @@ with open('command_ignores.json') as ignores_file:
     COMMAND_IGNORES = json.load(ignores_file)
     COMMAND_IGNORES = [x.upper() for x in COMMAND_IGNORES]
 
+##################################################
+# Lazy-init
+##################################################
+SQF_COMMAND_PARAM_REGEX = None
+
 
 ##################################################
 # Classes
@@ -56,17 +61,9 @@ class SQFCommand(object):
         self.introduced_version = introduced_version
         self.syntax = syntax
         self.parameters = parameters
-        if self.parameters is None:
-            self.parameters = []
 
-        # Find overrides
-        try:
-            overrides_detail = COMMAND_OVERRIDES[self.name]
-            print(f"Overriding data for command \"{self.name}\".")
-            for key, value in overrides_detail.items():
-                setattr(self, key, value)
-        except KeyError:
-            pass  # No override data for this command
+        # Fill overridden data, if any
+        self._find_overrides()
 
         # Check for empty parameters
         if self.description == "" or self.description is None:
@@ -74,6 +71,20 @@ class SQFCommand(object):
 
         if self.syntax == "" or self.syntax is None:
             print(f"Command \"{self.name}\" has empty syntax.")
+
+        if self.parameters is None:
+            # This is a problem! Empty parameters (i.e. `[]`) is fine; but None means no data could be fetched.
+            print(f"Command \"{self.name}\" has no parameters data!")
+            self.parameters = []
+
+    def _find_overrides(self):
+        try:
+            overrides_detail = COMMAND_OVERRIDES[self.name]
+            print(f"Overriding data for command \"{self.name}\".")
+            for key, value in overrides_detail.items():
+                setattr(self, key, value)
+        except KeyError:
+            pass  # No override data for this command
 
     class JSONEncoder(JSONEncoder):
         def __init__(self, *args, **kwargs):
@@ -96,10 +107,10 @@ class SQFCommand(object):
 
 
 class SQFCommandParameter(object):
-    def __init__(self, name=None, description=None, sqftype=None):
+    def __init__(self, name=None, description=None, sqf_type=None):
         self.name = name
         self.description = description
-        self.sqftype = sqftype
+        self.sqf_type = sqf_type
 
     class JSONEncoder(JSONEncoder):
         def __init__(self, *args, **kwargs):
@@ -109,7 +120,7 @@ class SQFCommandParameter(object):
             return {
                 'name': obj.name,
                 'description': obj.description,
-                'sqftype': obj.sqftype
+                'sqf_type': obj.sqf_type
             }
 
 
@@ -281,7 +292,8 @@ def _parse_command_data(name, file):
 
     return SQFCommand(name=name,
                       description=_parse_description(xtree),
-                      syntax=_parse_syntax(xtree))
+                      syntax=_parse_syntax(xtree),
+                      parameters=_parse_parameters(xtree, name))
 
 
 def _parse_description(xtree):
@@ -310,6 +322,56 @@ def _parse_syntax(xtree):
         pass
 
     return None
+
+
+def _parse_parameters(xtree, name):
+    class NotFound(BaseException):
+        pass
+
+    def xpath():
+
+        try:
+            return xtree.xpath('//root/template/part[name[text()[contains(.,\'p\')]]]/value/text()')
+        except IndexError:
+            pass
+
+        raise NotFound
+
+    # Compile regex if necessary
+    global SQF_COMMAND_PARAM_REGEX
+    if SQF_COMMAND_PARAM_REGEX is None:
+        SQF_COMMAND_PARAM_REGEX = \
+            re.compile(r"^(?P<name>[a-zA-B0-9]+): *\[*(?P<type>[a-zA-Z]+)\]+ *(- ){0,1}(?P<description>.*)$",
+                       re.IGNORECASE)
+
+    # Acquire raw data from XPath
+    try:
+        params_raw = xpath()
+    except NotFound:
+        return None
+
+    # Remove empty data returned by XPath
+    r = []
+    for p in params_raw:
+        stripped = p.strip()
+        if stripped != "":
+            r.append(stripped)
+    params_raw = r
+    del r
+
+    # Parse individual details
+    params = []
+    for raw_param in params_raw:
+        data = SQF_COMMAND_PARAM_REGEX.search(raw_param)
+        if data is None:
+            continue
+        params.append(SQFCommandParameter(
+            name=data.group("name"),
+            description=data.group("description"),
+            sqf_type=data.group("type")
+        ))
+
+    return params
 
 
 def validate_sqf_command_name(name):

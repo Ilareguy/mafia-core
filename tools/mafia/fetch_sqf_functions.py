@@ -28,7 +28,7 @@ if __name__ == '__main__':
     functions = fetch_sqf_commands()
     exit(0)
 
-    with urllib.request.urlopen("https://community.bistudio.com/wikidata/api.php?action=parse&page=set3DENMissionAttribute&format=json&prop=parsetree") as response:
+    with urllib.request.urlopen("https://community.bistudio.com/wikidata/api.php?action=parse&page=setVehicleArmor&format=json&prop=parsetree") as response:
         with open("output.json", "w+b") as file:
             file.write(response.read())
 
