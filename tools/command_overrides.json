@@ -16,5 +16,17 @@
                 "sqf_type": "Number"
             }
         ]
+    },
+    "fleeing": {
+        "returns": {
+            "description": "Returns [[true]] if a unit is fleeing, [[false]] if not. '''Dead''' or '''empty''' units return [[false]].",
+            "sqf_type": "Boolean"
+        }
+    },
+    "remoteExec": {
+        "returns": {
+            "description": "Nil in case of error. [[String]] otherwise. If JIP is not requested this is an empty string, if JIP is requested, it is the JIP ID. See the topic [[Function#Return_Values|Function]] for more information.",
+            "sqf_type": "Anything"
+        }
     }
 }

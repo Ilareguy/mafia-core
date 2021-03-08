@@ -37,8 +37,7 @@ CACHE_DIRECTORY = 'cache/'
 CACHE_COMMAND_DIRECTORY = CACHE_DIRECTORY + 'commands/'
 SQF_COMMANDS_STRUCTURE_CACHED_FILE = 'commands.json'
 SQF_COMMANDS_RAW_CACHED_FILE = CACHE_DIRECTORY + 'sqf_commands_raw.json'
-BI_WIKI_URL = 'https://community.bistudio.com/wikidata/api.php?'
-SQF_COMMANDS = 'action=parse&pageid=12689&format=json&prop=links'
+BI_WIKI_URL = 'https://community.bistudio.com/wikidata/api.php'
 
 with open('command_overrides.json') as overrides_file:
     COMMAND_OVERRIDES = json.load(overrides_file)
@@ -84,7 +83,7 @@ class SQFCommand(object):
 
         if self.returns is None:
             # This is a problem! Must be of type `SQFCommandReturn`. None means it couldn't be parsed.
-            print(f"Command `{self.name}` has no return type specified!")
+            print(f"Command `{self.name}` has no return type specified. Assuming `Nothing`.")
             self.returns = SQFCommandReturn()
 
     def _find_overrides(self):
@@ -130,7 +129,7 @@ class SQFCommand(object):
 
 
 class SQFCommandReturn(object):
-    def __init__(self, description=None, sqf_type=None):
+    def __init__(self, description=None, sqf_type="Nothing"):
         self.description = description
         self.sqf_type = sqf_type
 
@@ -238,11 +237,42 @@ def fetch_sqf_commands():
     ##################################################
 
     if not isfile(SQF_COMMANDS_RAW_CACHED_FILE):
-        # Cached data doesn't exist yet; fetch now
+        # Cached data doesn't exist yet; fetch now.
+
+        """
+        The MediaWiki API has changed since the last use of this script. At this time, we can no longer retrieve all the
+        links/scripting commands from a single GET request. Instead, we have to request a list of "category members"
+        that belong to the "Category:Arma_3:_Scripting_Commands" (page ID 12299) category. Each "category member" is in
+        fact a wiki page describing a single Arma scripting command.
+        
+        This GET request limits the amount of results to an upper limit of 500, so multiple requests need to be sent in
+        order to retrieve every single scripting command.
+        """
         try:
-            with urllib.request.urlopen(BI_WIKI_URL + SQF_COMMANDS) as response:
-                with open(SQF_COMMANDS_RAW_CACHED_FILE, "w+b") as file:
-                    file.write(response.read())
+            scripting_commands = []
+            done = False  # True when we're done fetching all the category members
+            cmcontinue = False  # "cmcontinue" string provided by the MediaWiki API on each call
+
+            while not done:
+                url = BI_WIKI_URL + "?action=query&list=categorymembers&cmpageid=12299&cmlimit=max&cmprop=title|ids" \
+                                    "&format=json"
+                if cmcontinue is not False:
+                    url += f"&cmcontinue={cmcontinue}"
+                with urllib.request.urlopen(url) as response:
+                    data = json.loads(response.read())
+                    try:
+                        cmcontinue = data['continue']['cmcontinue']
+                    except KeyError:
+                        done = True
+                    scripting_commands.extend(data['query']['categorymembers'])
+
+                    del data
+
+            with open(SQF_COMMANDS_RAW_CACHED_FILE, "w+") as scripting_commands_file:
+                json.dump(scripting_commands, scripting_commands_file)
+
+            del scripting_commands
+
         except URLError as e:
             print(f'Could not fetch commands list from wiki. Exception: {e}')
             return
@@ -257,8 +287,8 @@ def fetch_sqf_commands():
         return
 
     # Parse command names
-    for link in data['parse']['links']:
-        command_name = link['*']
+    for link in data:
+        command_name = link['title']
         # There are some edge-cases in the commands list
         if command_name == 'setPylonLoadOut':
             command_name = 'setPylonLoadout'
@@ -267,6 +297,8 @@ def fetch_sqf_commands():
 
         if link['ns'] == 0 and validate_sqf_command_name(command_name):
             raw_commands.append(command_name)
+
+    del data
 
     ##################################################
     # Build structured data about each command.
@@ -282,7 +314,7 @@ def fetch_sqf_commands():
         try:
             if not isfile(command_raw_cache_path):
                 # Fetch and cache raw data about this command
-                command_url = BI_WIKI_URL + f'action=parse&page={command_name}&format=json&prop=parsetree'
+                command_url = BI_WIKI_URL + f'?action=parse&page={command_name}&format=json&prop=parsetree'
                 print(f'No cached data for {command_name}; fetching now... ')
                 with urllib.request.urlopen(command_url) as response:
                     with open(command_raw_cache_path, "w+b") as file:
@@ -420,6 +452,16 @@ def _parse_return_details(xtree):
     def xpath():
         try:
             return xtree.xpath('//root/template/part[name[@index="5"]]/value/text()')[0]
+        except IndexError:
+            pass
+
+        try:
+            return xtree.xpath('//root/template/part[name[text()[starts-with(.,\'r1\')]]]/value/text()')[0]
+        except IndexError:
+            pass
+
+        try:
+            return xtree.xpath('//root/template/part[name[@index="1"]]/value/text()')[0]
         except IndexError:
             pass
 
