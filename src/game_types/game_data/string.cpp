@@ -25,6 +25,10 @@
 
 using namespace mafia::game_types::game_data;
 
+uintptr_t String::type_def {0};
+uintptr_t String::data_type_def {0};
+mafia::game_types::RVPoolAllocator* String::pool_alloc_base;
+
 String::String() noexcept
 {
     *reinterpret_cast<uintptr_t*>(this) = type_def;

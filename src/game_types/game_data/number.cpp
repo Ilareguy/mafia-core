@@ -25,6 +25,10 @@
 
 using namespace mafia::game_types::game_data;
 
+uintptr_t Number::type_def {0};
+uintptr_t Number::data_type_def {0};
+mafia::game_types::RVPoolAllocator* Number::pool_alloc_base {nullptr};
+
 Number::Number() noexcept
 {
     *reinterpret_cast<uintptr_t*>(this) = type_def;

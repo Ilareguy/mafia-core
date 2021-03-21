@@ -30,61 +30,6 @@
 
 namespace mafia
 {
-    uintptr_t game_data_string::type_def;
-    uintptr_t game_data_string::data_type_def;
-    rv_pool_allocator* game_data_string::pool_alloc_base;
-
-    uintptr_t game_data_number::type_def;
-    uintptr_t game_data_number::data_type_def;
-    rv_pool_allocator* game_data_number::pool_alloc_base;
-
-    uintptr_t game_data_array::type_def;
-    uintptr_t game_data_array::data_type_def;
-    rv_pool_allocator* game_data_array::pool_alloc_base;
-
-    uintptr_t game_data_bool::type_def;
-    uintptr_t game_data_bool::data_type_def;
-    rv_pool_allocator* game_data_bool::pool_alloc_base;
-
-    uintptr_t game_data_code::type_def;
-    uintptr_t game_data_code::data_type_def;
-    rv_pool_allocator* game_data_code::pool_alloc_base;
-
-    uintptr_t game_data_group::type_def;
-    uintptr_t game_data_group::data_type_def;
-
-    uintptr_t game_data_config::type_def;
-    uintptr_t game_data_config::data_type_def;
-
-    uintptr_t game_data_control::type_def;
-    uintptr_t game_data_control::data_type_def;
-
-    uintptr_t game_data_display::type_def;
-    uintptr_t game_data_display::data_type_def;
-
-    uintptr_t game_data_location::type_def;
-    uintptr_t game_data_location::data_type_def;
-
-    uintptr_t game_data_script::type_def;
-    uintptr_t game_data_script::data_type_def;
-
-    uintptr_t game_data_side::type_def;
-    uintptr_t game_data_side::data_type_def;
-
-    uintptr_t game_data_rv_text::type_def;
-    uintptr_t game_data_rv_text::data_type_def;
-
-    uintptr_t game_data_team_member::type_def;
-    uintptr_t game_data_team_member::data_type_def;
-
-    uintptr_t game_data_namespace::type_def;
-    uintptr_t game_data_namespace::data_type_def;
-
-    uintptr_t game_data_nothing::type_def;
-    uintptr_t game_data_nothing::data_type_def;
-
-    uintptr_t game_data_object::type_def;
-    uintptr_t game_data_object::data_type_def;
 
     uintptr_t game_value::__vptr_def;
     uintptr_t sqf_script_type::type_def;
@@ -112,21 +57,6 @@ namespace mafia
 
         return (*compound_type)[0]->_name + "_" + (*compound_type)[1]->_name;
     }
-
-
-
-
-
-    void* game_data_code::operator new(std::size_t)
-    {
-        return pool_alloc_base->allocate(1);
-    }
-
-    void game_data_code::operator delete(void* ptr_, std::size_t)
-    {
-        return pool_alloc_base->deallocate(ptr_);
-    }
-
 
 
     game_data* game_data::createFromSerialized(param_archive& ar)
@@ -258,9 +188,7 @@ namespace mafia
 
     bool exiting = false;
     /// @private
-    extern "C" DLLEXPORT void CDECL
-
-    handle_unload_internal()
+    extern "C" DLLEXPORT void CDECL handle_unload_internal()
     {
         exiting = true;
     }

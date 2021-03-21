@@ -109,24 +109,7 @@ namespace mafia
         Type* get() const { return _ref; }
     };
 
-    /*
-    This is a placeholder so i can use refcount but still have an accessible vtable pointer
-    */
-    class __vtable
-    {
-    public:
-        uintptr_t _vtable {0};
-    };
 
-    class dummy_vtable_class
-    {
-    public:
-        virtual void dummy() {};
-    };
-
-class _refcount_vtable_dummy: public __vtable, public mafia::game_types::RefCountBase
-    {
-    };
 
     template<class Type, class Allocator = mafia::game_types::RVAllocator<char>>  //Has to be allocator of type char
     class compact_array: public mafia::game_types::RefCountBase
@@ -1125,7 +1108,8 @@ class _refcount_vtable_dummy: public __vtable, public mafia::game_types::RefCoun
         {
             if (_first == _last)
             { return _where; }                                                                //Boogie!
-            if (_where < base::begin() || _where > base::end()) throw std::runtime_error("Invalid Iterator");  //WTF?!
+            if (_where < base::begin() || _where > base::end())
+            { throw std::runtime_error("Invalid Iterator"); }  //WTF?!
             const size_t insertOffset = std::distance(base::begin(), _where);
             const size_t previousEnd = static_cast<size_t>(base::_n);
             const size_t oldSize = base::count();
@@ -1285,7 +1269,8 @@ class _refcount_vtable_dummy: public __vtable, public mafia::game_types::RefCoun
     };
 
     template<class Type>
-class reference_array: public find_key_array<mafia::game_types::Ref<Type>, reference_array_find_key_array_traits<Type>>
+    class reference_array:
+            public find_key_array<mafia::game_types::Ref<Type>, reference_array_find_key_array_traits<Type>>
     {
         using base = find_key_array<mafia::game_types::Ref<Type>, reference_array_find_key_array_traits<Type>>;
         using traits = reference_array_find_key_array_traits<Type>;
@@ -1295,7 +1280,11 @@ class reference_array: public find_key_array<mafia::game_types::Ref<Type>, refer
 
         bool delete_at(const Type* el_) { return base::delete_by_key(el_); }
 
-        bool delete_at(const mafia::game_types::Ref<Type>& src_) const { return base::delete_by_key(traits::get_key(src_)); }
+        bool delete_at(const mafia::game_types::Ref<Type>& src_) const
+        {
+            return base::delete_by_key(
+                    traits::get_key(src_));
+        }
 
         bool find(const Type* el_) { return base::find_by_key(el_); }
 

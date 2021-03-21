@@ -21,40 +21,30 @@
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_NUMBER_H
-#define DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_NUMBER_H
+#ifndef DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_GROUP_H
+#define DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_GROUP_H
 
 #include "../game_data.h"
-#include <cstdint>
-#include <cstddef>
 
 namespace mafia::game_types::game_data
 {
-    class Number: mafia::game_types::GameData
+    class Group: public mafia::game_types::GameData
     {
     public:
         static uintptr_t type_def;
         static uintptr_t data_type_def;
-        static mafia::game_types::RVPoolAllocator* pool_alloc_base;
 
     public:
-        Number() noexcept;
-        explicit Number(float val_) noexcept;
-        Number(const Number& copy_);
-        Number(Number&& move_) noexcept;
-        Number& operator=(const Number& copy_);
-        Number& operator=(Number&& move_) noexcept;
-        static void* operator new(std::size_t sz_);
-        static void operator delete(void* ptr_, std::size_t sz_);
-        float number;
-
-        size_t hash() const
+        Group() noexcept
         {
-            return _private::pairhash(type_def, number);
+            *reinterpret_cast<uintptr_t*>(this) = type_def;
+            *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
         }
-        //protected:
-        //    static thread_local game_data_pool<game_data_number> _data_pool;
+
+        size_t hash() const { return _private::pairhash(type_def, group); }
+
+        void* group {};
     };
 }
 
-#endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_NUMBER_H
+#endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_GROUP_H

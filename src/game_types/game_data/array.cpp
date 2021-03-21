@@ -25,6 +25,10 @@
 
 using namespace mafia::game_types::game_data;
 
+uintptr_t Array::type_def{0};
+uintptr_t Array::data_type_def{0};
+mafia::game_types::RVPoolAllocator* Array::pool_alloc_base{nullptr};
+
 Array::Array()
 {
     *reinterpret_cast<uintptr_t*>(this) = type_def;

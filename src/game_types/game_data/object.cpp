@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 2020-09-07.
+ * File created by Anthony Ilareguy on 21/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,15 +21,15 @@
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_INVOKER_H
-#define DEF_MAFIA_CORE_INVOKER_H
+#include "object.h"
 
-namespace mafia
+using namespace mafia::game_types::game_data;
+
+uintptr_t Object::type_def {0};
+uintptr_t Object::data_type_def {0};
+
+Object::Object() noexcept
 {
-    class Invoker
-    {
-
-    };
+    *reinterpret_cast<uintptr_t*>(this) = type_def;
+    *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
 }
-
-#endif //DEF_MAFIA_CORE_INVOKER_H

@@ -34,6 +34,8 @@ namespace mafia::game_types::game_data
         static uintptr_t type_def;
         static uintptr_t data_type_def;
         static mafia::game_types::RVPoolAllocator* pool_alloc_base;
+
+    public:
         Bool();
         explicit Bool(bool val_);
         Bool(const Bool& copy_);

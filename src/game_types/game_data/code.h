@@ -21,14 +21,16 @@
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_ARRAY_H
-#define DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_ARRAY_H
+#ifndef DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_CODE_H
+#define DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_CODE_H
 
 #include "../game_data.h"
+#include "../game_instruction.h"
+#include "../../containers.h"
 
 namespace mafia::game_types::game_data
 {
-    class Array: public mafia::game_types::GameData
+    class Code: public mafia::game_types::GameData
     {
     public:
         static uintptr_t type_def;
@@ -36,25 +38,16 @@ namespace mafia::game_types::game_data
         static mafia::game_types::RVPoolAllocator* pool_alloc_base;
 
     public:
-        Array();
-        explicit Array(size_t size_);
-        explicit Array(const std::vector<GameValue>& init_);
-        Array(const std::initializer_list<GameValue>& init_);
-        explicit Array(auto_array<GameValue>&& init_);
-        Array(const Array& copy_);
-        Array(Array&& move_) noexcept;
-        Array& operator=(const Array& copy_);
-        Array& operator=(Array&& move_) noexcept;
-        ~Array();
-        auto_array<GameValue> data;
+        Code() noexcept;
 
-        auto length() const { return data.count(); }
-
-        size_t hash() const { return _private::pairhash(type_def, data.hash()); }
+        size_t hash() const { return _private::pairhash(type_def, code_string); }
 
         static void* operator new(std::size_t sz_);
         static void operator delete(void* ptr_, std::size_t sz_);
+        mafia::game_types::String code_string;
+        auto_array<mafia::game_types::Ref<GameInstruction>> instructions;
+        bool is_final;
     };
 }
 
-#endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_ARRAY_H
+#endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_CODE_H

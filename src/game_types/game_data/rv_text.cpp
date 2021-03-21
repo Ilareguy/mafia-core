@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 2020-09-07.
+ * File created by Anthony Ilareguy on 21/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,4 +21,15 @@
  *
  ********************************************************/
 
-#include "invoker.h"
+#include "rv_text.h"
+
+using namespace mafia::game_types::game_data;
+
+uintptr_t RVText::type_def {0};
+uintptr_t RVText::data_type_def {0};
+
+RVText::RVText() noexcept
+{
+    *reinterpret_cast<uintptr_t*>(this) = type_def;
+    *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
+}

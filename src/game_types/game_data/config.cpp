@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 20/03/2021.
+ * File created by Anthony Ilareguy on 21/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,4 +21,15 @@
  *
  ********************************************************/
 
-#include "sqf_function.h"
+#include "config.h"
+
+using namespace mafia::game_types::game_data;
+
+uintptr_t Config::type_def {0};
+uintptr_t Config::data_type_def {0};
+
+Config::Config() noexcept
+{
+    *reinterpret_cast<uintptr_t*>(this) = type_def;
+    *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
+}
