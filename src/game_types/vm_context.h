@@ -32,6 +32,7 @@
 #include "rv_allocator_local.h"
 #include "debug_value.h"
 #include "game_var_space.h"
+#include "source_doc.h"
 
 namespace mafia::game_types
 {
@@ -80,21 +81,24 @@ namespace mafia::game_types
         bool is_scheduled() const;
         bool is_serialization_enabled() const;
         void disable_serialization();
-
+        const SourceDocPosition& get_current_position();
 
         auto_array<mafia::game_types::Ref<callstack_item>,
                    mafia::game_types::RVAllocatorLocal<mafia::game_types::Ref<callstack_item>,
                                                        64>> callstack;  //#TODO check size on x64
-        bool serialenabled;                                                                      //disableSerialization -> true, 0x228
-        void* dummyu;                                                                            //VMContextBattlEyeMonitor : VMContextCallback
+        bool serialenabled; //disableSerialization -> true, 0x228
+        void* dummyu; //VMContextBattlEyeMonitor : VMContextCallback
 
         //const bool is_ui_context; //no touchy
         auto_array<GameValue, mafia::game_types::RVAllocatorLocal<GameValue, 32>> scriptStack;
 
-        mafia::game_types::String name;  //profiler might like this
+        SourceDoc sdoc;
+        SourceDocPosition sdocpos;  //last instruction pos
+
+        String name;  //profiler might like this
 
         //breakOut
-        mafia::game_types::String breakscopename;
+        String breakscopename;
         //throw
         GameValue exception_value;  //0x4B0
         //breakOut

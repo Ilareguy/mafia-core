@@ -28,109 +28,54 @@
 #include "debug_value.h"
 #include "serialization.h"
 #include "game_value.h"
+#include "sqf_script_type.h"
 #include <cstddef>
 
 namespace mafia::game_types
 {
-    namespace _private
-    {
-        class game_functions;
-        class game_operators;
-        class gsNular;
-
-        template<typename T, typename U>
-        std::size_t pairhash(const T& first, const U& second)
-        {
-            size_t _hash = std::hash<T>()(first);
-            _hash ^= std::hash<U>()(second) + 0x9e3779b9 + (_hash << 6) + (_hash >> 2);
-            return _hash;
-        }
-    }
-
-    class GameData: public mafia::game_types::RefCount, public mafia::game_types::DebugValue
+    class GameData: public mafia::game_types::RefCount,
+                    public mafia::game_types::DebugValue
     {
         // friend class game_value;
         // friend class mafia::invoker;
 
     public:
-        virtual const sqf_script_type& type() const
-        {
-#ifdef _MSC_VER                  //Only on MSVC on Windows
-            __debugbreak();  //If you landed here you did something wrong while implementing your custom type.
-#endif
-            static sqf_script_type dummy;
-            return dummy;
-        }
-
-        virtual ~GameData() = default;
-
-    protected:
-        virtual bool get_as_bool() const { return false; }
-
-        virtual float get_as_number() const { return 0.f; }
-
-        virtual const mafia::game_types::String& get_as_string() const
-        {
-            static mafia::game_types::String dummy;
-            dummy.clear();
-            return dummy;
-        }  ///Only usable on String and Code! Use to_string instead!
-        virtual const auto_array<mafia::game_types::GameValue>& get_as_const_array() const
-        {
-            static auto_array<mafia::game_types::GameValue> dummy;
-            dummy.clear();
-            return dummy;
-        }  //Why would you ever need this?
-        virtual auto_array<mafia::game_types::GameValue>& get_as_array()
-        {
-            static auto_array<mafia::game_types::GameValue> dummy;
-            dummy.clear();
-            return dummy;
-        }
+        virtual const sqf_script_type& type() const;
+        virtual ~GameData();
 
     public:
-        virtual mafia::game_types::GameData* copy() const { return nullptr; }
+        virtual bool get_as_bool() const;
+        virtual float get_as_number() const;
+        /// Only usable on String and Code! Use to_string instead!
+        virtual const mafia::game_types::String& get_as_string() const;
+        /// Why would you ever need this?
+        virtual const auto_array<mafia::game_types::GameValue>& get_as_const_array() const;
+        virtual auto_array<mafia::game_types::GameValue>& get_as_array();
+
+    public:
+        virtual mafia::game_types::GameData* copy() const;
 
     protected:
-        virtual void set_readonly(bool) {}  //No clue what this does...
-        virtual bool get_readonly() const { return false; }
-
-        virtual bool get_final() const { return false; }
-
-        virtual void set_final(bool) {}  //Only on GameDataCode AFAIK
+        virtual void set_readonly(bool);
+        virtual bool get_readonly() const;
+        virtual bool get_final() const;
+        virtual void set_final(bool); ///Only on GameDataCode AFAIK
     public:
-        virtual mafia::game_types::String to_string() const { return mafia::game_types::String(); }
-
-        virtual bool equals(const mafia::game_types::GameData*) const { return false; }
-
-        virtual const char* type_as_string() const { return "unknown"; }
-
-        virtual bool is_nil() const { return false; }
+        virtual mafia::game_types::String to_string() const;
+        virtual bool equals(const mafia::game_types::GameData*) const;
+        virtual const char* type_as_string() const;
+        virtual bool is_nil() const;
 
     private:
-        virtual void placeholder() const {}
+        virtual void placeholder() const;
+        virtual bool can_serialize();
+        int IaddRef() override;
+        int Irelease() override;
 
-        virtual bool can_serialize() { return false; }
-
-        int IaddRef() override { return add_ref(); }
-
-        int Irelease() override { return release(); }
-
-    public:  //#TODO make protected and give access to param_archive
-        virtual mafia::game_types::SerializationReturn serialize(mafia::game_types::ParamArchive& ar)
-        {
-            if (ar._isExporting)
-            {
-                sqf_script_type _type = type();
-                ar.serialize(r_string("type"sv), _type, 1);
-            }
-
-            return mafia::game_types::SerializationReturn::no_error;
-        }
-
+    public:
+        virtual mafia::game_types::SerializationReturn serialize(mafia::game_types::ParamArchive& ar);
         static mafia::game_types::GameData* createFromSerialized(mafia::game_types::ParamArchive& ar);
 
-    protected:
 #ifdef __linux__
         public:
 #endif

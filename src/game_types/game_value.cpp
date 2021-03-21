@@ -22,13 +22,18 @@
  ********************************************************/
 
 #include "game_value.h"
+#include "game_data/all.h"
+#include "param_archive.h"
 
 using namespace mafia::game_types;
+using namespace std::literals::string_view_literals;
+
+uintptr_t GameValue::__vptr_def {0};
 
 GameValue::GameValue(float val_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_number(val_);
+    data = new game_data::Number(val_);
 }
 
 GameValue::GameValue(int val_): GameValue(static_cast<float>(val_)) {}
@@ -38,62 +43,62 @@ GameValue::GameValue(size_t val_): GameValue(static_cast<float>(val_)) {}
 GameValue::GameValue(bool val_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_bool(val_);
+    data = new game_data::Bool(val_);
 }
 
 GameValue::GameValue(const std::string& val_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_string(val_);
+    data = new game_data::String(val_);
 }
 
-GameValue::GameValue(const r_string& val_)
+GameValue::GameValue(const String& val_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_string(val_);
+    data = new game_data::String(val_);
 }
 
 GameValue::GameValue(std::string_view val_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_string(val_);
+    data = new game_data::String(val_);
 }
 
 GameValue::GameValue(const std::vector<GameValue>& list_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_array(list_);
+    data = new game_data::Array(list_);
 }
 
 GameValue::GameValue(const std::initializer_list<GameValue>& list_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_array(list_);
+    data = new game_data::Array(list_);
 }
 
-GameValue::GameValue(auto_array<GameValue>&& array_)
+GameValue::GameValue(auto_array <GameValue>&& array_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_array(std::move(array_));
+    data = new game_data::Array(std::move(array_));
 }
 
 GameValue::GameValue(const vector3& vec_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_array({vec_.x, vec_.y, vec_.z});
+    data = new game_data::Array({vec_.x, vec_.y, vec_.z});
 }
 
 GameValue::GameValue(const vector2& vec_)
 {
     set_vtable(__vptr_def);
-    data = new game_data_array({vec_.x, vec_.y});
+    data = new game_data::Array({vec_.x, vec_.y});
 }
 
-GameValue::GameValue(const internal_object& internal_)
+/*GameValue::GameValue(const internal_object& internal_)
 {
     set_vtable(__vptr_def); //object class has bugged vtable :u
     data = internal_.data;
-}
+}*/
 
 GameValue& GameValue::operator=(const GameValue& copy_)
 {
@@ -115,58 +120,58 @@ GameValue& GameValue::operator=(GameValue&& move_) noexcept
 
 GameValue& GameValue::operator=(const float val_)
 {
-    data = new game_data_number(val_);
+    data = new game_data::Number(val_);
     return *this;
 }
 
 GameValue& GameValue::operator=(bool val_)
 {
-    data = new game_data_bool(val_);
+    data = new game_data::Bool(val_);
     return *this;
 }
 
 GameValue& GameValue::operator=(const std::string& val_)
 {
-    data = new game_data_string(val_);
+    data = new game_data::String(val_);
     return *this;
 }
 
-GameValue& GameValue::operator=(const r_string& val_)
+GameValue& GameValue::operator=(const String& val_)
 {
-    data = new game_data_string(val_);
+    data = new game_data::String(val_);
     return *this;
 }
 
 GameValue& GameValue::operator=(std::string_view val_)
 {
-    data = new game_data_string(val_);
+    data = new game_data::String(val_);
     return *this;
 }
 
 GameValue& GameValue::operator=(const std::vector<GameValue>& list_)
 {
-    data = new game_data_array(list_);
+    data = new game_data::Array(list_);
     return *this;
 }
 
 GameValue& GameValue::operator=(const vector3& vec_)
 {
-    data = new game_data_array({vec_.x, vec_.y, vec_.z});
+    data = new game_data::Array({vec_.x, vec_.y, vec_.z});
     return *this;
 }
 
 GameValue& GameValue::operator=(const vector2& vec_)
 {
-    data = new game_data_array({vec_.x, vec_.y});
+    data = new game_data::Array({vec_.x, vec_.y});
     return *this;
 }
 
-GameValue& GameValue::operator=(const internal_object& internal_)
+/*GameValue& GameValue::operator=(const internal_object& internal_)
 {
     data = internal_.data;
     set_vtable(__vptr_def);
     return *this;
-}
+}*/
 
 GameValue::operator int() const
 {
@@ -240,7 +245,7 @@ GameValue::operator std::string() const
     if (data)
     {
         const auto type = data->get_vtable();
-        if (type == game_data_code::type_def || type == game_data_string::type_def)
+        if (type == game_data::Code::type_def || type == game_data::String::type_def)
         {
             return static_cast<std::string>(data->get_as_string());
         }
@@ -250,12 +255,12 @@ GameValue::operator std::string() const
     return {};
 }
 
-GameValue::operator r_string() const
+GameValue::operator String() const
 {
     if (data)
     {
         const auto type = data->get_vtable();
-        if (type == game_data_code::type_def || type == game_data_string::type_def)
+        if (type == game_data::Code::type_def || type == game_data::String::type_def)
         {
             return data->get_as_string();
         }
@@ -265,19 +270,19 @@ GameValue::operator r_string() const
     return {};
 }
 
-auto_array<GameValue>& GameValue::to_array() const
+mafia::auto_array<GameValue>& GameValue::to_array() const
 {
     if (data)
     {
-        if (data->get_vtable() != game_data_array::type_def)
+        if (data->get_vtable() != game_data::Array::type_def)
         {
-            throw GameValue_conversion_error(
+            throw GameValueConversionError(
                     "Invalid conversion to array"
             );
         }
         return data->get_as_array();
     }
-    static auto_array<GameValue> dummy;//else we would return a temporary.
+    static auto_array <GameValue> dummy;//else we would return a temporary.
     dummy.clear(); //In case user modified it before
     return dummy;
 }
@@ -286,9 +291,9 @@ GameValue& GameValue::operator[](size_t i_) const
 {
     if (data)
     {
-        if (data->get_vtable() != game_data_array::type_def)
+        if (data->get_vtable() != game_data::Array::type_def)
         {
-            throw GameValue_conversion_error(
+            throw GameValueConversionError(
                     "Invalid array access"
             );
         }
@@ -307,7 +312,7 @@ std::optional<GameValue> GameValue::get(size_t i_) const
 {
     if (data)
     {
-        if (data->get_vtable() != game_data_array::type_def)
+        if (data->get_vtable() != game_data::Array::type_def)
         { return *this; }
         auto& array = data->get_as_array();
         if (array.count() > i_)
@@ -327,83 +332,83 @@ uintptr_t GameValue::type() const
     return 0x0;
 }
 
-game_data_type GameValue::type_enum() const
-{//#TODO make a static sorted table in the same order as enum. turns this search into a binary search
+GameDataType GameValue::type_enum() const
+{
     if (!data)
-    { return game_data_type::NOTHING; }
+    { return GameDataType::NOTHING; }
     const auto _type = data->get_vtable();
-    if (_type == game_data_object::type_def)
+    if (_type == game_data::Object::type_def)
     {
-        return game_data_type::OBJECT;
+        return GameDataType::OBJECT;
     }
-    if (_type == game_data_number::type_def)
+    if (_type == game_data::Number::type_def)
     {
-        return game_data_type::SCALAR;
+        return GameDataType::SCALAR;
     }
-    if (_type == game_data_string::type_def)
+    if (_type == game_data::String::type_def)
     {
-        return game_data_type::STRING;
+        return GameDataType::STRING;
     }
-    if (_type == game_data_array::type_def)
+    if (_type == game_data::Array::type_def)
     {
-        return game_data_type::ARRAY;
+        return GameDataType::ARRAY;
     }
-    if (_type == game_data_bool::type_def)
+    if (_type == game_data::Bool::type_def)
     {
-        return game_data_type::BOOL;
+        return GameDataType::BOOL;
     }
-    if (_type == game_data_group::type_def)
+    if (_type == game_data::Group::type_def)
     {
-        return game_data_type::GROUP;
+        return GameDataType::GROUP;
     }
-    if (_type == game_data_config::type_def)
+    if (_type == game_data::Config::type_def)
     {
-        return game_data_type::CONFIG;
+        return GameDataType::CONFIG;
     }
-    if (_type == game_data_control::type_def)
+    if (_type == game_data::Control::type_def)
     {
-        return game_data_type::CONTROL;
+        return GameDataType::CONTROL;
     }
-    if (_type == game_data_display::type_def)
+    if (_type == game_data::Display::type_def)
     {
-        return game_data_type::DISPLAY;
+        return GameDataType::DISPLAY;
     }
-    if (_type == game_data_location::type_def)
+    if (_type == game_data::Location::type_def)
     {
-        return game_data_type::LOCATION;
+        return GameDataType::LOCATION;
     }
-    if (_type == game_data_script::type_def)
+    if (_type == game_data::Script::type_def)
     {
-        return game_data_type::SCRIPT;
+        return GameDataType::SCRIPT;
     }
-    if (_type == game_data_side::type_def)
+    if (_type == game_data::Side::type_def)
     {
-        return game_data_type::SIDE;
+        return GameDataType::SIDE;
     }
-    if (_type == game_data_rv_text::type_def)
+    if (_type == game_data::RVText::type_def)
     {
-        return game_data_type::TEXT;
+        return GameDataType::TEXT;
     }
-    if (_type == game_data_namespace::type_def)
+    if (_type == game_data::Namespace::type_def)
     {
-        return game_data_type::NAMESPACE;
+        return GameDataType::NAMESPACE;
     }
-    if (_type == game_data_code::type_def)
+    if (_type == game_data::Code::type_def)
     {
-        return game_data_type::CODE;
+        return GameDataType::CODE;
     }
-    if (_type == game_data_nothing::type_def)
+    if (_type == game_data::Nothing::type_def)
     {
-        return game_data_type::NOTHING;
+        return GameDataType::NOTHING;
     }
-    return game_data_type::ANY;
+    return GameDataType::ANY;
 }
 
 size_t GameValue::size() const
 {
     if (!data)
     { return 0; }
-    if (data->get_vtable() != game_data_array::type_def)
+    if (data->get_vtable() != game_data::Array::type_def)
     { return 0; }
     return data->get_as_array().count();
 }
@@ -425,29 +430,29 @@ bool GameValue::is_null() const
     switch (type)
     {
 
-        case game_data_type::SCALAR:      //[[fallthrough]] //#TODO fix when MSVC gets their stuff together
-        case game_data_type::BOOL:        //[[fallthrough]]
-        case game_data_type::ARRAY:       //[[fallthrough]]
-        case game_data_type::STRING:      //[[fallthrough]]
-        case game_data_type::NOTHING:     //[[fallthrough]]
-        case game_data_type::ANY:         //[[fallthrough]]
-        case game_data_type::NAMESPACE:   //[[fallthrough]]
-        case game_data_type::NaN:         //[[fallthrough]]
-        case game_data_type::CODE:        //[[fallthrough]]
-        case game_data_type::SIDE:        //[[fallthrough]]
-        case game_data_type::TEXT:        //[[fallthrough]]
-        case game_data_type::TARGET:      //[[fallthrough]]
-        case game_data_type::NetObject:   //[[fallthrough]]
-        case game_data_type::SUBGROUP:    //[[fallthrough]]
-        case game_data_type::DIARY_RECORD:return false;
-        case game_data_type::OBJECT:      //[[fallthrough]] //SL
-        case game_data_type::GROUP:       //[[fallthrough]] //LL
-        case game_data_type::SCRIPT:      //[[fallthrough]] //LL
-        case game_data_type::DISPLAY:     //[[fallthrough]] //LL
-        case game_data_type::CONTROL:     //[[fallthrough]] //LL
-        case game_data_type::TEAM_MEMBER: //[[fallthrough]] //SLP
-        case game_data_type::TASK:        //[[fallthrough]] //LL
-        case game_data_type::LOCATION://LL
+        case GameDataType::SCALAR:      //[[fallthrough]] //#TODO fix when MSVC gets their stuff together
+        case GameDataType::BOOL:        //[[fallthrough]]
+        case GameDataType::ARRAY:       //[[fallthrough]]
+        case GameDataType::STRING:      //[[fallthrough]]
+        case GameDataType::NOTHING:     //[[fallthrough]]
+        case GameDataType::ANY:         //[[fallthrough]]
+        case GameDataType::NAMESPACE:   //[[fallthrough]]
+        case GameDataType::NaN:         //[[fallthrough]]
+        case GameDataType::CODE:        //[[fallthrough]]
+        case GameDataType::SIDE:        //[[fallthrough]]
+        case GameDataType::TEXT:        //[[fallthrough]]
+        case GameDataType::TARGET:      //[[fallthrough]]
+        case GameDataType::NetObject:   //[[fallthrough]]
+        case GameDataType::SUBGROUP:    //[[fallthrough]]
+        case GameDataType::DIARY_RECORD:return false;
+        case GameDataType::OBJECT:      //[[fallthrough]] //SL
+        case GameDataType::GROUP:       //[[fallthrough]] //LL
+        case GameDataType::SCRIPT:      //[[fallthrough]] //LL
+        case GameDataType::DISPLAY:     //[[fallthrough]] //LL
+        case GameDataType::CONTROL:     //[[fallthrough]] //LL
+        case GameDataType::TEAM_MEMBER: //[[fallthrough]] //SLP
+        case GameDataType::TASK:        //[[fallthrough]] //LL
+        case GameDataType::LOCATION://LL
         {
             const uintptr_t datax = reinterpret_cast<uintptr_t>(data.get());
             const uintptr_t data_1 = datax + sizeof(uintptr_t) * 3;
@@ -460,9 +465,9 @@ bool GameValue::is_null() const
             }
             return true;
         }
-        case game_data_type::CONFIG:
+        case GameDataType::CONFIG:
         {
-            return !reinterpret_cast<game_data_config*>(data.get())->path.is_empty();//#TODO test
+            return !reinterpret_cast<game_data::Config*>(data.get())->path.is_empty();
         }
 
 
@@ -499,57 +504,67 @@ size_t GameValue::hash() const
 
     switch (type_enum())
     {
-        case game_data_type::SCALAR: return reinterpret_cast<game_data_number*>(data.get())->hash();
-        case game_data_type::BOOL: return reinterpret_cast<game_data_bool*>(data.get())->hash();
-        case game_data_type::ARRAY: return reinterpret_cast<game_data_array*>(data.get())->hash();
-        case game_data_type::STRING: return reinterpret_cast<game_data_string*>(data.get())->hash();
-        case game_data_type::NOTHING: return reinterpret_cast<game_data*>(data.get())->to_string().hash();
-        case game_data_type::NAMESPACE: return reinterpret_cast<game_data_namespace*>(data.get())->hash();
-        case game_data_type::NaN: return reinterpret_cast<game_data*>(data.get())->to_string().hash();
-        case game_data_type::CODE: return reinterpret_cast<game_data_code*>(data.get())->hash();
-        case game_data_type::OBJECT: return reinterpret_cast<game_data_object*>(data.get())->hash();
-        case game_data_type::SIDE: return reinterpret_cast<game_data_side*>(data.get())->hash();
-        case game_data_type::GROUP: return reinterpret_cast<game_data_group*>(data.get())->hash();
-        case game_data_type::TEXT: return reinterpret_cast<game_data_rv_text*>(data.get())->hash();
-        case game_data_type::SCRIPT: return reinterpret_cast<game_data_script*>(data.get())->hash();
-        case game_data_type::TARGET: return reinterpret_cast<game_data*>(data.get())->to_string().hash();
-        case game_data_type::CONFIG: return reinterpret_cast<game_data_config*>(data.get())->hash();
-        case game_data_type::DISPLAY: return reinterpret_cast<game_data_display*>(data.get())->hash();
-        case game_data_type::CONTROL: return reinterpret_cast<game_data_control*>(data.get())->hash();
-#if defined(_DEBUG) && defined(_MSC_VER)
-            //If you encounter any of these give Dedmen a repro.
-        case game_data_type::ANY: __debugbreak();
-            break;//ANY should never be seen as a value.
-        case game_data_type::NetObject: __debugbreak();
-            break;
-        case game_data_type::SUBGROUP: __debugbreak();
-            break;
-#else
-            case game_data_type::ANY: return 0;
-            case game_data_type::NetObject: return 0;
-            case game_data_type::SUBGROUP: return 0;
-#endif
-        case game_data_type::TEAM_MEMBER: return reinterpret_cast<game_data_team_member*>(data.get())->hash();
-        case game_data_type::TASK:
-            return reinterpret_cast<game_data*>(data.get())->to_string()
+        case GameDataType::SCALAR: return reinterpret_cast<game_data::Number*>(data.get())->hash();
+        case GameDataType::BOOL: return reinterpret_cast<game_data::Bool*>(data.get())->hash();
+        case GameDataType::ARRAY: return reinterpret_cast<game_data::Array*>(data.get())->hash();
+        case GameDataType::STRING: return reinterpret_cast<game_data::String*>(data.get())->hash();
+        case GameDataType::NOTHING: return reinterpret_cast<GameData*>(data.get())->to_string().hash();
+        case GameDataType::NAMESPACE: return reinterpret_cast<game_data::Namespace*>(data.get())->hash();
+        case GameDataType::NaN: return reinterpret_cast<GameData*>(data.get())->to_string().hash();
+        case GameDataType::CODE: return reinterpret_cast<game_data::Code*>(data.get())->hash();
+        case GameDataType::OBJECT: return reinterpret_cast<game_data::Object*>(data.get())->hash();
+        case GameDataType::SIDE: return reinterpret_cast<game_data::Side*>(data.get())->hash();
+        case GameDataType::GROUP: return reinterpret_cast<game_data::Group*>(data.get())->hash();
+        case GameDataType::TEXT: return reinterpret_cast<game_data::RVText*>(data.get())->hash();
+        case GameDataType::SCRIPT: return reinterpret_cast<game_data::Script*>(data.get())->hash();
+        case GameDataType::TARGET: return reinterpret_cast<GameData*>(data.get())->to_string().hash();
+        case GameDataType::CONFIG: return reinterpret_cast<game_data::Config*>(data.get())->hash();
+        case GameDataType::DISPLAY: return reinterpret_cast<game_data::Display*>(data.get())->hash();
+        case GameDataType::CONTROL: return reinterpret_cast<game_data::Control*>(data.get())->hash();
+        case GameDataType::ANY: return 0;
+        case GameDataType::NetObject: return 0;
+        case GameDataType::SUBGROUP: return 0;
+        case GameDataType::TEAM_MEMBER: return reinterpret_cast<game_data::TeamMember*>(data.get())->hash();
+        case GameDataType::TASK:
+            return reinterpret_cast<GameData*>(data.get())->to_string()
                                                            .hash(); //"Task %s (id %d)" or "No Task"
-        case game_data_type::DIARY_RECORD:
-            return reinterpret_cast<game_data*>(data.get())->to_string()
+        case GameDataType::DIARY_RECORD:
+            return reinterpret_cast<GameData*>(data.get())->to_string()
                                                            .hash(); //"No diary record" or... The text of that record? Text might be long and make this hash heavy
-        case game_data_type::LOCATION: return reinterpret_cast<game_data_location*>(data.get())->hash();
-        case game_data_type::end: return 0;
+        case GameDataType::LOCATION: return reinterpret_cast<game_data::Location*>(data.get())->hash();
+        case GameDataType::end: return 0;
     }
 
-    return _private::pairhash<uintptr_t, uintptr_t>(
+    return _private::pair_hash<uintptr_t, uintptr_t>(
             data->get_vtable(), reinterpret_cast<uintptr_t>(data.get()));
 }
 
-void* GameValue::operator new(const std::size_t sz_)
+/*void* GameValue::operator new(const std::size_t sz_)
 {
-    return rv_allocator<GameValue>::create_array(sz_);
-}
+    return RVAllocator<GameValue>::create_array(sz_);
+}*/
 
 void GameValue::operator delete(void* ptr_, std::size_t)
 {
-    rv_allocator<GameValue>::deallocate(static_cast<GameValue*>(ptr_));
+    RVAllocator<GameValue>::deallocate(static_cast<GameValue*>(ptr_));
 }
+
+SerializationReturn GameValue::serialize(ParamArchive& ar)
+{
+    if (!data)
+    { data = RVAllocator<game_data::Nothing>::create_single(); }
+    ar.serialize(String("data"sv), data, 1);
+
+    if (data && data->get_vtable() == game_data::Nothing::type_def)
+    { data = nullptr; }
+    return SerializationReturn::no_error;
+}
+
+GameValueStatic::GameValueStatic(): GameValue() {}
+
+GameValueStatic::~GameValueStatic()
+{
+    if (exiting)
+    { data._ref = nullptr; }
+}
+

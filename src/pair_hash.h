@@ -21,39 +21,15 @@
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_GAME_TYPES_GAME_TYPE_H
-#define DEF_MAFIA_CORE_GAME_TYPES_GAME_TYPE_H
+#ifndef DEF_MAFIA_CORE_PAIR_HASH_H
+#define DEF_MAFIA_CORE_PAIR_HASH_H
 
-namespace mafia::game_types
+template<typename T, typename U>
+std::size_t pair_hash(const T& first, const U& second)
 {
-    enum class GameType
-    {
-        SCALAR,
-        BOOL,
-        ARRAY,
-        STRING,
-        NOTHING,
-        ANY,
-        NAMESPACE,
-        NaN,
-        CODE,
-        OBJECT,
-        SIDE,
-        GROUP,
-        TEXT,
-        SCRIPT,
-        TARGET,
-        CONFIG,
-        DISPLAY,
-        CONTROL,
-        NetObject,
-        SUBGROUP,
-        TEAM_MEMBER,
-        TASK,
-        DIARY_RECORD,
-        LOCATION,
-        end
-    };
+    size_t _hash = std::hash<T>()(first);
+    _hash ^= std::hash<U>()(second) + 0x9e3779b9 + (_hash << 6) + (_hash >> 2);
+    return _hash;
 }
 
-#endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_TYPE_H
+#endif // DEF_MAFIA_CORE_PAIR_HASH_H

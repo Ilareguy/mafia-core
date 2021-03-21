@@ -32,7 +32,7 @@ namespace mafia::game_types
     template<class Type>
     class Ref
     {
-        friend class game_value_static;  //Overrides _ref to nullptr in destructor when Arma is exiting
+        friend class GameValueStatic;  //Overrides _ref to nullptr in destructor when Arma is exiting
         static_assert(std::is_base_of<mafia::game_types::RefCountBase, Type>::value, "Type must inherit refcount_base");
         Type* _ref {nullptr};
 

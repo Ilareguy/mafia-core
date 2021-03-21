@@ -28,6 +28,8 @@
 #include "game_state.h"
 #include "serialization.h"
 
+// @TODO Move implementation into .cpp
+
 namespace mafia::game_types
 {
     class ParamArchive;
@@ -54,18 +56,20 @@ namespace mafia::game_types
         //#TODO add SRef class
         ParamArchiveEntry* _p1 {
                 mafia::game_types::RVAllocator<ParamArchiveEntry>::create_single()
-        };  //pointer to classEntry. vtable something
-        int _version {1};//version
-        //#TODO is that 64bit on x64?
+        };  // pointer to classEntry. vtable something
+        int _version {1};// version
+        // #TODO is that 64bit on x64?
         uint32_t _p3 {
                 0
-        }; //be careful with alignment seems to always be 0 for exporting.
+        }; // be careful with alignment seems to always be 0 for exporting.
 
-        auto_array<uintptr_t> _parameters; //parameters? on serializing gameData only element is pointer to gameState
-        bool _isExporting {true};//writing data vs loading data
+        auto_array<uintptr_t> _parameters; // parameters? on serializing gameData only element is pointer to gameState
+        bool _isExporting {true}; // writing data vs loading data
         SerializationReturn serialize(mafia::game_types::String name, SerializeClass& value, int min_version);
-        SerializationReturn
-        serialize(mafia::game_types::String name, mafia::game_types::String& value, int min_version);
+        SerializationReturn serialize(
+                mafia::game_types::String name,
+                mafia::game_types::String& value, int min_version
+        );
         SerializationReturn serialize(mafia::game_types::String name, bool& value, int min_version);
         SerializationReturn
         serialize(mafia::game_types::String name, bool& value, int min_version, bool default_value);
@@ -75,13 +79,13 @@ namespace mafia::game_types
         serialize(const mafia::game_types::String& name, mafia::game_types::Ref<Type>& value, int min_version)
         {
             if (_version < min_version)
-            { return serialization_return::version_too_new; }
+            { return SerializationReturn::version_too_new; }
             if (_isExporting || _p3 == 2)
             {
                 if (!value)
-                { return serialization_return::no_error; }
+                { return SerializationReturn::no_error; }
 
-                param_archive sub_archive(nullptr);
+                ParamArchive sub_archive(nullptr);
                 sub_archive._version = _version;
                 sub_archive._p3 = _p3;
                 sub_archive._parameters = _parameters;
@@ -98,20 +102,20 @@ namespace mafia::game_types
 
                 if (!sub_archive._p1)
                 {
-                    return serialization_return::no_entry;
+                    return SerializationReturn::no_entry;
                 }
 
                 const auto ret = value->serialize(sub_archive);
                 if (_isExporting)
                 {
                     sub_archive._p1->compress();
-                    rv_allocator<param_archive_entry>::destroy_deallocate(sub_archive._p1);
+                    RVAllocator<ParamArchiveEntry>::destroy_deallocate(sub_archive._p1);
                     sub_archive._p1 = nullptr;
                 }
             }
             else
             {
-                param_archive sub_archive(nullptr);
+                ParamArchive sub_archive(nullptr);
                 sub_archive._version = _version;
                 sub_archive._p3 = _p3;
                 sub_archive._parameters = _parameters;
@@ -128,7 +132,7 @@ namespace mafia::game_types
 
                 if (!sub_archive._p1)
                 {
-                    return serialization_return::no_entry;
+                    return SerializationReturn::no_entry;
                 }
                 auto val = Type::createFromSerialized(sub_archive);
                 if (val)
@@ -136,11 +140,11 @@ namespace mafia::game_types
                 if (_isExporting)
                 {
                     sub_archive._p1->compress();
-                    rv_allocator<param_archive_entry>::destroy_deallocate(sub_archive._p1);
+                    RVAllocator<ParamArchiveEntry>::destroy_deallocate(sub_archive._p1);
                     sub_archive._p1 = nullptr;
                 }
             }
-            return serialization_return::no_error;
+            return SerializationReturn::no_error;
         }
     };
 
@@ -165,11 +169,11 @@ namespace mafia::game_types
     public:
         virtual ~ParamArchiveEntry() {}
 
-        //Generic stuff for all types
-        virtual int
-        entry_count() const { return 0; }                                          //Number of entries. count for array and number of class entries otherwise
-        virtual ParamArchiveEntry*
-        get_entry_by_index(int index_) const { return nullptr; }  //Don't know what that's used for.
+        // Number of entries. count for array and number of class entries otherwise
+        virtual int entry_count() const { return 0; }
+
+        // Don't know what that's used for.
+        virtual ParamArchiveEntry* get_entry_by_index(int index_) const { return nullptr; }
         virtual mafia::game_types::String
         current_entry_name() { return mafia::game_types::String(); }                           //Dunno exactly what this is. on GameData serialize it returns "data"
         virtual ParamArchiveEntry* get_entry_by_name(const mafia::game_types::String& name) const { return nullptr; }

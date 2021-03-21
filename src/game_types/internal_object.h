@@ -21,31 +21,27 @@
  *
  ********************************************************/
 
-#include "code.h"
+#ifndef DEF_MAFIA_CORE_GAME_TYPES_INTERNAL_OBJECT_H
+#define DEF_MAFIA_CORE_GAME_TYPES_INTERNAL_OBJECT_H
 
-using namespace mafia::game_types::game_data;
+#include "game_value.h"
 
-uintptr_t Code::type_def {0};
-uintptr_t Code::data_type_def {0};
-mafia::game_types::RVPoolAllocator* Code::pool_alloc_base {nullptr};
-
-Code::Code() noexcept
+namespace mafia::game_types
 {
-    *reinterpret_cast<uintptr_t*>(this) = type_def;
-    *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
+    class InternalObject: public GameValue
+    {
+    public:
+        InternalObject();
+        InternalObject(const GameValue& value_);
+        InternalObject(const InternalObject& copy_);
+        InternalObject(InternalObject&& move_) noexcept;
+        InternalObject& operator=(InternalObject&& move_) noexcept;
+
+        InternalObject& operator=(const InternalObject& copy_);
+
+        bool operator<(const InternalObject& compare_) const;
+        bool operator>(const InternalObject& compare_) const;
+    };
 }
 
-void* Code::operator new(std::size_t)
-{
-    return pool_alloc_base->allocate(1);
-}
-
-void Code::operator delete(void* ptr_, std::size_t)
-{
-    return pool_alloc_base->deallocate(ptr_);
-}
-
-size_t Code::hash() const
-{
-    return _private::pair_hash(type_def, code_string);
-}
+#endif // DEF_MAFIA_CORE_GAME_TYPES_INTERNAL_OBJECT_H

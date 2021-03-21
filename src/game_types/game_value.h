@@ -26,19 +26,22 @@
 
 #include "serialization.h"
 #include "game_data.h"
-#include "game_type.h"
+#include "game_data_type.h"
 #include "../vector.h"
 #include <vector>
+
+// @TODO Move implementation into .cpp
 
 namespace mafia::game_types
 {
     class GameValue: public mafia::game_types::SerializeClass
     {
         // friend class mafia::invoker;
-        // friend void mafia::set_game_value_vtable(uintptr_t);
+        friend void mafia::game_types::set_game_value_vtable(uintptr_t);
 
     protected:
         static uintptr_t __vptr_def;  //Users should not be able to access this
+
     public:
         GameValue() noexcept
         {
@@ -156,7 +159,7 @@ namespace mafia::game_types
         uintptr_t
         type() const;  //#TODO should this be renamed to type_vtable? and make the enum variant the default? We still want to use vtable internally cuz speed
         /// doesn't handle all types. Will return game_data_type::ANY if not handled
-        mafia::game_types::GameType type_enum() const;
+        mafia::game_types::GameDataType type_enum() const;
 
         size_t size() const;
         //#TODO implement is_null. GameDataObject's objectLink == nullptr. Same for GameDataGroup and others.
@@ -229,7 +232,7 @@ namespace mafia::game_types
     class GameValueStatic: public GameValue
     {
     public:
-        GameValueStatic(): game_value() {}
+        GameValueStatic();
 
         ~GameValueStatic();
 
@@ -243,6 +246,15 @@ namespace mafia::game_types
             return *this;
         }
     };
+
+
+
+    bool exiting = false;
+    /// @private
+    extern "C" DLLEXPORT void CDECL handle_unload_internal()
+    {
+        exiting = true;
+    }
 }
 
 #endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_VALUE_H

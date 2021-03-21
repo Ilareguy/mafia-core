@@ -21,31 +21,16 @@
  *
  ********************************************************/
 
-#include "code.h"
+#include "source_doc.h"
 
-using namespace mafia::game_types::game_data;
+using namespace mafia::game_types;
 
-uintptr_t Code::type_def {0};
-uintptr_t Code::data_type_def {0};
-mafia::game_types::RVPoolAllocator* Code::pool_alloc_base {nullptr};
-
-Code::Code() noexcept
+SerializationReturn SourceDoc::serialize(ParamArchive& ar)
 {
-    *reinterpret_cast<uintptr_t*>(this) = type_def;
-    *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
+    return SerializationReturn::unknown_error;
 }
 
-void* Code::operator new(std::size_t)
+SerializationReturn SourceDocPosition::serialize(ParamArchive& ar)
 {
-    return pool_alloc_base->allocate(1);
-}
-
-void Code::operator delete(void* ptr_, std::size_t)
-{
-    return pool_alloc_base->deallocate(ptr_);
-}
-
-size_t Code::hash() const
-{
-    return _private::pair_hash(type_def, code_string);
+    return SerializationReturn::unknown_error;
 }

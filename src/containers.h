@@ -1291,21 +1291,6 @@ namespace mafia
         bool find(const mafia::game_types::Ref<Type>& src_) const { return base::find_by_key(traits::get_key(src_)); }
     };
 
-    /*
-    static unsigned int rv_map_hash_string_case_sensitive(const char* key, int hashValue = 0) noexcept {
-        while (*key) {
-            hashValue = hashValue * 33 + static_cast<unsigned char>(*key++);
-        }
-        return hashValue;
-    }
-    static unsigned int rv_map_hash_string_case_insensitive(const char* key, int hashValue = 0) noexcept {
-        while (*key) {
-            hashValue = hashValue * 33 + static_cast<unsigned char>(tolower(*key++));
-        }
-        return hashValue;
-    }
-    */
-
     static unsigned int rv_map_hash_string_case_sensitive(std::string_view key, int hashValue = 0) noexcept
     {
         for (auto& it : key)
@@ -1326,14 +1311,6 @@ namespace mafia
 
     struct map_string_to_class_trait
     {
-        /*
-        static unsigned int hash_key(const char* key) noexcept {
-            return rv_map_hash_string_case_sensitive(key);
-        }
-        static bool compare_keys(const char* k1, const char* k2) noexcept {
-            return strcmp(k1, k2) == 0;
-        }
-        */
         static unsigned int hash_key(std::string_view key) noexcept
         {
             return rv_map_hash_string_case_sensitive(key);
@@ -1349,20 +1326,6 @@ namespace mafia
 
     struct map_string_to_class_trait_caseinsensitive: map_string_to_class_trait
     {
-        /*
-        static unsigned int hash_key(const char* key) noexcept {
-            return rv_map_hash_string_case_insensitive(key);
-        }
-
-        static bool compare_keys(const char* k1, const char* k2) noexcept {
-#ifdef __GNUC__
-            return std::equal(k1, k1 + strlen(k1),
-                              k2, [](unsigned char l, unsigned char r) { return l == r || tolower(l) == tolower(r); });
-#else
-            return _strcmpi(k1, k2) == 0;
-#endif
-        }
-        */
 
         static unsigned int hash_key(std::string_view key) noexcept
         {

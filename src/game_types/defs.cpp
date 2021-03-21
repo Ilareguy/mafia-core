@@ -21,31 +21,26 @@
  *
  ********************************************************/
 
-#include "code.h"
+#include "defs.h"
 
-using namespace mafia::game_types::game_data;
+using namespace mafia::game_types;
 
-uintptr_t Code::type_def {0};
-uintptr_t Code::data_type_def {0};
-mafia::game_types::RVPoolAllocator* Code::pool_alloc_base {nullptr};
+constexpr RegisteredSQFFunction::RegisteredSQFFunction() noexcept = default;
 
-Code::Code() noexcept
+RegisteredSQFFunction::RegisteredSQFFunction(std::shared_ptr<registered_sqf_function_impl> func_) noexcept:
+        _function(func_) {}
+
+void RegisteredSQFFunction::clear() noexcept
 {
-    *reinterpret_cast<uintptr_t*>(this) = type_def;
-    *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
+    _function = nullptr;
 }
 
-void* Code::operator new(std::size_t)
+bool RegisteredSQFFunction::has_function() const noexcept
 {
-    return pool_alloc_base->allocate(1);
+    return _function.get() != nullptr;
 }
 
-void Code::operator delete(void* ptr_, std::size_t)
+void mafia::game_types::set_game_value_vtable(uintptr_t vtable)
 {
-    return pool_alloc_base->deallocate(ptr_);
-}
-
-size_t Code::hash() const
-{
-    return _private::pair_hash(type_def, code_string);
+    GameValue::__vptr_def = vtable;
 }

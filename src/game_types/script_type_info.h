@@ -25,11 +25,13 @@
 #define DEF_MAFIA_CORE_GAME_TYPES_SCRIPT_TYPE_INFO_H
 
 #include "game_data.h"
+#include "v_table.h"
 
 namespace mafia::game_types
 {
     class ScriptTypeInfo
     {  //Donated from ArmaDebugEngine
+    public:
         using createFunc = GameData* (*)(mafia::game_types::ParamArchive* ar);
 #ifdef __linux__
         script_type_info(mafia::game_types::String name, createFunc cf, mafia::game_types::String localizedName, mafia::game_types::String readableName) : _name(std::move(name)), _createFunction(cf), _localizedName(std::move(localizedName)), _readableName(std::move(readableName)), _javaFunc("none") {}
@@ -39,12 +41,7 @@ namespace mafia::game_types
                 mafia::game_types::String name, createFunc cf, mafia::game_types::String localizedName,
                 mafia::game_types::String readableName, mafia::game_types::String description,
                 mafia::game_types::String category, mafia::game_types::String typeName
-        ):
-                _name(std::move(name)), _createFunction(cf), _localizedName(std::move(localizedName)),
-                _readableName(std::move(readableName)), _description(std::move(description)),
-                _category(std::move(category)), _typeName(std::move(typeName)), _javaFunc(
-                "none"
-        ) {}
+        );
 
 #endif
         mafia::game_types::String _name;  // SCALAR
@@ -57,6 +54,14 @@ namespace mafia::game_types
         mafia::game_types::String _typeName;     //float/NativeObject
 #endif
         mafia::game_types::String _javaFunc;  //Lcom/bistudio/JNIScripting/NativeObject;
+    };
+
+    class CompoundScriptTypeInfo: public auto_array<const ScriptTypeInfo*>, public DummyVtable
+    {
+    public:
+        CompoundScriptTypeInfo(const auto_array<const ScriptTypeInfo*>& types);
+        void set_vtable(uintptr_t v) noexcept;
+        uintptr_t get_vtable() const noexcept;
     };
 }
 

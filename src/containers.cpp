@@ -28,45 +28,43 @@
 
 namespace mafia
 {
-    class MemTableFunctions
+    namespace _private
     {
-        //We don't want to expose this in the header. It's only used here
-    public:
-        virtual void* New(size_t size) = 0;
-        virtual void* New(size_t size, const char* file, int line) = 0;
-        virtual void Delete(void* mem) = 0;
-        virtual void Delete(void* mem, const char* file, int line) = 0;
-        virtual void* Realloc(void* mem, size_t size) = 0;
-        virtual void* Realloc(void* mem, size_t size, const char* file, int line) = 0;
-        virtual void* Resize(void* mem, size_t size) = 0; //This actually doesn't do anything.
-        virtual void* NewPage(size_t size, size_t align) = 0;
-        virtual void DeletePage(void* page, size_t size) = 0;
-        virtual void* HeapAlloc(void* mem, size_t size) = 0;
-        virtual void* HeapAlloc(void* mem, size_t size, const char* file, int line) = 0;//HeapAlloc
-        virtual void* HeapDelete(void* mem, size_t size) = 0;
-        virtual void* HeapDelete(void* mem, size_t size, const char* file, int line) = 0;//HeapFree
-        virtual int something(void* mem, size_t unknown) = 0;
-        virtual size_t GetPageRecommendedSize() = 0;
-        virtual void* HeapBase() = 0;
-        virtual size_t HeapUsed() = 0;
-        virtual size_t HeapUsedByNew() = 0;
-        virtual size_t HeapCommited() = 0;
-        virtual int FreeBlocks() = 0;
-        virtual int MemoryAllocatedBlocks() = 0;
-        virtual void Report() = 0;
-        virtual bool CheckIntegrity() = 0;
-        virtual bool IsOutOfMemory() = 0;
-        virtual void CleanUp() = 0;
-        virtual void Lock() = 0;
-        virtual void Unlock() = 0;
-        const char* arr[6] {
-                "tbb4malloc_bi", "tbb3malloc_bi", "jemalloc_bi", "tcmalloc_bi", "nedmalloc_bi", "custommalloc_bi"
+        class MemTableFunctions
+        {
+            //We don't want to expose this in the header. It's only used here
+        public:
+            virtual void* New(size_t size) = 0;
+            virtual void* New(size_t size, const char* file, int line) = 0;
+            virtual void Delete(void* mem) = 0;
+            virtual void Delete(void* mem, const char* file, int line) = 0;
+            virtual void* Realloc(void* mem, size_t size) = 0;
+            virtual void* Realloc(void* mem, size_t size, const char* file, int line) = 0;
+            virtual void* Resize(void* mem, size_t size) = 0; //This actually doesn't do anything.
+            virtual void* NewPage(size_t size, size_t align) = 0;
+            virtual void DeletePage(void* page, size_t size) = 0;
+            virtual void* HeapAlloc(void* mem, size_t size) = 0;
+            virtual void* HeapAlloc(void* mem, size_t size, const char* file, int line) = 0;//HeapAlloc
+            virtual void* HeapDelete(void* mem, size_t size) = 0;
+            virtual void* HeapDelete(void* mem, size_t size, const char* file, int line) = 0;//HeapFree
+            virtual int something(void* mem, size_t unknown) = 0;
+            virtual size_t GetPageRecommendedSize() = 0;
+            virtual void* HeapBase() = 0;
+            virtual size_t HeapUsed() = 0;
+            virtual size_t HeapUsedByNew() = 0;
+            virtual size_t HeapCommited() = 0;
+            virtual int FreeBlocks() = 0;
+            virtual int MemoryAllocatedBlocks() = 0;
+            virtual void Report() = 0;
+            virtual bool CheckIntegrity() = 0;
+            virtual bool IsOutOfMemory() = 0;
+            virtual void CleanUp() = 0;
+            virtual void Lock() = 0;
+            virtual void Unlock() = 0;
+            const char* arr[6] {
+                    "tbb4malloc_bi", "tbb3malloc_bi", "jemalloc_bi", "tcmalloc_bi", "nedmalloc_bi", "custommalloc_bi"
+            };
         };
-    };
-
-    void mafia::set_game_value_vtable(uintptr_t vtable)
-    {
-        game_value::__vptr_def = vtable;
     }
 
     void* _internal::rv_allocator_allocate_generic(size_t _size)

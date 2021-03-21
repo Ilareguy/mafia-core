@@ -30,7 +30,7 @@
 
 namespace mafia::game_types::game_data
 {
-    class Number: mafia::game_types::GameData
+    class Number: public mafia::game_types::GameData
     {
     public:
         static uintptr_t type_def;

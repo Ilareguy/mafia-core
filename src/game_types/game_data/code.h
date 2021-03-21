@@ -40,7 +40,7 @@ namespace mafia::game_types::game_data
     public:
         Code() noexcept;
 
-        size_t hash() const { return _private::pairhash(type_def, code_string); }
+        size_t hash() const;
 
         static void* operator new(std::size_t sz_);
         static void operator delete(void* ptr_, std::size_t sz_);

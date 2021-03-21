@@ -18,7 +18,7 @@ add_executable(main
         src/game_types/rv_pool_allocator.cpp
         src/game_types/rv_allocator.cpp
         src/game_types/ref.cpp
-        src/game_types/game_type.h
+        src/game_types/game_data_type.cpp
         src/game_types/rv_allocator_local.cpp
         src/game_types/game_data.cpp
         src/game_types/debug_value.cpp
@@ -47,7 +47,12 @@ add_executable(main
         src/game_types/game_instruction.cpp
         src/game_types/vm_context.cpp
         src/game_types/game_var_space.cpp
-        src/game_types/game_data/object.cpp src/game_types/game_data/object.h src/game_types/script_type_info.cpp src/game_types/script_type_info.h)
+        src/game_types/game_data/object.cpp
+        src/game_types/script_type_info.cpp
+        src/game_types/sqf_script_type.cpp
+        src/game_types/defs.cpp
+        src/game_types/internal_object.cpp
+        src/game_types/source_doc.cpp src/game_types/source_doc.h src/pair_hash.h)
 
 ########## Dependencies
 find_package(fmt CONFIG REQUIRED)
