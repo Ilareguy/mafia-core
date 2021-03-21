@@ -24,7 +24,7 @@
 #ifndef DEF_MAFIA_CORE_REF_COUNT_H
 #define DEF_MAFIA_CORE_REF_COUNT_H
 
-namespace mafia::game_types
+namespace mafia
 {
     class RefCountBase
     {

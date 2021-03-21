@@ -25,6 +25,7 @@
 #define DEF_MAFIA_CORE_ALLOCATOR_INFO_H
 
 #include "game_types/game_data_type.h"
+#include <array>
 
 namespace mafia
 {
@@ -41,13 +42,14 @@ namespace mafia
         }
     }
 
+    class RVPoolAllocator;
+
     struct AllocatorInfo
     {
         uintptr_t genericAllocBase {0};
         uintptr_t poolFuncAlloc {0};
         uintptr_t poolFuncDealloc {0};
-        std::array<mafia::game_types::RVPoolAllocator*,
-                   static_cast<size_t>(game_types::GameDataType::end)> _poolAllocs {};
+        std::array<mafia::RVPoolAllocator*, static_cast<size_t>(game_types::GameDataType::end)> _poolAllocs {};
         game_types::GameValue
         (* evaluate_func)(const game_types::game_data::Code&, void* ns, const game_types::String& name){nullptr};
         game_types::GameState* gameState {nullptr};

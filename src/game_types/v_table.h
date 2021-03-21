@@ -24,6 +24,9 @@
 #ifndef DEF_MAFIA_CORE_V_TABLE_H
 #define DEF_MAFIA_CORE_V_TABLE_H
 
+#include "../ref_count.h"
+#include <cstddef>
+
 namespace mafia
 {
     /*
@@ -41,7 +44,7 @@ namespace mafia
         virtual void dummy() {};
     };
 
-    class RefCountDummyVtable: public __vtable, public mafia::game_types::RefCountBase
+    class RefCountDummyVtable: public __vtable, public mafia::RefCountBase
     {
     };
 }

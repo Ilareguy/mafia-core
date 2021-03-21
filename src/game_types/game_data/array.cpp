@@ -22,12 +22,15 @@
  ********************************************************/
 
 #include "array.h"
+#include "../../pair_hash.h"
+#include "../rv_pool_allocator.h"
+// #include "../debug_value.h"
 
 using namespace mafia::game_types::game_data;
 
-uintptr_t Array::type_def{0};
-uintptr_t Array::data_type_def{0};
-mafia::game_types::RVPoolAllocator* Array::pool_alloc_base{nullptr};
+uintptr_t Array::type_def {0};
+uintptr_t Array::data_type_def {0};
+mafia::game_types::RVPoolAllocator* Array::pool_alloc_base {nullptr};
 
 Array::Array()
 {
@@ -48,7 +51,7 @@ Array::Array(const std::initializer_list<mafia::game_types::GameValue>& init_): 
     *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
 }
 
-Array::Array(auto_array<mafia::game_types::GameValue>&& init_): data(std::move(init_))
+Array::Array(mafia::containers::AutoArray<mafia::game_types::GameValue>&& init_): data(std::move(init_))
 {
     *reinterpret_cast<uintptr_t*>(this) = type_def;
     *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
@@ -102,4 +105,14 @@ void* Array::operator new(std::size_t)
 void Array::operator delete(void* ptr_, std::size_t)
 {
     return pool_alloc_base->deallocate(ptr_);
+}
+
+auto Array::length() const
+{
+    return data.count();
+}
+
+size_t Array::hash() const
+{
+    return mafia::pair_hash(type_def, data.hash());
 }

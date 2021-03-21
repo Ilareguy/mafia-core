@@ -21,19 +21,24 @@
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_GAME_TYPES_REF_H
-#define DEF_MAFIA_CORE_GAME_TYPES_REF_H
+#ifndef DEF_MAFIA_CORE_REF_H
+#define DEF_MAFIA_CORE_REF_H
 
 #include "ref_count.h"
 #include <type_traits>
 
-namespace mafia::game_types
+namespace mafia
 {
+    namespace game_types
+    {
+        class GameValueStatic;
+    }
+
     template<class Type>
     class Ref
     {
-        friend class GameValueStatic;  //Overrides _ref to nullptr in destructor when Arma is exiting
-        static_assert(std::is_base_of<mafia::game_types::RefCountBase, Type>::value, "Type must inherit refcount_base");
+        friend class mafia::game_types::GameValueStatic;  //Overrides _ref to nullptr in destructor when Arma is exiting
+        static_assert(std::is_base_of<mafia::RefCountBase, Type>::value, "Type must inherit mafia::RefCountBase");
         Type* _ref {nullptr};
 
     public:
@@ -94,7 +99,7 @@ namespace mafia::game_types
         {
             static_assert(
                     std::is_constructible_v < Type * , T * > || std::is_base_of_v < T, Type > ,
-                    "Cannot convert intercept::types::ref to incompatible type"
+                    "Cannot convert mafia::Ref to incompatible type"
             );
             T* source = source_ref_.get();
             if (source)
@@ -108,7 +113,7 @@ namespace mafia::game_types
         {
             static_assert(
                     std::is_constructible_v < Type * , T * > || std::is_base_of_v < T, Type > ,
-                    "Cannot convert intercept::types::ref to incompatible type"
+                    "Cannot convert mafia::Ref to incompatible type"
             );
             T* source = other_.get();
             Type* old = _ref;
@@ -150,4 +155,4 @@ namespace mafia::game_types
     };
 }
 
-#endif // DEF_MAFIA_CORE_GAME_TYPES_REF_H
+#endif // DEF_MAFIA_CORE_REF_H

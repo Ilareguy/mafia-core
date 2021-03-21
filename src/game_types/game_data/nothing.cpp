@@ -33,3 +33,8 @@ Nothing::Nothing() noexcept
     *reinterpret_cast<uintptr_t*>(this) = type_def;
     *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
 }
+
+size_t Nothing::hash()
+{
+    return 0x1337;
+}

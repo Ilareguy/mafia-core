@@ -44,11 +44,12 @@ namespace mafia::game_types::game_data
         Bool& operator=(Bool&& move_) noexcept;
         static void* operator new(std::size_t sz_);
         static void operator delete(void* ptr_, std::size_t sz_);
-        bool val;
-
-        size_t hash() const { return _private::pairhash(type_def, val); }
+        size_t hash() const;
         //protected:
         //    static thread_local game_data_pool<game_data_bool> _data_pool;
+
+    public:
+        bool val;
     };
 }
 

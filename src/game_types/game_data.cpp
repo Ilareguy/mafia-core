@@ -23,6 +23,8 @@
 
 #include "game_data.h"
 #include "param_archive.h"
+#include "sqf_script_type.h"
+#include "debug_value.h"
 
 using namespace mafia::game_types;
 using namespace std::literals::string_view_literals;
@@ -49,16 +51,16 @@ const mafia::game_types::String& GameData::get_as_string() const
     return dummy;
 }
 
-const mafia::auto_array<GameValue>& GameData::get_as_const_array() const
+const mafia::containers::AutoArray<GameValue>& GameData::get_as_const_array() const
 {
-    static auto_array <mafia::game_types::GameValue> dummy;
+    static mafia::containers::AutoArray<mafia::game_types::GameValue> dummy;
     dummy.clear();
     return dummy;
 }
 
-mafia::auto_array<GameValue>& GameData::get_as_array()
+mafia::containers::AutoArray<GameValue>& GameData::get_as_array()
 {
-    static auto_array <mafia::game_types::GameValue> dummy;
+    static mafia::containers::AutoArray<mafia::game_types::GameValue> dummy;
     dummy.clear();
     return dummy;
 }
@@ -85,9 +87,9 @@ void GameData::placeholder() const {}
 
 bool GameData::can_serialize() { return false; }
 
-int GameData::IaddRef(){ return add_ref(); }
+int GameData::IaddRef() { return add_ref(); }
 
-int GameData::Irelease(){ return release(); }
+int GameData::Irelease() { return release(); }
 
 mafia::game_types::SerializationReturn GameData::serialize(ParamArchive& ar)
 {
@@ -120,4 +122,14 @@ mafia::game_types::GameData* GameData::createFromSerialized(ParamArchive& ar)
 
     auto gs = reinterpret_cast<GameState*>(ar._parameters.front());
     return gs->create_game_data_from_type(_type, &ar);
+}
+
+uintptr_t GameData::get_vtable() const
+{
+    return *reinterpret_cast<const uintptr_t*>(this);
+}
+
+uintptr_t GameData::get_secondary_vtable() const noexcept
+{
+    return *reinterpret_cast<const uintptr_t*>(static_cast<const DebugValue*>(this));
 }

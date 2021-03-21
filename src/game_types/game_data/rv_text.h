@@ -36,10 +36,10 @@ namespace mafia::game_types::game_data
 
     public:
         RVText() noexcept;
+        size_t hash() const;
 
-        size_t hash() const { return _private::pairhash(type_def, rv_text); }
-
-        void* rv_text {};
+    public:
+        void* rv_text {nullptr};
     };
 }
 

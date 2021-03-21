@@ -26,7 +26,7 @@
 
 #include "v_table.h"
 #include "game_value.h"
-#include "./string.h"
+#include "rv_string.h"
 
 namespace mafia::game_types
 {

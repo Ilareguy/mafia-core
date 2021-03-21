@@ -48,7 +48,8 @@ uintptr_t CompoundScriptTypeInfo::get_vtable() const noexcept
     return *reinterpret_cast<const uintptr_t*>(this);
 }
 
-CompoundScriptTypeInfo::CompoundScriptTypeInfo(const mafia::auto_array<const ScriptTypeInfo*>& types): auto_array(types)
+CompoundScriptTypeInfo::CompoundScriptTypeInfo(const mafia::containers::AutoArray<const ScriptTypeInfo*>& types):
+        mafia::containers::AutoArray<const ScriptTypeInfo*>(types)
 {
     resize(types.size());
     insert(begin(), types.begin(), types.end());

@@ -21,7 +21,9 @@
  *
  ********************************************************/
 
-#include "./string.h"
+#include "./String.h"
+#include "../../pair_hash.h"
+#include "../rv_pool_allocator.h"
 
 using namespace mafia::game_types::game_data;
 
@@ -94,3 +96,5 @@ void String::operator delete(void* ptr_, std::size_t)
 {
     return pool_alloc_base->deallocate(ptr_);
 }
+
+size_t String::hash() const { return mafia::pair_hash(type_def, raw_string); }

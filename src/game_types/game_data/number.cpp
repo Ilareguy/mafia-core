@@ -22,6 +22,8 @@
  ********************************************************/
 
 #include "number.h"
+#include "../rv_pool_allocator.h"
+#include "../../pair_hash.h"
 
 using namespace mafia::game_types::game_data;
 
@@ -83,4 +85,9 @@ void* Number::operator new(std::size_t)
 void Number::operator delete(void* ptr_, std::size_t)
 {
     return pool_alloc_base->deallocate(ptr_);
+}
+
+size_t Number::hash() const
+{
+    return mafia::pair_hash(type_def, number);
 }

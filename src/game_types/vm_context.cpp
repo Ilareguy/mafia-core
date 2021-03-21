@@ -51,7 +51,7 @@ void VMContext::disable_serialization()
     serialenabled = false;
 }
 
-const SourceDocPosition& VMContext::get_current_position()
+const SourceDocPosition& VMContext::get_current_position() const
 {
     return sdocpos;
 }

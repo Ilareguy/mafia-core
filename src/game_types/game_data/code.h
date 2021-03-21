@@ -26,7 +26,8 @@
 
 #include "../game_data.h"
 #include "../game_instruction.h"
-#include "../../containers.h"
+#include "../../ref.h"
+#include "../../containers/auto_array.h"
 
 namespace mafia::game_types::game_data
 {
@@ -39,13 +40,13 @@ namespace mafia::game_types::game_data
 
     public:
         Code() noexcept;
-
         size_t hash() const;
-
         static void* operator new(std::size_t sz_);
         static void operator delete(void* ptr_, std::size_t sz_);
         mafia::game_types::String code_string;
-        auto_array<mafia::game_types::Ref<GameInstruction>> instructions;
+        mafia::containers::AutoArray<mafia::Ref<GameInstruction>> instructions;
+
+    public:
         bool is_final;
     };
 }

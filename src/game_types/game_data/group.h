@@ -35,15 +35,11 @@ namespace mafia::game_types::game_data
         static uintptr_t data_type_def;
 
     public:
-        Group() noexcept
-        {
-            *reinterpret_cast<uintptr_t*>(this) = type_def;
-            *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
-        }
+        Group() noexcept;
+        size_t hash() const;
 
-        size_t hash() const { return _private::pairhash(type_def, group); }
-
-        void* group {};
+    public:
+        void* group {nullptr};
     };
 }
 

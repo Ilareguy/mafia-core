@@ -9,15 +9,13 @@ add_executable(main
         src/main.cpp
         src/memory_utility.cpp
         src/allocator_info.h
-        src/types.cpp
-        src/containers.cpp
         src/vector.cpp
         src/shared.h
         src/game_types/game_state.cpp
-        src/game_types/ref_count.cpp
+        src/ref_count.cpp
         src/game_types/rv_pool_allocator.cpp
         src/game_types/rv_allocator.cpp
-        src/game_types/ref.cpp
+        src/ref.cpp
         src/game_types/game_data_type.cpp
         src/game_types/rv_allocator_local.cpp
         src/game_types/game_data.cpp
@@ -29,7 +27,7 @@ add_executable(main
         src/game_types/game_data/number.cpp
         src/game_types/game_data/bool.cpp
         src/game_types/game_data/array.cpp
-        src/game_types/game_data/string.cpp
+        src/game_types/game_data/String.cpp
         src/game_types/game_data/group.cpp
         src/game_types/game_data/config.cpp
         src/game_types/game_data/control.cpp
@@ -52,7 +50,11 @@ add_executable(main
         src/game_types/sqf_script_type.cpp
         src/game_types/defs.cpp
         src/game_types/internal_object.cpp
-        src/game_types/source_doc.cpp src/game_types/source_doc.h src/pair_hash.h)
+        src/game_types/source_doc.cpp
+        src/game_types/source_doc.h
+        src/pair_hash.h
+        src/unique_ref.cpp
+        src/containers/compact_array.cpp src/containers/compact_array.h src/containers/rv_array.cpp src/containers/rv_array.h src/containers/auto_array.cpp src/containers/auto_array.h src/containers/stack_array.cpp src/containers/stack_array.h src/containers/find_key_array.cpp src/containers/find_key_array.h src/containers/reference_array.cpp src/containers/reference_array.h src/containers/map_string_to_class.cpp src/containers/map_string_to_class.h)
 
 ########## Dependencies
 find_package(fmt CONFIG REQUIRED)

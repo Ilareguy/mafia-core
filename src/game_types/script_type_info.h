@@ -26,6 +26,7 @@
 
 #include "game_data.h"
 #include "v_table.h"
+#include "../containers/auto_array.h"
 
 namespace mafia::game_types
 {
@@ -38,28 +39,28 @@ namespace mafia::game_types
 #else
 
         ScriptTypeInfo(
-                mafia::game_types::String name, createFunc cf, mafia::game_types::String localizedName,
-                mafia::game_types::String readableName, mafia::game_types::String description,
-                mafia::game_types::String category, mafia::game_types::String typeName
+                String name, createFunc cf, String localizedName,
+                String readableName, String description,
+                String category, String typeName
         );
 
 #endif
-        mafia::game_types::String _name;  // SCALAR
+        String _name;  // SCALAR
         createFunc _createFunction {nullptr};
-        mafia::game_types::String _localizedName;  //@STR_EVAL_TYPESCALAR
-        mafia::game_types::String _readableName;   //Number
+        String _localizedName;  //@STR_EVAL_TYPESCALAR
+        String _readableName;   //Number
 #ifndef __linux__
-        mafia::game_types::String _description;  //A real number.
-        mafia::game_types::String _category;     //Default
-        mafia::game_types::String _typeName;     //float/NativeObject
+        String _description;  //A real number.
+        String _category;     //Default
+        String _typeName;     //float/NativeObject
 #endif
-        mafia::game_types::String _javaFunc;  //Lcom/bistudio/JNIScripting/NativeObject;
+        String _javaFunc;  //Lcom/bistudio/JNIScripting/NativeObject;
     };
 
-    class CompoundScriptTypeInfo: public auto_array<const ScriptTypeInfo*>, public DummyVtable
+class CompoundScriptTypeInfo: public containers::AutoArray<const ScriptTypeInfo*>, public DummyVtable
     {
     public:
-        CompoundScriptTypeInfo(const auto_array<const ScriptTypeInfo*>& types);
+        explicit CompoundScriptTypeInfo(const containers::AutoArray<const ScriptTypeInfo*>& types);
         void set_vtable(uintptr_t v) noexcept;
         uintptr_t get_vtable() const noexcept;
     };

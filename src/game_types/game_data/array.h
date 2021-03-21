@@ -25,6 +25,8 @@
 #define DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_ARRAY_H
 
 #include "../game_data.h"
+#include "../../containers/auto_array.h"
+#include <vector>
 
 namespace mafia::game_types::game_data
 {
@@ -37,23 +39,22 @@ namespace mafia::game_types::game_data
 
     public:
         Array();
-        explicit Array(size_t size_);
-        explicit Array(const std::vector<GameValue>& init_);
+        Array(size_t size_);
+        Array(const std::vector<GameValue>& init_);
         Array(const std::initializer_list<GameValue>& init_);
-        explicit Array(auto_array<GameValue>&& init_);
+        explicit Array(mafia::containers::AutoArray<GameValue>&& init_);
         Array(const Array& copy_);
         Array(Array&& move_) noexcept;
         Array& operator=(const Array& copy_);
         Array& operator=(Array&& move_) noexcept;
         ~Array();
-        auto_array<GameValue> data;
-
-        auto length() const { return data.count(); }
-
-        size_t hash() const { return _private::pairhash(type_def, data.hash()); }
-
+        auto length() const;
+        size_t hash() const;
         static void* operator new(std::size_t sz_);
         static void operator delete(void* ptr_, std::size_t sz_);
+
+    public:
+        mafia::containers::AutoArray<GameValue> data;
     };
 }
 

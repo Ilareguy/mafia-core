@@ -33,6 +33,7 @@
 #include "debug_value.h"
 #include "game_var_space.h"
 #include "source_doc.h"
+#include "../containers/auto_array.h"
 
 namespace mafia::game_types
 {
@@ -53,7 +54,7 @@ namespace mafia::game_types
         };
 
         //ArmaDebugEngine. Usual Intercept users won't need this and shouldn't use this
-        class callstack_item: public mafia::game_types::RefCount, public IDebugScope
+        class callstack_item: public mafia::RefCount, public IDebugScope
         {
         public:
             callstack_item* _parent;
@@ -76,21 +77,21 @@ namespace mafia::game_types
             virtual void on_before_exec() {}
         };
 
-        auto add_callstack_item(mafia::game_types::Ref<callstack_item> newItem);
+        auto add_callstack_item(mafia::Ref<callstack_item> newItem);
         void throw_script_exception(GameValue value);
         bool is_scheduled() const;
         bool is_serialization_enabled() const;
         void disable_serialization();
-        const SourceDocPosition& get_current_position();
+        const SourceDocPosition& get_current_position() const;
 
-        auto_array<mafia::game_types::Ref<callstack_item>,
-                   mafia::game_types::RVAllocatorLocal<mafia::game_types::Ref<callstack_item>,
+        mafia::containers::AutoArray<mafia::Ref<callstack_item>,
+                   mafia::game_types::RVAllocatorLocal<mafia::Ref<callstack_item>,
                                                        64>> callstack;  //#TODO check size on x64
         bool serialenabled; //disableSerialization -> true, 0x228
         void* dummyu; //VMContextBattlEyeMonitor : VMContextCallback
 
         //const bool is_ui_context; //no touchy
-        auto_array<GameValue, mafia::game_types::RVAllocatorLocal<GameValue, 32>> scriptStack;
+        mafia::containers::AutoArray<GameValue, mafia::game_types::RVAllocatorLocal<GameValue, 32>> scriptStack;
 
         SourceDoc sdoc;
         SourceDocPosition sdocpos;  //last instruction pos

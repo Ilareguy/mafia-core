@@ -24,7 +24,7 @@
 #ifndef DEF_MAFIA_CORE_GAME_TYPES_GAME_TYPE_H
 #define DEF_MAFIA_CORE_GAME_TYPES_GAME_TYPE_H
 
-#include "./string.h"
+#include "rv_string.h"
 
 namespace mafia::game_types
 {

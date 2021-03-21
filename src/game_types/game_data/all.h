@@ -39,7 +39,7 @@
 #include "rv_text.h"
 #include "script.h"
 #include "side.h"
-#include "string.h"
+#include "String.h"
 #include "team_member.h"
 
 #endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_ALL_H

@@ -26,7 +26,6 @@
 
 #include "../game_data.h"
 #include <cstdint>
-#include <cstddef>
 
 namespace mafia::game_types::game_data
 {
@@ -46,14 +45,12 @@ namespace mafia::game_types::game_data
         Number& operator=(Number&& move_) noexcept;
         static void* operator new(std::size_t sz_);
         static void operator delete(void* ptr_, std::size_t sz_);
-        float number;
-
-        size_t hash() const
-        {
-            return _private::pairhash(type_def, number);
-        }
+        size_t hash() const;
         //protected:
         //    static thread_local game_data_pool<game_data_number> _data_pool;
+
+    public:
+        float number {0};
     };
 }
 

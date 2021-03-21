@@ -36,10 +36,10 @@ namespace mafia::game_types::game_data
 
     public:
         Script() noexcept;
+        size_t hash() const;
 
-        size_t hash() const { return _private::pairhash(type_def, script); }
-
-        void* script {};
+    public:
+        void* script {nullptr};
     };
 }
 

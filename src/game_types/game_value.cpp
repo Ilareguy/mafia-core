@@ -24,17 +24,63 @@
 #include "game_value.h"
 #include "game_data/all.h"
 #include "param_archive.h"
+#include "../pair_hash.h"
 
 using namespace mafia::game_types;
 using namespace std::literals::string_view_literals;
 
 uintptr_t GameValue::__vptr_def {0};
 
+GameValue::GameValue() noexcept
+{
+    set_vtable(__vptr_def);
+}
+
+GameValue::~GameValue() noexcept = default;
+
+GameValue::GameValue(GameData* val_) noexcept
+{
+    set_vtable(__vptr_def);
+    data = val_;
+}
+
 GameValue::GameValue(float val_)
 {
     set_vtable(__vptr_def);
     data = new game_data::Number(val_);
 }
+
+GameValue::operator mafia::game_types::String() const
+{
+    if (data)
+    {
+        const auto type = data->get_vtable();
+        if (type == game_data::Code::type_def || type == game_data::String::type_def)
+        {
+            return data->get_as_string();
+        }
+        return data->to_string();
+    }
+
+    return {};
+}
+
+void GameValue::copy(const GameValue& copy_) noexcept
+{
+    set_vtable(__vptr_def);  //Whatever vtable copy_ has.. if it's different then it's wrong
+    data = copy_.data;
+}
+
+#pragma optimize("ts", on)
+
+GameValue::GameValue(GameValue&& move_) noexcept
+{
+    set_vtable(__vptr_def);  //Whatever vtable move_ has.. if it's different then it's wrong
+    data = nullptr;
+    data.swap(move_.data);
+}
+
+#pragma optimize("", on)
 
 GameValue::GameValue(int val_): GameValue(static_cast<float>(val_)) {}
 
@@ -76,7 +122,7 @@ GameValue::GameValue(const std::initializer_list<GameValue>& list_)
     data = new game_data::Array(list_);
 }
 
-GameValue::GameValue(auto_array <GameValue>&& array_)
+GameValue::GameValue(mafia::containers::AutoArray<GameValue>&& array_)
 {
     set_vtable(__vptr_def);
     data = new game_data::Array(std::move(array_));
@@ -146,6 +192,11 @@ GameValue& GameValue::operator=(std::string_view val_)
 {
     data = new game_data::String(val_);
     return *this;
+}
+
+GameValue& GameValue::operator=(const char* str_)
+{
+    return this->operator=(std::string_view(str_));
 }
 
 GameValue& GameValue::operator=(const std::vector<GameValue>& list_)
@@ -255,22 +306,7 @@ GameValue::operator std::string() const
     return {};
 }
 
-GameValue::operator String() const
-{
-    if (data)
-    {
-        const auto type = data->get_vtable();
-        if (type == game_data::Code::type_def || type == game_data::String::type_def)
-        {
-            return data->get_as_string();
-        }
-        return data->to_string();
-    }
-
-    return {};
-}
-
-mafia::auto_array<GameValue>& GameValue::to_array() const
+mafia::containers::AutoArray<GameValue>& GameValue::to_array() const
 {
     if (data)
     {
@@ -282,7 +318,7 @@ mafia::auto_array<GameValue>& GameValue::to_array() const
         }
         return data->get_as_array();
     }
-    static auto_array <GameValue> dummy;//else we would return a temporary.
+    static mafia::containers::AutoArray<GameValue> dummy;//else we would return a temporary.
     dummy.clear(); //In case user modified it before
     return dummy;
 }
@@ -527,17 +563,19 @@ size_t GameValue::hash() const
         case GameDataType::TEAM_MEMBER: return reinterpret_cast<game_data::TeamMember*>(data.get())->hash();
         case GameDataType::TASK:
             return reinterpret_cast<GameData*>(data.get())->to_string()
-                                                           .hash(); //"Task %s (id %d)" or "No Task"
+                                                          .hash(); //"Task %s (id %d)" or "No Task"
         case GameDataType::DIARY_RECORD:
             return reinterpret_cast<GameData*>(data.get())->to_string()
-                                                           .hash(); //"No diary record" or... The text of that record? Text might be long and make this hash heavy
+                                                          .hash(); //"No diary record" or... The text of that record? Text might be long and make this hash heavy
         case GameDataType::LOCATION: return reinterpret_cast<game_data::Location*>(data.get())->hash();
         case GameDataType::end: return 0;
     }
 
-    return _private::pair_hash<uintptr_t, uintptr_t>(
+    return mafia::pair_hash<uintptr_t, uintptr_t>(
             data->get_vtable(), reinterpret_cast<uintptr_t>(data.get()));
 }
+
+void GameValue::clear() { data = nullptr; }
 
 /*void* GameValue::operator new(const std::size_t sz_)
 {
@@ -548,6 +586,20 @@ void GameValue::operator delete(void* ptr_, std::size_t)
 {
     RVAllocator<GameValue>::deallocate(static_cast<GameValue*>(ptr_));
 }
+
+uintptr_t GameValue::get_vtable() const noexcept
+{
+    return *reinterpret_cast<const uintptr_t*>(this);
+}
+
+#pragma optimize("ts", on)
+
+void GameValue::set_vtable(uintptr_t vt) noexcept
+{
+    *reinterpret_cast<uintptr_t*>(this) = vt;
+}
+
+#pragma optimize("", on)
 
 SerializationReturn GameValue::serialize(ParamArchive& ar)
 {
@@ -560,6 +612,8 @@ SerializationReturn GameValue::serialize(ParamArchive& ar)
     return SerializationReturn::no_error;
 }
 
+GameValue::GameValue(const char* str_): GameValue(std::string_view(str_)) {}
+
 GameValueStatic::GameValueStatic(): GameValue() {}
 
 GameValueStatic::~GameValueStatic()
@@ -568,3 +622,12 @@ GameValueStatic::~GameValueStatic()
     { data._ref = nullptr; }
 }
 
+/*GameValueStatic::GameValueStatic(const GameValue& copy): GameValue(copy) {}
+
+GameValueStatic::GameValueStatic(GameValue&& move): GameValue(move) {}*/
+
+GameValueStatic& GameValueStatic::operator=(const GameValue& copy)
+{
+    data = copy.data;
+    return *this;
+}

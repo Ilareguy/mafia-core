@@ -36,8 +36,7 @@ namespace mafia::game_types::game_data
 
     public:
         Nothing() noexcept;
-
-        static size_t hash() { return 0x1337; }
+        static size_t hash();
     };
 }
 

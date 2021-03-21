@@ -27,8 +27,7 @@
 #include "rv_allocator.h"
 #include "game_state.h"
 #include "serialization.h"
-
-// @TODO Move implementation into .cpp
+#include "../containers/auto_array.h"
 
 namespace mafia::game_types
 {
@@ -41,18 +40,11 @@ namespace mafia::game_types
     public:
         static GameState* get_game_state();
 
-        ParamArchive(ParamArchiveEntry* p1): _p1(p1)
-        {
-            _parameters.push_back(
-                    reinterpret_cast<uintptr_t>(get_game_state()));
-        }
+    public:
+        explicit ParamArchive(ParamArchiveEntry* p1);
+        virtual ~ParamArchive();
 
-        virtual ~ParamArchive()
-        {
-            if (_p1)
-            { mafia::game_types::RVAllocator<ParamArchiveEntry>::destroy_deallocate(_p1); }
-        }
-
+    public:
         //#TODO add SRef class
         ParamArchiveEntry* _p1 {
                 mafia::game_types::RVAllocator<ParamArchiveEntry>::create_single()
@@ -63,8 +55,9 @@ namespace mafia::game_types
                 0
         }; // be careful with alignment seems to always be 0 for exporting.
 
-        auto_array<uintptr_t> _parameters; // parameters? on serializing gameData only element is pointer to gameState
+        containers::AutoArray<uintptr_t> _parameters; // parameters? on serializing gameData only element is pointer to gameState
         bool _isExporting {true}; // writing data vs loading data
+
         SerializationReturn serialize(mafia::game_types::String name, SerializeClass& value, int min_version);
         SerializationReturn serialize(
                 mafia::game_types::String name,
@@ -76,7 +69,7 @@ namespace mafia::game_types
 
         template<class Type>
         SerializationReturn
-        serialize(const mafia::game_types::String& name, mafia::game_types::Ref<Type>& value, int min_version)
+        serialize(const mafia::game_types::String& name, mafia::Ref<Type>& value, int min_version)
         {
             if (_version < min_version)
             { return SerializationReturn::version_too_new; }
@@ -151,61 +144,51 @@ namespace mafia::game_types
     class ParamArchiveArrayEntry
     {
     public:
-        virtual ~ParamArchiveArrayEntry() = default;
-
-        virtual operator float() const { return 0; }
-
-        virtual operator int() const { return 0; }
-
-        virtual operator const mafia::game_types::String() const { return mafia::game_types::String(); }
-
-        virtual operator mafia::game_types::String() const { return mafia::game_types::String(); }
-
-        virtual operator bool() const { return false; }
+        virtual ~ParamArchiveArrayEntry();
+        virtual explicit operator float() const;
+        virtual explicit operator int() const;
+        virtual explicit operator const mafia::game_types::String() const;
+        virtual operator mafia::game_types::String() const;
+        virtual operator bool() const;
     };
 
     class ParamArchiveEntry
     {
     public:
-        virtual ~ParamArchiveEntry() {}
+        virtual ~ParamArchiveEntry();
 
         // Number of entries. count for array and number of class entries otherwise
-        virtual int entry_count() const { return 0; }
+        virtual int entry_count() const;
 
         // Don't know what that's used for.
-        virtual ParamArchiveEntry* get_entry_by_index(int index_) const { return nullptr; }
-        virtual mafia::game_types::String
-        current_entry_name() { return mafia::game_types::String(); }                           //Dunno exactly what this is. on GameData serialize it returns "data"
-        virtual ParamArchiveEntry* get_entry_by_name(const mafia::game_types::String& name) const { return nullptr; }
+        virtual ParamArchiveEntry* get_entry_by_index(int index_) const;
+
+        //Dunno exactly what this is. on GameData serialize it returns "data"
+        virtual String current_entry_name();
+
+        virtual ParamArchiveEntry* get_entry_by_name(const mafia::game_types::String& name) const;
 
         //Normal Entry. Contains a single value of a single type
-        virtual operator float() const { return 0; }
-
-        virtual operator int() const { return 0; }
-
-        virtual operator int64_t() const { return 0; }
+        virtual operator float() const;
+        virtual operator int() const;
+        virtual operator int64_t() const;
 
     private:
         struct rv_string_dummy: public mafia::game_types::String
         {
-            rv_string_dummy(const mafia::game_types::String& o): mafia::game_types::String(o) {}
+            rv_string_dummy(const mafia::game_types::String& o);
         };
 
-        virtual operator const rv_string_dummy() const
-        {
-            return operator mafia::game_types::String();
-        }
+        virtual operator const rv_string_dummy() const;
 
     public:
-        virtual operator mafia::game_types::String() const { return mafia::game_types::String(); }
-
-        virtual operator bool() const { return false; }
-
-        virtual mafia::game_types::String _placeholder1(uint32_t) const { return mafia::game_types::String(); }
+        virtual operator mafia::game_types::String() const;
+        virtual operator bool() const;
+        virtual mafia::game_types::String _placeholder1(uint32_t) const;
 
         //Array entry
-        virtual void
-        reserve(int count_) {}  //Yes.. This is indeed a signed integer for something that should be unsigned...
+        virtual void reserve(int count_) {}
+
         virtual void add_array_entry(float value_) {}
 
         virtual void add_array_entry(int value_) {}
@@ -214,19 +197,13 @@ namespace mafia::game_types
 
         virtual void add_array_entry(const mafia::game_types::String& value_) {}
 
-        virtual int count() const { return 0; }
+        virtual int count() const;
 
-        virtual ParamArchiveArrayEntry* operator[](int index_) const { return new ParamArchiveArrayEntry(); }
+        virtual ParamArchiveArrayEntry* operator[](int index_) const;
 
         //Class entry (contains named values)
-        virtual ParamArchiveEntry*
-        add_entry_array(const mafia::game_types::String& name_) { return new ParamArchiveEntry; }
-
-        virtual ParamArchiveEntry*
-        add_entry_class(
-                const mafia::game_types::String& name_,
-                bool unknown_ = false
-        ) { return new ParamArchiveEntry; }
+        virtual ParamArchiveEntry* add_entry_array(const mafia::game_types::String& name_);
+        virtual ParamArchiveEntry* add_entry_class(const String& name_, bool unknown_ = false);
 
         virtual void add_entry(const mafia::game_types::String& name_, const mafia::game_types::String& value_) {}
 

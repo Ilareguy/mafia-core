@@ -22,6 +22,8 @@
  ********************************************************/
 
 #include "code.h"
+#include "../rv_pool_allocator.h"
+#include "../../pair_hash.h"
 
 using namespace mafia::game_types::game_data;
 
@@ -47,5 +49,5 @@ void Code::operator delete(void* ptr_, std::size_t)
 
 size_t Code::hash() const
 {
-    return _private::pair_hash(type_def, code_string);
+    return mafia::pair_hash(type_def, code_string);
 }

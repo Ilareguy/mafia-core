@@ -24,7 +24,7 @@
 #ifndef DEF_MAFIA_CORE_GAME_TYPES_DEBUG_VALUE_H
 #define DEF_MAFIA_CORE_GAME_TYPES_DEBUG_VALUE_H
 
-#include "ref.h"
+#include "../ref.h"
 
 namespace mafia::game_types
 {
@@ -111,7 +111,7 @@ namespace mafia::game_types
 
             operator Type*() const noexcept { return _ref; }
 
-            bool operator!=(const mafia::game_types::Ref<Type>& other_) const noexcept { return _ref != other_._ref; }
+            bool operator!=(const mafia::Ref<Type>& other_) const noexcept { return _ref != other_._ref; }
 
             size_t ref_count() const noexcept { return _ref ? _ref->ref_count() : 0; }
         };

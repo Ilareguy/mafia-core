@@ -36,10 +36,10 @@ namespace mafia::game_types::game_data
 
     public:
         Location() noexcept;
+        size_t hash() const;
 
-        size_t hash() const { return _private::pairhash(type_def, location); }
-
-        void* location {};
+    public:
+        void* location {nullptr};
     };
 }
 

@@ -25,6 +25,7 @@
 #define DEF_MAFIA_CORE_GAME_TYPES_GAME_VARIABLE_H
 
 #include "game_value.h"
+#include "rv_string.h"
 
 namespace mafia::game_types
 {
@@ -41,7 +42,6 @@ namespace mafia::game_types
         };
     }
 
-
     class GameVariable: public _private::DebugVariable
     {
     public:
@@ -50,28 +50,13 @@ namespace mafia::game_types
         bool read_only {false};
 
     public:
-        GameVariable() {}
+        GameVariable();
+        GameVariable(String name_, GameValue&& val_, bool read_only_ = false);
+        GameVariable(String name_, const GameValue& val_, bool read_only_ = false);
 
-        GameVariable(mafia::game_types::String name_, GameValue&& val_, bool read_only_ = false):
-                name(std::move(name_)), value(std::move(val_)), read_only(read_only_) {}
-
-        GameVariable(mafia::game_types::String name_, const GameValue& val_, bool read_only_ = false):
-                name(std::move(name_)), value(val_), read_only(read_only_) {}
-
-        std::string_view get_map_key() const { return name; }
-
-        void get_name(char* buffer, int len) const override
-        {
-            std::copy(
-                    name.begin(), std::min(name.begin() + static_cast<size_t>(len), name.end()),
-                    compact_array<char>::iterator(buffer));
-            buffer[len - 1] = 0;
-        }
-
-        void* get_val() const override
-        {
-            return value.data;
-        }
+        std::string_view get_map_key() const;
+        void get_name(char* buffer, int len) const override;
+        void* get_val() const override;
     };
 }
 

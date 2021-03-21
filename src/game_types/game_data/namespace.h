@@ -27,7 +27,7 @@
 #include "../game_data.h"
 #include "../v_table.h"
 #include "../game_variable.h"
-#include "../../containers.h"
+#include "../../containers/map_string_to_class.h"
 
 namespace mafia::game_types::game_data
 {
@@ -39,12 +39,12 @@ namespace mafia::game_types::game_data
 
     public:
         Namespace() noexcept;
+        size_t hash() const;
 
-        size_t hash() const { return _private::pairhash(type_def, 0); }
-
-        mafia::map_string_to_class<mafia::game_types::GameVariable, auto_array<mafia::game_types::GameVariable>> _variables;
-        mafia::game_types::String _name;
-        bool _1;
+    public:
+        mafia::containers::MapStringToClass<GameVariable, mafia::containers::AutoArray<GameVariable>> _variables {};
+        mafia::game_types::String _name {""};
+        bool _1 {false};
     };
 }
 

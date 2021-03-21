@@ -26,6 +26,11 @@
 
 #include "../game_data.h"
 
+namespace mafia::game_types
+{
+    class RVPoolAllocator;
+}
+
 namespace mafia::game_types::game_data
 {
     class String: public mafia::game_types::GameData
@@ -37,21 +42,21 @@ namespace mafia::game_types::game_data
 
     public:
         String() noexcept;
-        explicit String(const std::string& str_);
-        explicit String(const mafia::game_types::String& str_);
+        String(const std::string& str_);
+        String(const mafia::game_types::String& str_);
         String(const String& copy_);
         String(String&& move_) noexcept;
         String& operator=(const String& copy_);
         String& operator=(String&& move_) noexcept;
         ~String();
-        mafia::game_types::String raw_string;
-
-        size_t hash() const { return _private::pairhash(type_def, raw_string); }
-
+        size_t hash() const;
         static void* operator new(std::size_t sz_);
         static void operator delete(void* ptr_, std::size_t sz_);
         //protected:
         //    static thread_local game_data_pool<game_data_string> _data_pool;
+
+    public:
+        mafia::game_types::String raw_string {""};
     };
 }
 

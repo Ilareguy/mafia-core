@@ -29,6 +29,13 @@
 
 namespace mafia::game_types
 {
+    namespace _private
+    {
+        void* rv_allocator_allocate_generic(size_t _size);
+        void rv_allocator_deallocate_generic(void* _Ptr);
+        void* rv_allocator_reallocate_generic(void* _Ptr, size_t _size);
+    }
+
     template<class Type>
     class RVAllocator
     {
@@ -59,14 +66,14 @@ namespace mafia::game_types
         RVAllocator() = default;
 
         template<class Other>
-        explicit RVAllocator(const RVAllocator<Other>&) {}
+        RVAllocator(const RVAllocator<Other>&) {}
 
         template<class Other>
-        explicit RVAllocator(RVAllocator<Other>&&) {}
+        RVAllocator(RVAllocator<Other>&&) {}
 
         static void deallocate(Type* ptr, size_t = 0)
         {
-            return _internal::rv_allocator_deallocate_generic(ptr);
+            return _private::rv_allocator_deallocate_generic(ptr);
         }
 
         static void destroy(Type* ptr)
@@ -86,20 +93,20 @@ namespace mafia::game_types
         static void destroy_deallocate(Type* ptr)
         {
             destroy(ptr);
-            return _internal::rv_allocator_deallocate_generic(ptr);
+            return _private::rv_allocator_deallocate_generic(ptr);
         }
 
         static void destroy_deallocate(Type* _Ptr, size_t size_)
         {
             destroy(_Ptr, size_);
-            return _internal::rv_allocator_deallocate_generic(_Ptr);
+            return _private::rv_allocator_deallocate_generic(_Ptr);
         }
 
         //This only allocates the memory! This will not be initialized to 0 and the allocated object will not have it's constructor called!
         //use the create* Methods instead
         static Type* allocate(const size_t count_)
         {
-            return reinterpret_cast<Type*>(_internal::rv_allocator_allocate_generic(sizeof(Type) * count_));
+            return reinterpret_cast<Type*>(_private::rv_allocator_allocate_generic(sizeof(Type) * count_));
         }
 
         //Allocates and Initializes one Object
@@ -141,7 +148,7 @@ namespace mafia::game_types
 
         static Type* reallocate(Type* ptr_, const size_t count_)
         {
-            return reinterpret_cast<Type*>(_internal::rv_allocator_reallocate_generic(ptr_, sizeof(Type) * count_));
+            return reinterpret_cast<Type*>(_private::rv_allocator_reallocate_generic(ptr_, sizeof(Type) * count_));
         }
     };
 }

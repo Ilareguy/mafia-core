@@ -24,13 +24,13 @@
 #ifndef DEF_MAFIA_CORE_GAME_TYPES_GAME_STATE_H
 #define DEF_MAFIA_CORE_GAME_TYPES_GAME_STATE_H
 
-#include "ref_count.h"
-#include "ref.h"
 #include "rv_allocator_local.h"
 #include "source_doc.h"
-#include "./string.h"
-#include "../containers.h"
+#include "rv_string.h"
 #include "game_data/namespace.h"
+#include "../ref_count.h"
+#include "../ref.h"
+#include "../containers/map_string_to_class.h"
 #include <string>
 
 namespace mafia::game_types
@@ -52,10 +52,10 @@ namespace mafia::game_types
     class GameState
     {
     public:
-        class game_evaluator: public RefCount
+        class GameEvaluator: public RefCount
         {
         public:
-            explicit game_evaluator(GameVarSpace* var = nullptr);
+            explicit GameEvaluator(GameVarSpace* var = nullptr);
 
             GameVarSpace* local;
             int handle;
@@ -148,13 +148,13 @@ namespace mafia::game_types
         * @brief Sets a script error at current position.
         * @param type This type is actually irrelevant, it just needs to be !=ok and !=handled though it's still recommended to use a sensible type
         */
-        void set_script_error(game_evaluator::evaluator_error_type type, String message);
+        void set_script_error(GameEvaluator::evaluator_error_type type, String message);
 
         /**
         * @brief Sets a script error at custom position.
         * @param type This type is actually irrelevant, it just needs to be !=ok and !=handled though it's still recommended to use a sensible type
         */
-        void set_script_error(game_evaluator::evaluator_error_type type, String message, SourceDocPosition position);
+        void set_script_error(GameEvaluator::evaluator_error_type type, String message, SourceDocPosition position);
 
         ///Checks whether value is array of appropriate size, if not it sets the appropriate error message and returns false
         bool error_check_size(GameValue value, size_t min_size);
@@ -163,7 +163,7 @@ namespace mafia::game_types
         bool error_check_type(GameValue value, GameDataType expected_type);
 
         VMContext* get_vm_context() const;
-        game_evaluator* get_evaluator() const;
+        GameEvaluator* get_evaluator() const;
         const auto& get_script_types();
         const auto& get_script_functions();
         const auto& get_script_operators();
@@ -172,19 +172,19 @@ namespace mafia::game_types
         GameData* create_game_data_from_type(const SQFScriptType& type, ParamArchive* ar) const;
 
     private:
-        auto_array<const ScriptTypeInfo*> _scriptTypes;
+        containers::AutoArray<const ScriptTypeInfo*> _scriptTypes;
 
         using game_functions = _private::game_functions;
         using game_operators = _private::game_operators;
         using gsNular = _private::gsNular;
 
-        mafia::map_string_to_class<game_functions, auto_array<game_functions>> _scriptFunctions;
-        mafia::map_string_to_class<game_operators, auto_array<game_operators>> _scriptOperators;
-        mafia::map_string_to_class<gsNular, auto_array<gsNular>> _scriptNulars;
+        mafia::containers::MapStringToClass<game_functions, containers::AutoArray<game_functions>> _scriptFunctions;
+        mafia::containers::MapStringToClass<game_operators, containers::AutoArray<game_operators>> _scriptOperators;
+        mafia::containers::MapStringToClass<gsNular, containers::AutoArray<gsNular>> _scriptNulars;
 
-        auto_array<Ref<game_evaluator>, RVAllocatorLocal<Ref<game_evaluator>, 64>> context;
+        containers::AutoArray<Ref<GameEvaluator>, RVAllocatorLocal<Ref<GameEvaluator>, 64>> context;
 
-        game_evaluator* eval;
+        GameEvaluator* eval;
 
         Ref<game_data::Namespace> varspace;  //Maybe currentNamespace?
 
@@ -192,7 +192,7 @@ namespace mafia::game_types
         //1: ui
         //2: profile
         //3: mission
-        const auto_array<game_data::Namespace*> namespaces;  //mission/parsing/... namespace
+        const containers::AutoArray<game_data::Namespace*> namespaces;  //mission/parsing/... namespace
         bool dummy2;
         bool onscreen_script_errors;
         VMContext* current_context;

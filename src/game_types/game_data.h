@@ -24,23 +24,29 @@
 #ifndef DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_H
 #define DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_H
 
-#include "ref_count.h"
 #include "debug_value.h"
 #include "serialization.h"
-#include "game_value.h"
-#include "sqf_script_type.h"
+#include "../ref_count.h"
+#include "../containers/auto_array.h"
 #include <cstddef>
 
 namespace mafia::game_types
 {
-    class GameData: public mafia::game_types::RefCount,
+    class RVPoolAllocator;
+    class SQFScriptType;
+    class GameValue;
+}
+
+namespace mafia::game_types
+{
+    class GameData: public mafia::RefCount,
                     public mafia::game_types::DebugValue
     {
         // friend class game_value;
         // friend class mafia::invoker;
 
     public:
-        virtual const sqf_script_type& type() const;
+        virtual const SQFScriptType& type() const;
         virtual ~GameData();
 
     public:
@@ -49,8 +55,8 @@ namespace mafia::game_types
         /// Only usable on String and Code! Use to_string instead!
         virtual const mafia::game_types::String& get_as_string() const;
         /// Why would you ever need this?
-        virtual const auto_array<mafia::game_types::GameValue>& get_as_const_array() const;
-        virtual auto_array<mafia::game_types::GameValue>& get_as_array();
+        virtual const mafia::containers::AutoArray<mafia::game_types::GameValue>& get_as_const_array() const;
+        virtual mafia::containers::AutoArray<mafia::game_types::GameValue>& get_as_array();
 
     public:
         virtual mafia::game_types::GameData* copy() const;
@@ -79,20 +85,9 @@ namespace mafia::game_types
 #ifdef __linux__
         public:
 #endif
-
-        uintptr_t get_vtable() const
-        {
-            return *reinterpret_cast<const uintptr_t*>(this);
-        }
-
-        uintptr_t get_secondary_vtable() const noexcept
-        {
-            return *reinterpret_cast<const uintptr_t*>(static_cast<const _private::I_debug_value*>(this));
-        }
+        uintptr_t get_vtable() const;
+        uintptr_t get_secondary_vtable() const noexcept;
     };
-{
-
-};
 }
 
 #endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_H

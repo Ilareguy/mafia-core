@@ -25,8 +25,21 @@
 #include "game_state.h"
 #include "../allocator_info.h"
 #include "../memory_utility.h"
+#include "../unique_ref.h"
 
 using namespace mafia::game_types;
+
+ParamArchive::ParamArchive(ParamArchiveEntry* p1): _p1(p1)
+{
+    _parameters.push_back(
+            reinterpret_cast<uintptr_t>(get_game_state()));
+}
+
+ParamArchive::~ParamArchive()
+{
+    if (_p1)
+    { mafia::game_types::RVAllocator<ParamArchiveEntry>::destroy_deallocate(_p1); }
+}
 
 GameState* ParamArchive::get_game_state()
 {
@@ -77,7 +90,7 @@ SerializationReturn ParamArchive::serialize(String name, String& value, int min_
     }
     else
     {
-        unique_ref<ParamArchiveEntry> entry = _p1->get_entry_by_name(name);
+        mafia::UniqueRef<ParamArchiveEntry> entry = _p1->get_entry_by_name(name);
         if (!entry)
         { return SerializationReturn::no_entry; }
         value = static_cast<String>(std::move(
@@ -98,7 +111,7 @@ SerializationReturn ParamArchive::serialize(String name, bool& value, int min_ve
     }
     else
     {
-        unique_ref<ParamArchiveEntry> entry = _p1->get_entry_by_name(name);
+        mafia::UniqueRef<ParamArchiveEntry> entry = _p1->get_entry_by_name(name);
         if (!entry)
         { return SerializationReturn::no_entry; }
         value = static_cast<int>(*entry); //#TODO check if entry actually contains the type that we want
@@ -126,3 +139,53 @@ SerializationReturn ParamArchive::serialize(String name, bool& value, int min_ve
     }
     return err;
 }
+
+ParamArchiveArrayEntry::~ParamArchiveArrayEntry() = default;
+
+ParamArchiveArrayEntry::operator float() const { return 0; }
+
+ParamArchiveArrayEntry::operator int() const { return 0; }
+
+ParamArchiveArrayEntry::operator const mafia::game_types::String() const { return mafia::game_types::String(); }
+
+ParamArchiveArrayEntry::operator mafia::game_types::String() const { return mafia::game_types::String(); }
+
+ParamArchiveArrayEntry::operator bool() const { return false; }
+
+ParamArchiveEntry::~ParamArchiveEntry() {}
+
+int ParamArchiveEntry::entry_count() const { return 0; }
+
+ParamArchiveEntry* ParamArchiveEntry::get_entry_by_index(int index_) const { return nullptr; }
+
+String ParamArchiveEntry::current_entry_name() { return mafia::game_types::String(); }
+
+ParamArchiveEntry* ParamArchiveEntry::get_entry_by_name(const String& name) const { return nullptr; }
+
+ParamArchiveEntry::operator float() const { return 0; }
+
+ParamArchiveEntry::operator int() const { return 0; }
+
+ParamArchiveEntry::operator int64_t() const { return 0; }
+
+ParamArchiveEntry::rv_string_dummy::rv_string_dummy(const String& o): mafia::game_types::String(o) {}
+
+ParamArchiveEntry::operator const rv_string_dummy() const
+{
+    return operator mafia::game_types::String();
+}
+
+ParamArchiveEntry::operator mafia::game_types::String() const { return mafia::game_types::String(); }
+
+ParamArchiveEntry::operator bool() const { return false; }
+
+mafia::game_types::String ParamArchiveEntry::_placeholder1(uint32_t) const { return mafia::game_types::String(); }
+
+int ParamArchiveEntry::count() const { return 0; }
+
+ParamArchiveArrayEntry* ParamArchiveEntry::operator[](int index_) const { return new ParamArchiveArrayEntry(); }
+
+ParamArchiveEntry* ParamArchiveEntry::add_entry_array(const String& name_) { return new ParamArchiveEntry; }
+
+ParamArchiveEntry*
+ParamArchiveEntry::add_entry_class(const String& name_, bool unknown_) { return new ParamArchiveEntry; }

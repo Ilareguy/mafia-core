@@ -22,6 +22,7 @@
  ********************************************************/
 
 #include "rv_text.h"
+#include "../../pair_hash.h"
 
 using namespace mafia::game_types::game_data;
 
@@ -32,4 +33,9 @@ RVText::RVText() noexcept
 {
     *reinterpret_cast<uintptr_t*>(this) = type_def;
     *reinterpret_cast<uintptr_t*>(static_cast<mafia::game_types::DebugValue*>(this)) = data_type_def;
+}
+
+size_t RVText::hash() const
+{
+    return mafia::pair_hash(type_def, rv_text);
 }

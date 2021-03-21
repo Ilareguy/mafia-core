@@ -22,3 +22,24 @@
  ********************************************************/
 
 #include "rv_pool_allocator.h"
+#include "../memory_utility.h"
+#include "../allocator_info.h"
+
+using namespace mafia::game_types;
+
+void* RVPoolAllocator::allocate(size_t count)
+{
+    static auto allocatorBase = mafia::memory_utility::get_allocator();;
+    typedef void* (__thiscall* allocFunc)(RVPoolAllocator*, size_t /*count*/);
+    auto alloc = reinterpret_cast<allocFunc>(allocatorBase->poolFuncAlloc);
+    auto allocation = alloc(this, count);
+    return allocation;
+}
+
+void RVPoolAllocator::deallocate(void* data)
+{
+    static auto allocatorBase = mafia::memory_utility::get_allocator();
+    typedef void(__thiscall* deallocFunc)(RVPoolAllocator*, void* /*data*/);
+    auto dealloc = reinterpret_cast<deallocFunc>(allocatorBase->poolFuncDealloc);
+    dealloc(this, data);
+}

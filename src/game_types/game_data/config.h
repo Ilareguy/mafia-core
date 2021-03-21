@@ -25,6 +25,7 @@
 #define DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_CONFIG_H
 
 #include "../game_data.h"
+#include "../../containers/auto_array.h"
 
 namespace mafia::game_types::game_data
 {
@@ -36,11 +37,11 @@ namespace mafia::game_types::game_data
 
     public:
         Config() noexcept;
+        size_t hash() const;
+        mafia::containers::AutoArray<mafia::game_types::String> path;
 
-        size_t hash() const { return _private::pairhash(type_def, config); }
-
-        void* config {};
-        auto_array<mafia::game_types::String> path;
+    public:
+        void* config {nullptr};
     };
 }
 

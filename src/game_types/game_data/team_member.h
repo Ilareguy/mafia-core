@@ -36,10 +36,10 @@ namespace mafia::game_types::game_data
 
     public:
         TeamMember() noexcept;
+        size_t hash() const;
 
-        size_t hash() const { return _private::pairhash(type_def, team); }
-
-        void* team {};
+    public:
+        void* team {nullptr};
     };
 }
 

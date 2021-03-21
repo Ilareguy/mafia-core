@@ -25,7 +25,7 @@
 #define DEF_MAFIA_CORE_GAME_TYPES_SOURCE_DOC_H
 
 #include "serialization.h"
-#include "./string.h"
+#include "rv_string.h"
 
 namespace mafia::game_types
 {
