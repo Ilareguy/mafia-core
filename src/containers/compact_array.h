@@ -47,16 +47,16 @@ namespace mafia::containers
             Type* p_;
 
         public:
-            using iterator_category_t = std::random_access_iterator_tag;
-            using value_t = Type;
-            using difference_t = ptrdiff_t;
-            using pointer_t = Type*;
-            using reference_t = Type&;
-            using unchecked_t = pointer_t;
+            using iterator_category = std::random_access_iterator_tag;
+            using value_type = Type;
+            using difference_type = ptrdiff_t;
+            using pointer = Type*;
+            using reference = Type&;
+            using _Unchecked_type = pointer;
 
             iterator(): p_(nullptr) {}
 
-            iterator(Type* p): p_(p) {}
+            explicit iterator(Type* p): p_(p) {}
 
             iterator(const iterator& other): p_(other.p_) {}
 
@@ -71,17 +71,20 @@ namespace mafia::containers
                 ++p_;
                 return *this;
             }  // prefix++
+
             iterator operator++(int)
             {
                 iterator tmp(*this);
                 ++(*this);
                 return tmp;
             }  // postfix++
+
             iterator& operator--()
             {
                 --p_;
                 return *this;
             }  // prefix--
+
             iterator operator--(int)
             {
                 iterator tmp(*this);
@@ -118,7 +121,7 @@ namespace mafia::containers
                 return tmp;
             }
 
-            difference_t operator-(const iterator& other) const { return p_ - other.p_; }
+            difference_type operator-(const iterator& other) const { return p_ - other.p_; }
 
             bool operator<(const iterator& other) const { return (p_ - other.p_) < 0; }
 
@@ -136,9 +139,9 @@ namespace mafia::containers
 
             Type* operator->() { return p_; }
 
-            operator Type*() { return p_; }
+            explicit operator Type*() { return p_; }
         };
-        
+
         class const_iterator
         {
             const Type* p_;
@@ -149,11 +152,11 @@ namespace mafia::containers
             using difference_type = ptrdiff_t;
             using pointer = Type*;
             using reference = Type&;
-            using unchecked_t = pointer;
+            using _Unchecked_type = pointer;
 
             const_iterator(): p_(nullptr) {}
 
-            const_iterator(const Type* p) noexcept: p_(p) {}
+            explicit const_iterator(const Type* p) noexcept: p_(p) {}
 
             const_iterator(const typename CompactArray<Type>::iterator& other): p_(other.p_) {}
 
@@ -241,7 +244,7 @@ namespace mafia::containers
 
             const Type* operator->() const noexcept { return p_; }
 
-            operator const Type*() const noexcept { return p_; }
+            explicit operator const Type*() const noexcept { return p_; }
         };
 
         size_t size() const noexcept { return _size; }
@@ -285,7 +288,7 @@ namespace mafia::containers
         static CompactArray* create(size_t number_of_elements_)
         {
             const size_t size = sizeof(CompactArray) + sizeof(Type) * (number_of_elements_ -
-                                                                        1);  //-1 because we already have one element in CompactArray
+                                                                       1);  //-1 because we already have one element in CompactArray
             auto* buffer = reinterpret_cast<CompactArray*>(Allocator::allocate(size));
 #pragma warning(suppress : 26409)  //don't use new/delete
             new(buffer) CompactArray(number_of_elements_);
@@ -295,7 +298,7 @@ namespace mafia::containers
         static CompactArray* create_zero(size_t number_of_elements_)
         {
             const size_t size = sizeof(CompactArray) + sizeof(Type) * (number_of_elements_ -
-                                                                        1);  //-1 because we already have one element in CompactArray
+                                                                       1);  //-1 because we already have one element in CompactArray
             auto* buffer = reinterpret_cast<CompactArray*>(Allocator::allocate(size));
 #pragma warning(suppress : 26409)  //don't use new/delete
             std::memset(buffer, 0, size);
@@ -360,7 +363,7 @@ namespace mafia::containers
         Type _data {};
 
     private:
-        CompactArray(const size_t size_) noexcept
+        explicit CompactArray(const size_t size_) noexcept
         {
             _size = size_;
         }

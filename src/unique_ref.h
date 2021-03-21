@@ -79,7 +79,7 @@ namespace mafia
 
         Type* operator->() const { return _ref; }
 
-        explicit operator Type*() const { return _ref; }
+        operator Type*() const { return _ref; }
 
         Type* get() const { return _ref; }
     };

@@ -47,7 +47,7 @@ namespace mafia::game_types
         const char* data() const noexcept;
         const char* c_str() const noexcept;
         void make_mutable(); /// This will copy the underlying container if we cannot safely modify this String
-        operator const char*() const noexcept;
+        explicit operator const char*() const noexcept;
         operator std::string_view() const noexcept;
         size_t length() const noexcept; /// This calls strlen so O(N)
         size_t size() const noexcept; /// This calls strlen so O(N)

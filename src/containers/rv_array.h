@@ -62,7 +62,7 @@ namespace mafia::containers
 
             iterator(): p_(nullptr) {}
 
-            iterator(Type* p): p_(p) {}
+            explicit iterator(Type* p): p_(p) {}
 
             iterator(const iterator& other): p_(other.p_) {}
 
@@ -142,7 +142,7 @@ namespace mafia::containers
 
             Type* operator->() { return p_; }
 
-            operator Type*() { return p_; }
+            explicit operator Type*() { return p_; }
         };
         class const_iterator
         {
@@ -157,7 +157,7 @@ namespace mafia::containers
 
             const_iterator(): p_(nullptr) {}
 
-            const_iterator(const Type* p) noexcept: p_(p) {}
+            explicit const_iterator(const Type* p) noexcept: p_(p) {}
 
             const_iterator(const typename RVArray<Type>::iterator& other): p_(other.p_) {}
 
@@ -245,7 +245,7 @@ namespace mafia::containers
 
             const Type* operator->() const noexcept { return p_; }
 
-            operator const Type*() const noexcept { return p_; }
+            explicit operator const Type*() const noexcept { return p_; }
         };
 
         constexpr RVArray() noexcept: _data(nullptr), _n(0) {}

@@ -68,7 +68,7 @@ namespace mafia
             z = z_;
         }
 
-        explicit vector3_base(std::istream& read_)
+        vector3_base(std::istream& read_)
         {
             // Constructor to read from a stream
             read_.read(reinterpret_cast<char*>(&x), sizeof(T));
@@ -319,7 +319,7 @@ namespace mafia
             y = y_;
         }
 
-        explicit vector2_base(std::istream& read_)
+        vector2_base(std::istream& read_)
         {
             // Constructor to read from a stream
             read_.read(reinterpret_cast<char*>(&x), sizeof(T));

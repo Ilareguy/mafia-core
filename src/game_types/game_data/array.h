@@ -42,7 +42,7 @@ namespace mafia::game_types::game_data
         Array(size_t size_);
         Array(const std::vector<GameValue>& init_);
         Array(const std::initializer_list<GameValue>& init_);
-        explicit Array(mafia::containers::AutoArray<GameValue>&& init_);
+        Array(mafia::containers::AutoArray<GameValue>&& init_);
         Array(const Array& copy_);
         Array(Array&& move_) noexcept;
         Array& operator=(const Array& copy_);

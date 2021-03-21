@@ -51,28 +51,28 @@ namespace mafia::game_types
         GameValue(GameValue&& move_) noexcept;
 
         //Conversions
-        explicit GameValue(GameData* val_) noexcept;
-        explicit GameValue(float val_);
-        explicit GameValue(int val_);
-        explicit GameValue(size_t val_);
-        explicit GameValue(bool val_);
-        explicit GameValue(const std::string& val_);
-        explicit GameValue(const mafia::game_types::String& val_);
-        explicit GameValue(std::string_view val_);
-        explicit GameValue(const char* str_);
-        explicit GameValue(const std::vector<GameValue>& list_);
+        GameValue(GameData* val_) noexcept;
+        GameValue(float val_);
+        GameValue(int val_);
+        GameValue(size_t val_);
+        GameValue(bool val_);
+        GameValue(const std::string& val_);
+        GameValue(const mafia::game_types::String& val_);
+        GameValue(std::string_view val_);
+        GameValue(const char* str_);
+        GameValue(const std::vector<GameValue>& list_);
         GameValue(const std::initializer_list<GameValue>& list_);
-        explicit GameValue(mafia::containers::AutoArray<GameValue>&& array_);
+        GameValue(mafia::containers::AutoArray<GameValue>&& array_);
 
         template<class Type>
-        explicit GameValue(const mafia::containers::AutoArray<Type>& array_) :
+        GameValue(const mafia::containers::AutoArray<Type>& array_) :
                 GameValue(mafia::containers::AutoArray<GameValue>(array_.begin(), array_.end()))
         {
             static_assert(std::is_convertible<Type, GameValue>::value);
         }
 
         template<class Type>
-        explicit GameValue(const std::vector<Type>& array_) :
+        GameValue(const std::vector<Type>& array_) :
                 GameValue(mafia::containers::AutoArray<GameValue>(array_.begin(), array_.end()))
         {
             static_assert(std::is_convertible<Type, GameValue>::value);
