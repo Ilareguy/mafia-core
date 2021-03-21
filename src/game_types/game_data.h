@@ -25,13 +25,32 @@
 #define DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_H
 
 #include "ref_count.h"
+#include "debug_value.h"
+#include "serialization.h"
+#include "game_value.h"
+#include <cstddef>
 
 namespace mafia::game_types
 {
-    class GameData: public mafia::game_types::RefCount, public _private::I_debug_value
+    namespace _private
     {
-        friend class game_value;
-        friend class mafia::invoker;
+        class game_functions;
+        class game_operators;
+        class gsNular;
+
+        template<typename T, typename U>
+        std::size_t pairhash(const T& first, const U& second)
+        {
+            size_t _hash = std::hash<T>()(first);
+            _hash ^= std::hash<U>()(second) + 0x9e3779b9 + (_hash << 6) + (_hash >> 2);
+            return _hash;
+        }
+    }
+
+    class GameData: public mafia::game_types::RefCount, public mafia::game_types::DebugValue
+    {
+        // friend class game_value;
+        // friend class mafia::invoker;
 
     public:
         virtual const sqf_script_type& type() const
@@ -43,34 +62,34 @@ namespace mafia::game_types
             return dummy;
         }
 
-        virtual ~game_data() = default;
+        virtual ~GameData() = default;
 
     protected:
         virtual bool get_as_bool() const { return false; }
 
         virtual float get_as_number() const { return 0.f; }
 
-        virtual const r_string& get_as_string() const
+        virtual const mafia::game_types::String& get_as_string() const
         {
-            static r_string dummy;
+            static mafia::game_types::String dummy;
             dummy.clear();
             return dummy;
         }  ///Only usable on String and Code! Use to_string instead!
-        virtual const auto_array <game_value>& get_as_const_array() const
+        virtual const auto_array<mafia::game_types::GameValue>& get_as_const_array() const
         {
-            static auto_array <game_value> dummy;
+            static auto_array<mafia::game_types::GameValue> dummy;
             dummy.clear();
             return dummy;
         }  //Why would you ever need this?
-        virtual auto_array <game_value>& get_as_array()
+        virtual auto_array<mafia::game_types::GameValue>& get_as_array()
         {
-            static auto_array <game_value> dummy;
+            static auto_array<mafia::game_types::GameValue> dummy;
             dummy.clear();
             return dummy;
         }
 
     public:
-        virtual game_data* copy() const { return nullptr; }
+        virtual mafia::game_types::GameData* copy() const { return nullptr; }
 
     protected:
         virtual void set_readonly(bool) {}  //No clue what this does...
@@ -80,9 +99,9 @@ namespace mafia::game_types
 
         virtual void set_final(bool) {}  //Only on GameDataCode AFAIK
     public:
-        virtual r_string to_string() const { return r_string(); }
+        virtual mafia::game_types::String to_string() const { return mafia::game_types::String(); }
 
-        virtual bool equals(const game_data*) const { return false; }
+        virtual bool equals(const mafia::game_types::GameData*) const { return false; }
 
         virtual const char* type_as_string() const { return "unknown"; }
 
@@ -98,7 +117,7 @@ namespace mafia::game_types
         int Irelease() override { return release(); }
 
     public:  //#TODO make protected and give access to param_archive
-        virtual serialization_return serialize(param_archive& ar)
+        virtual mafia::game_types::SerializationReturn serialize(mafia::game_types::ParamArchive& ar)
         {
             if (ar._isExporting)
             {
@@ -106,10 +125,10 @@ namespace mafia::game_types
                 ar.serialize(r_string("type"sv), _type, 1);
             }
 
-            return serialization_return::no_error;
+            return mafia::game_types::SerializationReturn::no_error;
         }
 
-        static game_data* createFromSerialized(param_archive& ar);
+        static mafia::game_types::GameData* createFromSerialized(mafia::game_types::ParamArchive& ar);
 
     protected:
 #ifdef __linux__

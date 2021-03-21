@@ -215,6 +215,34 @@ namespace mafia::game_types
 
 #pragma optimize("", on)
     };
+
+    class GameValueConversionError: public std::runtime_error
+    {
+    public:
+        explicit GameValueConversionError(const std::string& _Message)
+                : runtime_error(_Message) {}
+
+        explicit GameValueConversionError(const char* _Message)
+                : runtime_error(_Message) {}
+    };
+
+    class GameValueStatic: public GameValue
+    {
+    public:
+        GameValueStatic(): game_value() {}
+
+        ~GameValueStatic();
+
+        GameValueStatic(const GameValue& copy): GameValue(copy) {}
+
+        GameValueStatic(GameValue&& move): GameValue(move) {}
+
+        GameValueStatic& operator=(const GameValue& copy)
+        {
+            data = copy.data;
+            return *this;
+        }
+    };
 }
 
 #endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_VALUE_H

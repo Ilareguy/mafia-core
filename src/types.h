@@ -57,21 +57,6 @@ namespace mafia
     class registered_sqf_function_impl;
     class invoker;
 
-    namespace _private
-    {
-        class game_functions;
-        class game_operators;
-        class gsNular;
-
-        template<typename T, typename U>
-        std::size_t pairhash(const T& first, const U& second)
-        {
-            size_t _hash = std::hash<T>()(first);
-            _hash ^= std::hash<U>()(second) + 0x9e3779b9 + (_hash << 6) + (_hash >> 2);
-            return _hash;
-        }
-    }
-
     class game_value;
     using game_value_parameter = const game_value&;
     class game_data_array;
@@ -240,7 +225,7 @@ class sqf_script_type: public mafia::game_types::SerializeClass
         nular_operator* op;
     };
 
-struct sourcedocpos: public mafia::game_types::SerializeClass
+/*struct sourcedocpos: public mafia::game_types::SerializeClass
     {  //See ArmaDebugEngine for more info on this
         mafia::game_types::String sourcefile;
         uint32_t sourceline;
@@ -255,39 +240,11 @@ struct sourcedocpos: public mafia::game_types::SerializeClass
 
     struct sourcedocposref: public sourcedocpos, mafia::game_types::RefCount
     {
-    };
+    };*/
 
 
     class vm_context;
     class game_variable;
-
-    class game_value_conversion_error: public std::runtime_error
-    {
-    public:
-        explicit game_value_conversion_error(const std::string& _Message)
-                : runtime_error(_Message) {}
-
-        explicit game_value_conversion_error(const char* _Message)
-                : runtime_error(_Message) {}
-    };
-
-    class game_value_static: public game_value
-    {
-    public:
-        game_value_static(): game_value() {}
-
-        ~game_value_static();
-
-        game_value_static(const game_value& copy): game_value(copy) {}
-
-        game_value_static(game_value&& move): game_value(move) {}
-
-        game_value_static& operator=(const game_value& copy)
-        {
-            data = copy.data;
-            return *this;
-        }
-    };
 
     class I_debug_variable
     {
@@ -441,11 +398,6 @@ struct sourcedocpos: public mafia::game_types::SerializeClass
             serialenabled = false;
         }
 
-        const sourcedocpos& get_current_position()
-        {
-            return sdocpos;
-        }
-
 
         auto_array<mafia::game_types::Ref<callstack_item>,
                    mafia::game_types::RVAllocatorLocal<mafia::game_types::Ref<callstack_item>,
@@ -455,10 +407,6 @@ struct sourcedocpos: public mafia::game_types::SerializeClass
 
         //const bool is_ui_context; //no touchy
         auto_array<game_value, mafia::game_types::RVAllocatorLocal<game_value, 32>> scriptStack;
-
-        sourcedoc sdoc;
-
-        sourcedocpos sdocpos;  //last instruction pos
 
         mafia::game_types::String name;  //profiler might like this
 
@@ -481,101 +429,9 @@ struct sourcedocpos: public mafia::game_types::SerializeClass
         bool breakout;
     };
 
-    class game_data_number: public game_data
-    {
-    public:
-        static uintptr_t type_def;
-        static uintptr_t data_type_def;
-        static mafia::game_types::RVPoolAllocator* pool_alloc_base;
-        game_data_number() noexcept;
-        game_data_number(float val_) noexcept;
-        game_data_number(const game_data_number& copy_);
-        game_data_number(game_data_number&& move_) noexcept;
-        game_data_number& operator=(const game_data_number& copy_);
-        game_data_number& operator=(game_data_number&& move_) noexcept;
-        static void* operator new(std::size_t sz_);
-        static void operator delete(void* ptr_, std::size_t sz_);
-        float number;
 
-        size_t hash() const
-        {
-            return _private::pairhash(type_def, number);
-        }
-        //protected:
-        //    static thread_local game_data_pool<game_data_number> _data_pool;
-    };
 
-    class game_data_bool: public game_data
-    {
-    public:
-        static uintptr_t type_def;
-        static uintptr_t data_type_def;
-        static mafia::game_types::RVPoolAllocator* pool_alloc_base;
-        game_data_bool();
-        game_data_bool(bool val_);
-        game_data_bool(const game_data_bool& copy_);
-        game_data_bool(game_data_bool&& move_) noexcept;
-        game_data_bool& operator=(const game_data_bool& copy_);
-        game_data_bool& operator=(game_data_bool&& move_) noexcept;
-        static void* operator new(std::size_t sz_);
-        static void operator delete(void* ptr_, std::size_t sz_);
-        bool val;
-
-        size_t hash() const { return _private::pairhash(type_def, val); }
-        //protected:
-        //    static thread_local game_data_pool<game_data_bool> _data_pool;
-    };
-
-    class game_data_array: public game_data
-    {
-    public:
-        static uintptr_t type_def;
-        static uintptr_t data_type_def;
-        static mafia::game_types::RVPoolAllocator* pool_alloc_base;
-        game_data_array();
-        game_data_array(size_t size_);
-        game_data_array(const std::vector<game_value>& init_);
-        game_data_array(const std::initializer_list<game_value>& init_);
-        game_data_array(auto_array<game_value>&& init_);
-        game_data_array(const game_data_array& copy_);
-        game_data_array(game_data_array&& move_) noexcept;
-        game_data_array& operator=(const game_data_array& copy_);
-        game_data_array& operator=(game_data_array&& move_) noexcept;
-        ~game_data_array();
-        auto_array<game_value> data;
-
-        auto length() const { return data.count(); }
-
-        size_t hash() const { return _private::pairhash(type_def, data.hash()); }
-
-        static void* operator new(std::size_t sz_);
-        static void operator delete(void* ptr_, std::size_t sz_);
-    };
-
-    class game_data_string: public game_data
-    {
-    public:
-        static uintptr_t type_def;
-        static uintptr_t data_type_def;
-        static mafia::game_types::RVPoolAllocator* pool_alloc_base;
-        game_data_string() noexcept;
-        explicit game_data_string(const std::string& str_);
-        explicit game_data_string(const mafia::game_types::String& str_);
-        game_data_string(const game_data_string& copy_);
-        game_data_string(game_data_string&& move_) noexcept;
-        game_data_string& operator=(const game_data_string& copy_);
-        game_data_string& operator=(game_data_string&& move_) noexcept;
-        ~game_data_string();
-        mafia::game_types::String raw_string;
-
-        size_t hash() const { return _private::pairhash(type_def, raw_string); }
-
-        static void* operator new(std::size_t sz_);
-        static void operator delete(void* ptr_, std::size_t sz_);
-        //protected:
-        //    static thread_local game_data_pool<game_data_string> _data_pool;
-    };
-
+    // @@ rendu ici @@
     class game_data_group: public game_data
     {
     public:
@@ -956,28 +812,6 @@ struct sourcedocpos: public mafia::game_types::SerializeClass
             void* object {};
         } * object {};
     };
-    //#TODO add game_data_nothing
-
-    /*namespace _private
-    {
-        game_data_type game_datatype_from_string(const mafia::game_types::String& name);
-        std::string_view to_string(game_data_type type);
-        //Not public API!
-        void add_game_datatype(mafia::game_types::String name, game_data_type type);
-
-        struct allocatorInfo
-        {
-            uintptr_t genericAllocBase;
-            uintptr_t poolFuncAlloc;
-            uintptr_t poolFuncDealloc;
-            std::array<mafia::game_types::RVPoolAllocator*, static_cast<size_t>(game_data_type::end)> _poolAllocs;
-            game_value (* evaluate_func)(const game_data_code&, void* ns, const mafia::game_types::String& name){nullptr};
-            game_state* gameState;
-            void* reserved1;
-            void* reserved2;
-            void* reserved3;
-        };
-    }*/
 
     class registered_sqf_function
     {

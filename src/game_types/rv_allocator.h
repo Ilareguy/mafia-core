@@ -24,6 +24,9 @@
 #ifndef DEF_MAFIA_CORE_GAME_TYPES_RV_ALLOCATOR_H
 #define DEF_MAFIA_CORE_GAME_TYPES_RV_ALLOCATOR_H
 
+#include <type_traits>
+#include <memory>
+
 namespace mafia::game_types
 {
     template<class Type>
@@ -45,22 +48,21 @@ namespace mafia::game_types
         using is_always_equal = std::true_type;
 
         template<class Other>
-        using rebind = rv_allocator<Other>;
+        using rebind = RVAllocator<Other>;
 
         template<class Other>
-        using rebind_alloc = rv_allocator<Other>;
+        using rebind_alloc = RVAllocator<Other>;
 
         template<class Other>
-        using rebind_traits = std::allocator_traits <rv_allocator<Other>>;
+        using rebind_traits = std::allocator_traits<RVAllocator<Other>>;
 
-        rv_allocator() = default;
-
-        template<class Other>
-        explicit rv_allocator(const rv_allocator <Other>&) {}
+        RVAllocator() = default;
 
         template<class Other>
-        explicit rv_allocator(rv_allocator<Other>
-        &&) {}
+        explicit RVAllocator(const RVAllocator<Other>&) {}
+
+        template<class Other>
+        explicit RVAllocator(RVAllocator<Other>&&) {}
 
         static void deallocate(Type* ptr, size_t = 0)
         {

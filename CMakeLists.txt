@@ -25,7 +25,7 @@ add_executable(main
         src/game_types/debug_value.cpp
         src/game_types/serialization.cpp
         src/game_types/rv_string.cpp
-        src/game_types/param_archive.cpp src/game_types/param_archive.h src/game_types/game_value.cpp src/game_types/game_value.h)
+        src/game_types/param_archive.cpp src/game_types/param_archive.h src/game_types/game_value.cpp src/game_types/game_value.h src/game_types/game_data/number.cpp src/game_types/game_data/number.h src/game_types/game_data/bool.cpp src/game_types/game_data/bool.h src/game_types/game_data/array.cpp src/game_types/game_data/array.h src/game_types/game_data/string.cpp src/game_types/game_data/string.h)
 
 ########## Dependencies
 find_package(fmt CONFIG REQUIRED)
