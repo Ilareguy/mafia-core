@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 28/02/2021.
+ * File created by Anthony Ilareguy on 21/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,11 +21,19 @@
  *
  ********************************************************/
 
-#include <iostream>
-#include "memory_utility.h"
+#include "mafia.h"
 
-int main(){
-    mafia::memory_utility::init();
+namespace mafia::_private
+{
+    bool exiting {false};
+}
 
-    return 0;
+bool mafia::is_exiting()
+{
+    return _private::exiting;
+}
+
+void mafia::exit()
+{
+    _private::exiting = true;
 }

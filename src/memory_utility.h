@@ -45,15 +45,6 @@ namespace mafia::memory_utility
     void init();
 
     AllocatorInfo* get_allocator();
-
-    /**
-     * Finds and returns an SQFFunction referencing the SQF function with the given function name.
-     * @param function_name The function to find.
-     * @param arg_signature Function signature.
-     * @return A valid, callable SQFFunction object if the function was found; an invalid, un-callable SQFFunction
-     * object otherwise.
-     */
-    SQFFunction& find(std::string_view function_name, std::string_view arg_signature);
 }
 
 #endif // DEF_MAFIA_CORE_MEMORY_UTILITY_H

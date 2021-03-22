@@ -47,7 +47,8 @@ namespace mafia::game_types
     };
 
     class SerializeClass
-    {  //That's from gameValue RTTI. I'd name it serializable_class but I think keeping it close to engine name is better.
+    {
+        //That's from gameValue RTTI. I'd name it serializable_class but I think keeping it close to engine name is better.
     public:
         virtual ~SerializeClass() = default;
 
@@ -55,17 +56,6 @@ namespace mafia::game_types
         virtual SerializationReturn serialize(ParamArchive&) { return SerializationReturn::unknown_error; }
 
         virtual void _dummy2(void*) {}
-    };
-
-    struct sourcedoc: public SerializeClass
-    {  //See ArmaDebugEngine for more info on this
-        mafia::game_types::String sourcefile;
-        mafia::game_types::String content;
-
-        SerializationReturn serialize(ParamArchive& ar) override
-        {
-            return SerializationReturn::unknown_error;
-        }
     };
 }
 

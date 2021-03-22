@@ -22,6 +22,7 @@
  ********************************************************/
 
 #include "game_variable.h"
+#include "game_value_impl.h"
 #include "../containers/compact_array.h"
 
 using namespace mafia::game_types;
@@ -46,5 +47,5 @@ void GameVariable::get_name(char* buffer, int len) const
 
 void* GameVariable::get_val() const
 {
-    return value.data;
+    return value.impl->data;
 }

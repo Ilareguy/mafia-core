@@ -23,6 +23,7 @@
 
 #include "internal_object.h"
 #include "game_data/object.h"
+#include "game_value_impl.h"
 
 using namespace mafia::game_types;
 
@@ -59,12 +60,12 @@ InternalObject& InternalObject::operator=(const InternalObject& copy_)
 
 bool InternalObject::operator<(const InternalObject& compare_) const
 {
-    return static_cast<game_data::Object*>(data.get())->object <
-           static_cast<game_data::Object*>(compare_.data.get())->object;
+    return static_cast<game_data::Object*>(impl->data.get())->object <
+           static_cast<game_data::Object*>(compare_.impl->data.get())->object;
 }
 
 bool InternalObject::operator>(const InternalObject& compare_) const
 {
-    return static_cast<game_data::Object*>(data.get())->object >
-           static_cast<game_data::Object*>(compare_.data.get())->object;
+    return static_cast<game_data::Object*>(impl->data.get())->object >
+           static_cast<game_data::Object*>(compare_.impl->data.get())->object;
 }

@@ -35,4 +35,24 @@ namespace mafia
     }
 }
 
+namespace std
+{
+    template<>
+    struct hash<mafia::game_types::String>
+    {
+        size_t operator()(const mafia::game_types::String& x) const
+        {
+            return x.hash();
+        }
+    };
+    template<>
+    struct hash<mafia::game_types::GameValue>
+    {
+        size_t operator()(const mafia::game_types::GameValue& x) const
+        {
+            return x.hash();
+        }
+    };
+}  // namespace std
+
 #endif // DEF_MAFIA_CORE_PAIR_HASH_H

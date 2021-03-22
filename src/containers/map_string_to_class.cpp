@@ -43,6 +43,15 @@ unsigned int mafia::containers::rv_map_hash_string_case_sensitive(std::string_vi
     return hashValue;
 }
 
+unsigned int mafia::containers::rv_map_hash_string_case_insensitive(std::string_view key, int hashValue) noexcept
+{
+    for (auto& it : key)
+    {
+        hashValue = hashValue * 33 + static_cast<unsigned char>(tolower(it));
+    }
+    return hashValue;
+}
+
 unsigned int map_string_to_class_trait::hash_key(std::string_view key) noexcept
 {
     return rv_map_hash_string_case_sensitive(key);

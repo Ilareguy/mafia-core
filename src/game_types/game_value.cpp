@@ -22,9 +22,12 @@
  ********************************************************/
 
 #include "game_value.h"
+#include "game_value_impl.h"
 #include "game_data/all.h"
 #include "param_archive.h"
+#include "sqf_script_type.h"
 #include "../pair_hash.h"
+#include "../mafia.h"
 
 using namespace mafia::game_types;
 using namespace std::literals::string_view_literals;
@@ -33,33 +36,39 @@ uintptr_t GameValue::__vptr_def {0};
 
 GameValue::GameValue() noexcept
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
 }
 
-GameValue::~GameValue() noexcept = default;
+GameValue::~GameValue() noexcept
+{
+    delete impl;
+}
 
 GameValue::GameValue(GameData* val_) noexcept
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = val_;
+    impl->data = val_;
 }
 
 GameValue::GameValue(float val_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::Number(val_);
+    impl->data = new game_data::Number(val_);
 }
 
 GameValue::operator mafia::game_types::String() const
 {
-    if (data)
+    if (impl->data)
     {
-        const auto type = data->get_vtable();
+        const auto type = impl->data->get_vtable();
         if (type == game_data::Code::type_def || type == game_data::String::type_def)
         {
-            return data->get_as_string();
+            return impl->data->get_as_string();
         }
-        return data->to_string();
+        return impl->data->to_string();
     }
 
     return {};
@@ -68,16 +77,23 @@ GameValue::operator mafia::game_types::String() const
 void GameValue::copy(const GameValue& copy_) noexcept
 {
     set_vtable(__vptr_def);  //Whatever vtable copy_ has.. if it's different then it's wrong
-    data = copy_.data;
+    impl->data = copy_.impl->data;
+}
+
+GameValue::GameValue(const GameValue& copy_) noexcept
+{
+    impl = new GameValueImpl;
+    copy(copy_);
 }
 
 #pragma optimize("ts", on)
 
 GameValue::GameValue(GameValue&& move_) noexcept
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);  //Whatever vtable move_ has.. if it's different then it's wrong
-    data = nullptr;
-    data.swap(move_.data);
+    impl->data = nullptr;
+    impl->data.swap(move_.impl->data);
 }
 
 #pragma optimize("", on)
@@ -88,56 +104,65 @@ GameValue::GameValue(size_t val_): GameValue(static_cast<float>(val_)) {}
 
 GameValue::GameValue(bool val_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::Bool(val_);
+    impl->data = new game_data::Bool(val_);
 }
 
 GameValue::GameValue(const std::string& val_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::String(val_);
+    impl->data = new game_data::String(val_);
 }
 
 GameValue::GameValue(const String& val_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::String(val_);
+    impl->data = new game_data::String(val_);
 }
 
 GameValue::GameValue(std::string_view val_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::String(val_);
+    impl->data = new game_data::String(val_);
 }
 
 GameValue::GameValue(const std::vector<GameValue>& list_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::Array(list_);
+    impl->data = new game_data::Array(list_);
 }
 
 GameValue::GameValue(const std::initializer_list<GameValue>& list_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::Array(list_);
+    impl->data = new game_data::Array(list_);
 }
 
 GameValue::GameValue(mafia::containers::AutoArray<GameValue>&& array_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::Array(std::move(array_));
+    impl->data = new game_data::Array(std::move(array_));
 }
 
 GameValue::GameValue(const vector3& vec_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::Array({vec_.x, vec_.y, vec_.z});
+    impl->data = new game_data::Array({vec_.x, vec_.y, vec_.z});
 }
 
 GameValue::GameValue(const vector2& vec_)
 {
+    impl = new GameValueImpl;
     set_vtable(__vptr_def);
-    data = new game_data::Array({vec_.x, vec_.y});
+    impl->data = new game_data::Array({vec_.x, vec_.y});
 }
 
 /*GameValue::GameValue(const internal_object& internal_)
@@ -159,38 +184,38 @@ GameValue& GameValue::operator=(GameValue&& move_) noexcept
         return *this;
     }
     set_vtable(__vptr_def);
-    data = move_.data;
-    move_.data = nullptr;
+    impl->data = move_.impl->data;
+    move_.impl->data = nullptr;
     return *this;
 }
 
 GameValue& GameValue::operator=(const float val_)
 {
-    data = new game_data::Number(val_);
+    impl->data = new game_data::Number(val_);
     return *this;
 }
 
 GameValue& GameValue::operator=(bool val_)
 {
-    data = new game_data::Bool(val_);
+    impl->data = new game_data::Bool(val_);
     return *this;
 }
 
 GameValue& GameValue::operator=(const std::string& val_)
 {
-    data = new game_data::String(val_);
+    impl->data = new game_data::String(val_);
     return *this;
 }
 
 GameValue& GameValue::operator=(const String& val_)
 {
-    data = new game_data::String(val_);
+    impl->data = new game_data::String(val_);
     return *this;
 }
 
 GameValue& GameValue::operator=(std::string_view val_)
 {
-    data = new game_data::String(val_);
+    impl->data = new game_data::String(val_);
     return *this;
 }
 
@@ -201,19 +226,19 @@ GameValue& GameValue::operator=(const char* str_)
 
 GameValue& GameValue::operator=(const std::vector<GameValue>& list_)
 {
-    data = new game_data::Array(list_);
+    impl->data = new game_data::Array(list_);
     return *this;
 }
 
 GameValue& GameValue::operator=(const vector3& vec_)
 {
-    data = new game_data::Array({vec_.x, vec_.y, vec_.z});
+    impl->data = new game_data::Array({vec_.x, vec_.y, vec_.z});
     return *this;
 }
 
 GameValue& GameValue::operator=(const vector2& vec_)
 {
-    data = new game_data::Array({vec_.x, vec_.y});
+    impl->data = new game_data::Array({vec_.x, vec_.y});
     return *this;
 }
 
@@ -226,14 +251,14 @@ GameValue& GameValue::operator=(const vector2& vec_)
 
 GameValue::operator int() const
 {
-    if (data)
+    if (impl->data)
     {
 #ifdef MAFIA_SAFE_CONVERSIONS
-        const auto type = data->get_vtable();
-            if (data->get_vtable() == game_data_number::type_def)
+        const auto type = impl->data->get_vtable();
+            if (impl->data->get_vtable() == game_data_number::type_def)
                 throw GameValue_conversion_error("Invalid conversion to scalar");
 #endif
-        return static_cast<int>(data->get_as_number());
+        return static_cast<int>(impl->data->get_as_number());
     }
 
     return 0;
@@ -241,37 +266,37 @@ GameValue::operator int() const
 
 GameValue::operator float() const
 {
-    if (data)
+    if (impl->data)
     {
 #ifdef MAFIA_SAFE_CONVERSIONS
-        const auto type = data->get_vtable();
-            if (data->get_vtable() == game_data_number::type_def)
+        const auto type = impl->data->get_vtable();
+            if (impl->data->get_vtable() == game_data_number::type_def)
                 throw GameValue_conversion_error("Invalid conversion to scalar");
 #endif
-        return data->get_as_number();
+        return impl->data->get_as_number();
     }
     return 0.f;
 }
 
 GameValue::operator bool() const
 {
-    if (data)
+    if (impl->data)
     {
 #ifdef MAFIA_SAFE_CONVERSIONS
-        const auto type = data->get_vtable();
-            if (data->get_vtable() == game_data_bool::type_def)
+        const auto type = impl->data->get_vtable();
+            if (impl->data->get_vtable() == game_data_bool::type_def)
                 throw GameValue_conversion_error("Invalid conversion to scalar");
 #endif
-        return data->get_as_bool();
+        return impl->data->get_as_bool();
     }
     return false;
 }
 
-GameValue::operator vector3() const
+GameValue::operator mafia::vector3() const
 {
-    if (!data)
+    if (!impl->data)
     { return {}; }
-    auto& array = data->get_as_array();
+    auto& array = impl->data->get_as_array();
     if (array.count() == 3)
     {
         return vector3 {array[0], array[1], array[2]};
@@ -279,11 +304,11 @@ GameValue::operator vector3() const
     return vector3();
 }
 
-GameValue::operator vector2() const
+GameValue::operator mafia::vector2() const
 {
-    if (!data)
+    if (!impl->data)
     { return {}; }
-    auto& array = data->get_as_array();
+    auto& array = impl->data->get_as_array();
     if (array.count() == 2)
     {
         return vector2 {array[0], array[1]};
@@ -293,14 +318,14 @@ GameValue::operator vector2() const
 
 GameValue::operator std::string() const
 {
-    if (data)
+    if (impl->data)
     {
-        const auto type = data->get_vtable();
+        const auto type = impl->data->get_vtable();
         if (type == game_data::Code::type_def || type == game_data::String::type_def)
         {
-            return static_cast<std::string>(data->get_as_string());
+            return static_cast<std::string>(impl->data->get_as_string());
         }
-        return static_cast<std::string>(data->to_string());
+        return static_cast<std::string>(impl->data->to_string());
     }
 
     return {};
@@ -308,15 +333,15 @@ GameValue::operator std::string() const
 
 mafia::containers::AutoArray<GameValue>& GameValue::to_array() const
 {
-    if (data)
+    if (impl->data)
     {
-        if (data->get_vtable() != game_data::Array::type_def)
+        if (impl->data->get_vtable() != game_data::Array::type_def)
         {
             throw GameValueConversionError(
                     "Invalid conversion to array"
             );
         }
-        return data->get_as_array();
+        return impl->data->get_as_array();
     }
     static mafia::containers::AutoArray<GameValue> dummy;//else we would return a temporary.
     dummy.clear(); //In case user modified it before
@@ -325,15 +350,15 @@ mafia::containers::AutoArray<GameValue>& GameValue::to_array() const
 
 GameValue& GameValue::operator[](size_t i_) const
 {
-    if (data)
+    if (impl->data)
     {
-        if (data->get_vtable() != game_data::Array::type_def)
+        if (impl->data->get_vtable() != game_data::Array::type_def)
         {
             throw GameValueConversionError(
                     "Invalid array access"
             );
         }
-        auto& array = data->get_as_array();
+        auto& array = impl->data->get_as_array();
         if (array.count() > i_)
         {
             return array[i_];
@@ -346,11 +371,11 @@ GameValue& GameValue::operator[](size_t i_) const
 
 std::optional<GameValue> GameValue::get(size_t i_) const
 {
-    if (data)
+    if (impl->data)
     {
-        if (data->get_vtable() != game_data::Array::type_def)
+        if (impl->data->get_vtable() != game_data::Array::type_def)
         { return *this; }
-        auto& array = data->get_as_array();
+        auto& array = impl->data->get_as_array();
         if (array.count() > i_)
         {
             return array[i_];
@@ -361,18 +386,18 @@ std::optional<GameValue> GameValue::get(size_t i_) const
 
 uintptr_t GameValue::type() const
 {
-    if (data)
+    if (impl->data)
     {
-        return *reinterpret_cast<uintptr_t*>(data.get());
+        return *reinterpret_cast<uintptr_t*>(impl->data.get());
     } //#TODO use GetType virtual func instead
     return 0x0;
 }
 
 GameDataType GameValue::type_enum() const
 {
-    if (!data)
+    if (!impl->data)
     { return GameDataType::NOTHING; }
-    const auto _type = data->get_vtable();
+    const auto _type = impl->data->get_vtable();
     if (_type == game_data::Object::type_def)
     {
         return GameDataType::OBJECT;
@@ -442,25 +467,25 @@ GameDataType GameValue::type_enum() const
 
 size_t GameValue::size() const
 {
-    if (!data)
+    if (!impl->data)
     { return 0; }
-    if (data->get_vtable() != game_data::Array::type_def)
+    if (impl->data->get_vtable() != game_data::Array::type_def)
     { return 0; }
-    return data->get_as_array().count();
+    return impl->data->get_as_array().count();
 }
 
 bool GameValue::is_nil() const
 {
-    if (!data)
+    if (!impl->data)
     { return true; }
-    return data->is_nil();
+    return impl->data->is_nil();
 }
 
 bool GameValue::is_null() const
 {
-    if (!data)
+    if (!impl->data)
     { return true; }
-    if (data->is_nil())
+    if (impl->data->is_nil())
     { return true; }
     auto type = type_enum();
     switch (type)
@@ -490,7 +515,7 @@ bool GameValue::is_null() const
         case GameDataType::TASK:        //[[fallthrough]] //LL
         case GameDataType::LOCATION://LL
         {
-            const uintptr_t datax = reinterpret_cast<uintptr_t>(data.get());
+            const uintptr_t datax = reinterpret_cast<uintptr_t>(impl->data.get());
             const uintptr_t data_1 = datax + sizeof(uintptr_t) * 3;
             const uintptr_t data_2 = *reinterpret_cast<uintptr_t*>(data_1);
             if (data_2)
@@ -503,7 +528,7 @@ bool GameValue::is_null() const
         }
         case GameDataType::CONFIG:
         {
-            return !reinterpret_cast<game_data::Config*>(data.get())->path.is_empty();
+            return !reinterpret_cast<game_data::Config*>(impl->data.get())->path.is_empty();
         }
 
 
@@ -516,66 +541,66 @@ bool GameValue::is_null() const
 
 bool GameValue::operator==(const GameValue& other) const
 {
-    if (!data || !other.data)
+    if (!impl->data || !other.impl->data)
     { return false; }
-    if (data->type() != other.data->type())
+    if (impl->data->type() != other.impl->data->type())
     { return false; }
-    return data->equals(other.data);
+    return impl->data->equals(other.impl->data);
 
 }
 
 bool GameValue::operator!=(const GameValue& other) const
 {
-    if (!data || !other.data)
+    if (!impl->data || !other.impl->data)
     { return true; }
-    if (data->type() != other.data->type())
+    if (impl->data->type() != other.impl->data->type())
     { return true; }
-    return !data->equals(other.data);
+    return !impl->data->equals(other.impl->data);
 }
 
 size_t GameValue::hash() const
 {
-    if (!data)
+    if (!impl->data)
     { return 0; }
 
     switch (type_enum())
     {
-        case GameDataType::SCALAR: return reinterpret_cast<game_data::Number*>(data.get())->hash();
-        case GameDataType::BOOL: return reinterpret_cast<game_data::Bool*>(data.get())->hash();
-        case GameDataType::ARRAY: return reinterpret_cast<game_data::Array*>(data.get())->hash();
-        case GameDataType::STRING: return reinterpret_cast<game_data::String*>(data.get())->hash();
-        case GameDataType::NOTHING: return reinterpret_cast<GameData*>(data.get())->to_string().hash();
-        case GameDataType::NAMESPACE: return reinterpret_cast<game_data::Namespace*>(data.get())->hash();
-        case GameDataType::NaN: return reinterpret_cast<GameData*>(data.get())->to_string().hash();
-        case GameDataType::CODE: return reinterpret_cast<game_data::Code*>(data.get())->hash();
-        case GameDataType::OBJECT: return reinterpret_cast<game_data::Object*>(data.get())->hash();
-        case GameDataType::SIDE: return reinterpret_cast<game_data::Side*>(data.get())->hash();
-        case GameDataType::GROUP: return reinterpret_cast<game_data::Group*>(data.get())->hash();
-        case GameDataType::TEXT: return reinterpret_cast<game_data::RVText*>(data.get())->hash();
-        case GameDataType::SCRIPT: return reinterpret_cast<game_data::Script*>(data.get())->hash();
-        case GameDataType::TARGET: return reinterpret_cast<GameData*>(data.get())->to_string().hash();
-        case GameDataType::CONFIG: return reinterpret_cast<game_data::Config*>(data.get())->hash();
-        case GameDataType::DISPLAY: return reinterpret_cast<game_data::Display*>(data.get())->hash();
-        case GameDataType::CONTROL: return reinterpret_cast<game_data::Control*>(data.get())->hash();
+        case GameDataType::SCALAR: return reinterpret_cast<game_data::Number*>(impl->data.get())->hash();
+        case GameDataType::BOOL: return reinterpret_cast<game_data::Bool*>(impl->data.get())->hash();
+        case GameDataType::ARRAY: return reinterpret_cast<game_data::Array*>(impl->data.get())->hash();
+        case GameDataType::STRING: return reinterpret_cast<game_data::String*>(impl->data.get())->hash();
+        case GameDataType::NOTHING: return reinterpret_cast<GameData*>(impl->data.get())->to_string().hash();
+        case GameDataType::NAMESPACE: return reinterpret_cast<game_data::Namespace*>(impl->data.get())->hash();
+        case GameDataType::NaN: return reinterpret_cast<GameData*>(impl->data.get())->to_string().hash();
+        case GameDataType::CODE: return reinterpret_cast<game_data::Code*>(impl->data.get())->hash();
+        case GameDataType::OBJECT: return reinterpret_cast<game_data::Object*>(impl->data.get())->hash();
+        case GameDataType::SIDE: return reinterpret_cast<game_data::Side*>(impl->data.get())->hash();
+        case GameDataType::GROUP: return reinterpret_cast<game_data::Group*>(impl->data.get())->hash();
+        case GameDataType::TEXT: return reinterpret_cast<game_data::RVText*>(impl->data.get())->hash();
+        case GameDataType::SCRIPT: return reinterpret_cast<game_data::Script*>(impl->data.get())->hash();
+        case GameDataType::TARGET: return reinterpret_cast<GameData*>(impl->data.get())->to_string().hash();
+        case GameDataType::CONFIG: return reinterpret_cast<game_data::Config*>(impl->data.get())->hash();
+        case GameDataType::DISPLAY: return reinterpret_cast<game_data::Display*>(impl->data.get())->hash();
+        case GameDataType::CONTROL: return reinterpret_cast<game_data::Control*>(impl->data.get())->hash();
         case GameDataType::ANY: return 0;
         case GameDataType::NetObject: return 0;
         case GameDataType::SUBGROUP: return 0;
-        case GameDataType::TEAM_MEMBER: return reinterpret_cast<game_data::TeamMember*>(data.get())->hash();
+        case GameDataType::TEAM_MEMBER: return reinterpret_cast<game_data::TeamMember*>(impl->data.get())->hash();
         case GameDataType::TASK:
-            return reinterpret_cast<GameData*>(data.get())->to_string()
+            return reinterpret_cast<GameData*>(impl->data.get())->to_string()
                                                           .hash(); //"Task %s (id %d)" or "No Task"
         case GameDataType::DIARY_RECORD:
-            return reinterpret_cast<GameData*>(data.get())->to_string()
+            return reinterpret_cast<GameData*>(impl->data.get())->to_string()
                                                           .hash(); //"No diary record" or... The text of that record? Text might be long and make this hash heavy
-        case GameDataType::LOCATION: return reinterpret_cast<game_data::Location*>(data.get())->hash();
+        case GameDataType::LOCATION: return reinterpret_cast<game_data::Location*>(impl->data.get())->hash();
         case GameDataType::end: return 0;
     }
 
     return mafia::pair_hash<uintptr_t, uintptr_t>(
-            data->get_vtable(), reinterpret_cast<uintptr_t>(data.get()));
+            impl->data->get_vtable(), reinterpret_cast<uintptr_t>(impl->data.get()));
 }
 
-void GameValue::clear() { data = nullptr; }
+void GameValue::clear() { impl->data = nullptr; }
 
 /*void* GameValue::operator new(const std::size_t sz_)
 {
@@ -603,12 +628,12 @@ void GameValue::set_vtable(uintptr_t vt) noexcept
 
 SerializationReturn GameValue::serialize(ParamArchive& ar)
 {
-    if (!data)
-    { data = RVAllocator<game_data::Nothing>::create_single(); }
-    ar.serialize(String("data"sv), data, 1);
+    if (!impl->data)
+    { impl->data = RVAllocator<game_data::Nothing>::create_single(); }
+    ar.serialize(String("data"sv), impl->data, 1);
 
-    if (data && data->get_vtable() == game_data::Nothing::type_def)
-    { data = nullptr; }
+    if (impl->data && impl->data->get_vtable() == game_data::Nothing::type_def)
+    { impl->data = nullptr; }
     return SerializationReturn::no_error;
 }
 
@@ -618,8 +643,8 @@ GameValueStatic::GameValueStatic(): GameValue() {}
 
 GameValueStatic::~GameValueStatic()
 {
-    if (exiting)
-    { data._ref = nullptr; }
+    if (mafia::is_exiting())
+    { impl->data._ref = nullptr; }
 }
 
 /*GameValueStatic::GameValueStatic(const GameValue& copy): GameValue(copy) {}
@@ -628,6 +653,6 @@ GameValueStatic::GameValueStatic(GameValue&& move): GameValue(move) {}*/
 
 GameValueStatic& GameValueStatic::operator=(const GameValue& copy)
 {
-    data = copy.data;
+    impl->data = copy.impl->data;
     return *this;
 }

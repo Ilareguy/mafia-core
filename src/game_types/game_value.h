@@ -25,8 +25,8 @@
 #define DEF_MAFIA_CORE_GAME_TYPES_GAME_VALUE_H
 
 #include "serialization.h"
-#include "game_data.h"
 #include "game_data_type.h"
+#include "../ref.h"
 #include "../shared.h"
 #include "../vector.h"
 #include "../containers/auto_array.h"
@@ -35,6 +35,8 @@
 
 namespace mafia::game_types
 {
+    class GameData;
+    class GameValueImpl;
 
     class GameValue: public mafia::game_types::SerializeClass
     {
@@ -48,6 +50,7 @@ namespace mafia::game_types
         GameValue() noexcept;
         ~GameValue() noexcept;
         void copy(const GameValue& copy_) noexcept;
+        GameValue(const GameValue& copy_) noexcept;
         GameValue(GameValue&& move_) noexcept;
 
         //Conversions
@@ -63,6 +66,8 @@ namespace mafia::game_types
         GameValue(const std::vector<GameValue>& list_);
         GameValue(const std::initializer_list<GameValue>& list_);
         GameValue(mafia::containers::AutoArray<GameValue>&& array_);
+        GameValue(const vector3& vec_);
+        GameValue(const vector2& vec_);
 
         template<class Type>
         GameValue(const mafia::containers::AutoArray<Type>& array_) :
@@ -78,8 +83,6 @@ namespace mafia::game_types
             static_assert(std::is_convertible<Type, GameValue>::value);
         }
 
-        explicit GameValue(const vector3& vec_);
-        explicit GameValue(const vector2& vec_);
         //GameValue(const internal_object& internal_);
         GameValue& operator=(const GameValue& copy_);
         GameValue& operator=(GameValue&& move_) noexcept;
@@ -99,8 +102,8 @@ namespace mafia::game_types
         operator bool() const;
         operator std::string() const;
         operator mafia::game_types::String() const;
-        operator vector3() const;
-        operator vector2() const;
+        operator mafia::vector3() const;
+        operator mafia::vector2() const;
 
         /**
         * @brief tries to convert the game_value to an array if possible
@@ -142,26 +145,9 @@ namespace mafia::game_types
 
         SerializationReturn serialize(ParamArchive& ar) override;
 
-        mafia::Ref<GameData> data;
-
-        template<class T>
-        mafia::Ref<T> get_as()
-        {
-            static_assert(
-                    std::is_convertible_v<T, GameData>, "GameValue::get_as() can only convert to GameData types"
-            );
-            return static_cast<mafia::Ref<T>>(data);
-        }
-
-        template<class T>
-        const mafia::Ref<T> get_as() const
-        {
-            static_assert(
-                    std::is_convertible_v<T, GameData>, "GameValue::get_as() can only convert to GameData types"
-            );
-            return static_cast<const mafia::Ref<T>>(data);
-        }
-
+        // `data` is defined in game_value_impl.h. Include that file if you need to access it.
+        //mafia::Ref<GameData> data;
+        GameValueImpl* impl;
 
         static void operator delete(void* ptr_, std::size_t sz_);
 #ifndef __linux__
@@ -191,13 +177,6 @@ namespace mafia::game_types
         //GameValueStatic(GameValue&& move);
         GameValueStatic& operator=(const GameValue& copy);
     };
-
-    bool exiting = false;
-    /// @private
-    extern "C" DLLEXPORT void CDECL handle_unload_internal()
-    {
-        exiting = true;
-    }
 }
 
 #endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_VALUE_H

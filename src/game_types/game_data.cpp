@@ -24,7 +24,6 @@
 #include "game_data.h"
 #include "param_archive.h"
 #include "sqf_script_type.h"
-#include "debug_value.h"
 
 using namespace mafia::game_types;
 using namespace std::literals::string_view_literals;

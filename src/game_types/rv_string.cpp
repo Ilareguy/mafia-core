@@ -27,8 +27,6 @@
 
 using namespace mafia::game_types;
 
-constexpr String::String() noexcept = default;
-
 String::String(std::string_view str_)
 {
     if (str_.length())

@@ -118,6 +118,11 @@ const char* mafia::memory_utility::_private::get_RTTI_name(uintptr_t vtable)
     return test;
 }
 
+mafia::AllocatorInfo* mafia::memory_utility::get_allocator()
+{
+    return &_private::allocator;
+}
+
 // Basically equivalent to `loader::do_function_walk()` in
 // https://github.com/intercept/intercept/blob/master/src/host/loader/loader.cpp
 void mafia::memory_utility::init()

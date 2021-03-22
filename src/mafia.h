@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 28/02/2021.
+ * File created by Anthony Ilareguy on 21/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,11 +21,19 @@
  *
  ********************************************************/
 
-#include <iostream>
-#include "memory_utility.h"
+#ifndef DEF_MAFIA_CORE_MAFIA_H
+#define DEF_MAFIA_CORE_MAFIA_H
 
-int main(){
-    mafia::memory_utility::init();
+namespace mafia
+{
+    bool is_exiting();
+    void exit();
 
-    return 0;
+    /// @private
+    /*extern "C" DLLEXPORT void CDECL handle_unload_internal()
+    {
+        exiting = true;
+    }*/
 }
+
+#endif //DEF_MAFIA_CORE_MAFIA_H

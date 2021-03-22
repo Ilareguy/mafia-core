@@ -85,7 +85,7 @@ String& String::operator=(String&& move_) noexcept
     return *this;
 }
 
-String::~String() {}
+String::~String() = default;
 
 void* String::operator new(std::size_t)
 {
@@ -97,4 +97,7 @@ void String::operator delete(void* ptr_, std::size_t)
     return pool_alloc_base->deallocate(ptr_);
 }
 
-size_t String::hash() const { return mafia::pair_hash(type_def, raw_string); }
+size_t String::hash() const
+{
+    return mafia::pair_hash(type_def, raw_string);
+}

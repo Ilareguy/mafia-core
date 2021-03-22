@@ -54,7 +54,15 @@ add_executable(main
         src/game_types/source_doc.h
         src/pair_hash.h
         src/unique_ref.cpp
-        src/containers/compact_array.cpp src/containers/compact_array.h src/containers/rv_array.cpp src/containers/rv_array.h src/containers/auto_array.cpp src/containers/auto_array.h src/containers/stack_array.cpp src/containers/stack_array.h src/containers/find_key_array.cpp src/containers/find_key_array.h src/containers/reference_array.cpp src/containers/reference_array.h src/containers/map_string_to_class.cpp src/containers/map_string_to_class.h)
+        src/containers/compact_array.cpp
+        src/containers/rv_array.cpp
+        src/containers/auto_array.cpp
+        src/containers/stack_array.cpp
+        src/containers/find_key_array.cpp
+        src/containers/reference_array.cpp
+        src/containers/map_string_to_class.cpp
+        src/game_types/game_value_impl.h
+        src/mafia.cpp)
 
 ########## Dependencies
 find_package(fmt CONFIG REQUIRED)

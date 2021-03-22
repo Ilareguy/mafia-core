@@ -36,7 +36,7 @@ namespace mafia::game_types
     class String
     {
     public:
-        constexpr String() noexcept;
+        constexpr String() noexcept = default;
         String(std::string_view str_);
         String(mafia::containers::CompactArray<char>* dat_) noexcept;
         String(String&& move_) noexcept;

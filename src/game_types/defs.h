@@ -27,6 +27,7 @@
 #include "v_table.h"
 #include "game_value.h"
 #include "rv_string.h"
+#include "sqf_script_type.h"
 
 namespace mafia::game_types
 {
@@ -176,25 +177,5 @@ namespace mafia::game_types
         invalid_interface_class
     };
 }
-
-namespace std
-{
-    template<>
-    struct hash<mafia::game_types::String>
-    {
-        size_t operator()(const mafia::game_types::String& x) const
-        {
-            return x.hash();
-        }
-    };
-    template<>
-    struct hash<mafia::game_types::GameValue>
-    {
-        size_t operator()(const mafia::game_types::GameValue& x) const
-        {
-            return x.hash();
-        }
-    };
-}  // namespace std
 
 #endif // DEF_MAFIA_CORE_GAME_TYPES_DEFS_H

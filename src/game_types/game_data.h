@@ -26,6 +26,7 @@
 
 #include "debug_value.h"
 #include "serialization.h"
+#include "game_value.h"
 #include "../ref_count.h"
 #include "../containers/auto_array.h"
 #include <cstddef>
@@ -34,7 +35,6 @@ namespace mafia::game_types
 {
     class RVPoolAllocator;
     class SQFScriptType;
-    class GameValue;
 }
 
 namespace mafia::game_types

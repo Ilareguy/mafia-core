@@ -24,7 +24,6 @@
 #include "array.h"
 #include "../../pair_hash.h"
 #include "../rv_pool_allocator.h"
-// #include "../debug_value.h"
 
 using namespace mafia::game_types::game_data;
 

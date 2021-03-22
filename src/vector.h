@@ -44,7 +44,6 @@ namespace mafia
                   : val);
     }
 
-
     template<typename T>
     class vector3_base
     {
