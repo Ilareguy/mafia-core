@@ -1,0 +1,110 @@
+version=53;
+addons[]=
+{
+//"a3_map_stratis"
+};
+randomSeed=10704337;
+class Mission
+{
+    class Intel
+    {
+        timeOfChanges=1800.0002;
+        startWeather=0.30000001;
+        startWind=0.1;
+        startWaves=0.1;
+        forecastWeather=0.30000001;
+        forecastWind=0.1;
+        forecastWaves=0.1;
+        forecastLightnings=0.1;
+        year=2035;
+        month=7;
+        day=6;
+        hour=12;
+        minute=0;
+        startFogDecay=0.014;
+        forecastFogDecay=0.014;
+    };
+    class Entities
+    {
+        items=2;
+        class Item0
+        {
+            dataType="Marker";
+            position[]={1927.3781,2.4314818,3553.77};
+            name="marker_0";
+            type="mil_start";
+            id=0;
+        };
+        class Item1
+        {
+            dataType="Group";
+            side="West";
+            class Entities
+            {
+                items=1;
+                class Item0
+                {
+                    dataType="Object";
+                    class PositionInfo
+                    {
+                        position[]={1921.23,2.2125788,3545.4299};
+                    };
+                    side="West";
+                    flags=7;
+                    class Attributes
+                    {
+                        isPlayer=1;
+                    };
+                    id=2;
+                    type="B_officer_F";
+                    class CustomAttributes
+                    {
+                        class Attribute0
+                        {
+                            property="speaker";
+                            expression="_this setspeaker _value;";
+                            class Value
+                            {
+                                class data
+                                {
+                                    class type
+                                    {
+                                        type[]=
+                                        {
+                                            "STRING"
+                                        };
+                                    };
+                                    value="Male06ENG";
+                                };
+                            };
+                        };
+                        class Attribute1
+                        {
+                            property="pitch";
+                            expression="_this setpitch _value;";
+                            class Value
+                            {
+                                class data
+                                {
+                                    class type
+                                    {
+                                        type[]=
+                                        {
+                                            "SCALAR"
+                                        };
+                                    };
+                                    value=0.95999998;
+                                };
+                            };
+                        };
+                        nAttributes=2;
+                    };
+                };
+            };
+            class Attributes
+            {
+            };
+            id=1;
+        };
+    };
+};

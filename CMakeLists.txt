@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 message(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}.")
 
 ########## Targets
-add_executable(main
+add_library(mafia MODULE
         src/main.cpp
         src/memory_utility.cpp
         src/allocator_info.h
@@ -62,8 +62,8 @@ add_executable(main
         src/containers/reference_array.cpp
         src/containers/map_string_to_class.cpp
         src/game_types/game_value_impl.h
-        src/mafia.cpp)
+        src/mafia.cpp src/arguments.cpp src/arguments.h src/utils.h src/utils.cpp)
 
 ########## Dependencies
 find_package(fmt CONFIG REQUIRED)
-target_link_libraries(main PRIVATE fmt::fmt)
+target_link_libraries(mafia PRIVATE fmt::fmt)
