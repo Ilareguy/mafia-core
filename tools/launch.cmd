@@ -1,6 +1,3 @@
-@rem Move binaries to mod directory
-Xcopy /E /I /Y "build\debug\*.dll" "arma\@mafia\"
-
 @rem Install development files to the Arma 3 directory
 Xcopy /E /I /Y "arma\@mafia\*" "%ARMA3_SERVER_DIR%\@mafia\"
 Xcopy /E /I /Y "arma\MPMissions\*" "%ARMA3_SERVER_DIR%\MPMissions\"

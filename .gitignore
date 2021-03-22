@@ -34,8 +34,14 @@
 # Python virtual environment
 /tools/venv/
 
+
 # Build directory
 /build/
+arma/@mafia/Testing
+arma/@mafia/CMakeFiles
+arma/@mafia/*.pdb
+arma/@mafia/*.ilk
+arma/@mafia/*.exp
 
 # Arma package files
 *.pbo

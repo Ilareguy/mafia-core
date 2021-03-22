@@ -4,8 +4,18 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 message(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}.")
 
+########## Defines
+# 64 or 32 bits?
+if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+    add_definitions(-DMAFIA_64)
+    set(MAFIA_DLL_NAME mafia_x64)
+else ()
+    add_definitions(-DMAFIA_32)
+    set(MAFIA_DLL_NAME mafia)
+endif ()
+
 ########## Targets
-add_library(mafia MODULE
+add_library(${MAFIA_DLL_NAME} MODULE
         src/main.cpp
         src/memory_utility.cpp
         src/allocator_info.h
@@ -66,4 +76,7 @@ add_library(mafia MODULE
 
 ########## Dependencies
 find_package(fmt CONFIG REQUIRED)
-target_link_libraries(mafia PRIVATE fmt::fmt)
+target_link_libraries(${MAFIA_DLL_NAME} PRIVATE fmt::fmt)
+
+########## Misc
+set_target_properties(${MAFIA_DLL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
