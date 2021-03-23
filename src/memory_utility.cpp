@@ -23,19 +23,18 @@
 
 #include "memory_utility.h"
 #include "allocator_info.h"
+#include <future>
 #include <Windows.h>
 #include <Psapi.h>
-#include <future>
 
 #pragma comment (lib, "Psapi.lib") // GetModuleInformation
 #pragma comment (lib, "version.lib") // GetFileVersionInfoSize
 
 namespace mafia::memory_utility::_private
 {
-    AllocatorInfo allocator{};
+    AllocatorInfo allocator {};
 
-    uintptr_t find_in_memory(uintptr_t baseAddress,uintptr_t moduleSize, const char* pattern, size_t patternLength);
-
+    uintptr_t find_in_memory(uintptr_t baseAddress, uintptr_t moduleSize, const char* pattern, size_t patternLength);
     uintptr_t find_in_memory_pattern(
             uintptr_t baseAddress,
             uintptr_t moduleSize,
@@ -43,8 +42,11 @@ namespace mafia::memory_utility::_private
             const char* mask,
             uintptr_t offset = 0
     );
-
     const char* get_RTTI_name(uintptr_t vtable);
+    uintptr_t find_game_state(uintptr_t stack_base);
+
+    // Basically Windows' IsBadReadPtr(). See https://stackoverflow.com/questions/496034/most-efficient-replacement-for-isbadreadptr
+    bool ptr_check(void* p);
 }
 
 uintptr_t mafia::memory_utility::_private::find_in_memory(
@@ -102,19 +104,19 @@ uintptr_t mafia::memory_utility::_private::find_in_memory_pattern(
 
 const char* mafia::memory_utility::_private::get_RTTI_name(uintptr_t vtable)
 {
-    class v1
-    {
+    class v1 {
         virtual void doStuff() {}
     };
-
-    class v2: public v1
-    {
+    class v2 : public v1 {
         virtual void doStuff() {}
     };
-
     v2* v = (v2*) vtable;
     auto& typex = typeid(*v);
+#ifdef __GNUC__
+    auto test = typex.name();
+#else
     auto test = typex.raw_name();
+#endif
     return test;
 }
 
@@ -123,10 +125,72 @@ mafia::AllocatorInfo* mafia::memory_utility::get_allocator()
     return &_private::allocator;
 }
 
+bool mafia::memory_utility::_private::ptr_check(void* p)
+{
+    MEMORY_BASIC_INFORMATION mbi = {nullptr};
+    if (::VirtualQuery(p, &mbi, sizeof(mbi)))
+    {
+        DWORD mask = (PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE |
+                      PAGE_EXECUTE_WRITECOPY);
+        bool b = !(mbi.Protect & mask);
+        // check the page is not a guard page
+        if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS))
+        { b = true; }
+
+        return b;
+    }
+    return true;
+}
+
+uintptr_t mafia::memory_utility::_private::find_game_state(uintptr_t stack_base)
+{
+    auto checkValid = [](uintptr_t base) -> bool {
+        if (ptr_check(reinterpret_cast<void*>(base)))
+        { return false; }
+        struct size_check
+        {
+            uintptr_t p1;//typearray
+            uintptr_t typeCount;
+            uintptr_t typeCapacity;
+            uintptr_t p2;//functions
+            int f_tableCount {0};
+            int f_count {0};
+            uintptr_t p3;//operators
+            int o_tableCount {0};
+            int o_count {0};
+            uintptr_t p4;//nulars
+            int n_tableCount {0};
+            int n_count {0};
+        };
+        auto size_check_type = reinterpret_cast<size_check*>(base);
+        if (size_check_type->typeCount != size_check_type->typeCapacity)
+        {
+            return false;
+        } //auto_array size vs capacity. Should be compacted here.
+        //Check if all the function tables are valid
+        if (ptr_check(reinterpret_cast<void*>(size_check_type->p1))) return false;
+        if (ptr_check(reinterpret_cast<void*>(size_check_type->p2))) return false;
+        if (ptr_check(reinterpret_cast<void*>(size_check_type->p3))) return false;
+        if (ptr_check(reinterpret_cast<void*>(size_check_type->p4))) return false;
+        return true;
+    };
+
+    for (uintptr_t i = 0; i < 0x300; i += sizeof(uintptr_t))
+    {
+        const bool is_valid = checkValid(*reinterpret_cast<uintptr_t*>(stack_base + i));
+        if (is_valid)
+        { return *reinterpret_cast<uintptr_t*>(stack_base + i); }
+    }
+
+    return 0x0;
+}
+
 // Basically equivalent to `loader::do_function_walk()` in
 // https://github.com/intercept/intercept/blob/master/src/host/loader/loader.cpp
-void mafia::memory_utility::init()
+void mafia::memory_utility::init(uintptr_t stack_base)
 {
+    auto game_state_ptr = reinterpret_cast<mafia::game_types::GameState*>(_private::find_game_state(stack_base));
+
     MODULEINFO modInfo = {nullptr};
     HMODULE hModule = GetModuleHandleA(nullptr);
     GetModuleInformation(GetCurrentProcess(), hModule, &modInfo, sizeof(MODULEINFO));
@@ -242,7 +306,6 @@ void mafia::memory_utility::init()
     );
 #endif
 
-    // We need the allocator before we run the command scanning because the logging calls need r_string allocations
     const uintptr_t allocatorVtablePtr = future_allocatorVtablePtr.get();
     const char* test = _private::get_RTTI_name(allocatorVtablePtr);
     // assert(strcmp(test, ".?AVMemTableFunctions@@") == 0);

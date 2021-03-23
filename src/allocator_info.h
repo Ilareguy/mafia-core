@@ -29,7 +29,6 @@
 
 namespace mafia
 {
-
     namespace game_types
     {
         class GameValue;

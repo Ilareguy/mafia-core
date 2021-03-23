@@ -1,7 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="mafia_x64" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="mafia-core" TARGET_NAME="mafia_x64" CONFIG_NAME="Debug" RUN_PATH="$PROJECT_DIR$/tools/launch.cmd">
+  <configuration default="false" name="mafia_x64" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="&quot;-mod=@CBA_A3;curator;kart;heli;mark;expansion;jets;argo;orange;tacops;tank;enoch&quot; &quot;-serverMod=@mafia;&quot; &quot;-config=@mafia\server.cfg&quot; -port=2302 -profiles=SC &quot;-cfg=@mafia\basic.cfg&quot; -name=SC -autoInit" REDIRECT_INPUT="false" ELEVATE="false" WORKING_DIR="file://$PROJECT_DIR$/../../../../Steam/steamapps/common/Arma 3" PASS_PARENT_ENVS_2="true" PROJECT_NAME="mafia-core" TARGET_NAME="mafia_x64" CONFIG_NAME="Debug" RUN_PATH="$PROJECT_DIR$/../../../../Steam/steamapps/common/Arma 3/arma3server_x64.exe">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Install" />
     </method>
   </configuration>
 </component>

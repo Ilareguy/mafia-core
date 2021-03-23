@@ -36,7 +36,8 @@
 
 
 # Build directory
-/build/
+build/
+out/
 arma/@mafia/Testing
 arma/@mafia/CMakeFiles
 arma/@mafia/*.pdb
@@ -48,3 +49,4 @@ arma/@mafia/*.exp
 
 # Misc
 .idea/deployment.xml
+.vs/

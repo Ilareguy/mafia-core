@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 21/03/2021.
+ * File created by Anthony Ilareguy on 22/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,26 +21,20 @@
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_MAFIA_H
-#define DEF_MAFIA_CORE_MAFIA_H
+#ifndef DEF_MAFIA_CORE_LOGGING_PRIVATE_H
+#define DEF_MAFIA_CORE_LOGGING_PRIVATE_H
 
-#include <cstdint>
-
-namespace mafia
+namespace mafia::log::_private
 {
-    bool is_exiting();
-    void exit();
+    /**
+     * Initializes logging capabilities.
+     */
+    void init();
 
-    constexpr uint8_t version_major = 0;
-    constexpr uint8_t version_minor = 0;
-    constexpr uint8_t version_revision = 1;
-    constexpr const char* version_suffix = "-alpha";
-
-    /// @private
-    /*extern "C" DLLEXPORT void CDECL handle_unload_internal()
-    {
-        exiting = true;
-    }*/
+    /**
+     * Shuts down logging capabilities.
+     */
+    void shutdown();
 }
 
-#endif //DEF_MAFIA_CORE_MAFIA_H
+#endif // DEF_MAFIA_CORE_LOGGING_PRIVATE_H

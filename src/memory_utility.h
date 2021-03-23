@@ -37,12 +37,7 @@ namespace mafia
 
 namespace mafia::memory_utility
 {
-
-    /**
-     * Initializes the memory utility. This needs to be called once when the project is loaded into process memory by
-     * Arma.
-     */
-    void init();
+    void init(uintptr_t stack_base);
 
     AllocatorInfo* get_allocator();
 }

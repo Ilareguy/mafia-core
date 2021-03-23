@@ -14,9 +14,19 @@ else ()
     set(MAFIA_DLL_NAME mafia)
 endif ()
 
+# Debug or Release?
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions(-DMAFIA_DEBUG)
+else ()
+    add_definitions(-DMAFIA_RELEASE)
+endif ()
+
 ########## Targets
 add_library(${MAFIA_DLL_NAME} MODULE
         src/main.cpp
+        src/mafia.cpp
+        src/arguments.cpp
+        src/utils.cpp
         src/memory_utility.cpp
         src/allocator_info.h
         src/vector.cpp
@@ -72,11 +82,17 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/containers/reference_array.cpp
         src/containers/map_string_to_class.cpp
         src/game_types/game_value_impl.h
-        src/mafia.cpp src/arguments.cpp src/arguments.h src/utils.h src/utils.cpp)
+        src/logging.cpp src/logging_private.h)
 
 ########## Dependencies
+# NOTE: Linked-to library DLLs need to be in Arma'a *root directory*, and not in @mafia/.
 find_package(fmt CONFIG REQUIRED)
-target_link_libraries(${MAFIA_DLL_NAME} PRIVATE fmt::fmt)
+find_package(spdlog CONFIG REQUIRED)
+target_link_libraries(${MAFIA_DLL_NAME} PRIVATE
+        fmt::fmt
+        spdlog::spdlog)
 
 ########## Misc
 set_target_properties(${MAFIA_DLL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")

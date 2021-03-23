@@ -21,10 +21,12 @@
  *
  ********************************************************/
 
+#include "mafia.h"
 #include "memory_utility.h"
+#include "logging.h"
+#include "logging_private.h"
 #include "shared.h"
 #include "arguments.h"
-#include <fmt/format.h>
 #include <optional>
 #include <string_view>
 
@@ -60,14 +62,13 @@ std::optional<std::string_view> get_command(std::string_view input)
 
 void __stdcall RVExtensionVersion(char* output, int outputSize)
 {
-    const std::string version_str = fmt::format(
-            "{}.{}.{}{}",
-            0,
-            0,
-            1,
-            "-dev"
-    );
-    strncpy_s(output, outputSize, version_str.c_str(), _TRUNCATE);
+    sprintf_s(output, outputSize,
+              fmt::format("v.{}.{}.{}{}",
+                          mafia::version_major,
+                          mafia::version_minor,
+                          mafia::version_revision,
+                          mafia::version_suffix)
+              .c_str());
     output[outputSize - 1] = 0x00;
 }
 
@@ -86,10 +87,9 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
      * Note: output[outputSize-1] must always be 0x00. Arma checks for this and if it's not the case, then a "buffer
      * overrun" message is displayed and Arma intentionally dies. See https://feedback.bistudio.com/T82390
      */
-
     if (!cmd)
     {
-        output[0] = 0x00;
+        sprintf_s(output, outputSize, "Mafia did not receive any command.");
         output[outputSize - 1] = 0x00;
         return;
     }
@@ -105,42 +105,25 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
 
     if (command == "init"sv)
     {
-        mafia::memory_utility::init();
-        //mafia::logger()->info("Mafia Core DLL initialized.");
+        mafia::log::_private::init();
         mafia::_private::initialized = true;
 
+        sprintf_s(output, outputSize, "Mafia DLL initialized.");
+        mafia::log::info("Mafia DLL initialized.");
         output[outputSize - 1] = 0x00;
         return;
-    }
-    else if (command == "echo"sv)
-    {
-        result = function;
     }
     else if (command == "init_patch"sv)
     {
-        //uintptr_t game_state_addr = mafia::Loader::find_game_state(
-        //        reinterpret_cast<uintptr_t>(output) + outputSize
-        //);
-        //mafia::controller().get_loader().do_function_walk(game_state_addr);
+        mafia::memory_utility::init(reinterpret_cast<uintptr_t>(output) + outputSize);
+        //sprintf_s(output, outputSize, "Memory utility initialized.");
+        mafia::log::info("Memory utility initialized.");
         output[outputSize - 1] = 0x00;
         return;
     }
 
-    if (!mafia::_private::initialized)
-    {
-        // If Mafia wasn't initialized, we can't execute other commands
-        snprintf(
-                output, outputSize, "%s",
-                fmt::format("Called Mafia extension with \"{}\", but Mafia wasn't initialized.", function).c_str());
-        output[outputSize - 1] = 0x00;
-        return;
-    }
-
-    //mafia::logger()->info(R"({}: Received command: "{}" with args: "{}")", __FUNCTION__, command, argument_str);
-    result = fmt::format(R"({}: Received command: "{}" with args: "{}")", __FUNCTION__, command, argument_str);
+    mafia::log::debug(R"(Mafia received command: "{}" with args: "{}")", command, argument_str);
+    output[outputSize - 1] = 0x00;
 
     //result = mafia::controller().rv_call(command, _args);
-    if (result.length() > 0)
-    { snprintf(output, outputSize, "%s", result.c_str()); }
-    output[outputSize - 1] = 0x00;
 }
