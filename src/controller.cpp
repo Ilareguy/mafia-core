@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 21/03/2021.
+ * File created by Anthony Ilareguy on 23/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,20 +21,4 @@
  *
  ********************************************************/
 
-#include "mafia.h"
-
-namespace mafia::_private
-{
-    bool exiting {false};
-    std::shared_ptr<Controller> controller {nullptr};
-}
-
-bool mafia::is_exiting()
-{
-    return _private::exiting;
-}
-
-void mafia::exit()
-{
-    _private::exiting = true;
-}
+#include "controller.h"

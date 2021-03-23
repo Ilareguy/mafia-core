@@ -12,29 +12,32 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 21/03/2021.
+ * File created by Anthony Ilareguy on 28/02/2021.
  * [File Description]
  *
  ********************************************************
- * 
+ *
  * [Credits]
  *
  ********************************************************/
 
-#include "mafia.h"
+#include "dll_handle.h"
+#include <dlfcn.h>
+#include <fmt/format.h>
 
-namespace mafia::_private
+mafia::DLLHandle::DLLHandle(std::string_view sv)
 {
-    bool exiting {false};
-    std::shared_ptr<Controller> controller {nullptr};
+    // Open handle
+    _raw_handle = dlopen(sv.data(), RTLD_NOW | RTLD_GLOBAL);
+
+    // Fail if a handle could not be opened properly
+    if (nullptr == _raw_handle)
+    {
+        throw DLLOpenError {fmt::format("Could not load dynamic library file \"{}\".", sv).c_str()};
+    }
 }
 
-bool mafia::is_exiting()
+mafia::DLLHandle::~DLLHandle()
 {
-    return _private::exiting;
-}
-
-void mafia::exit()
-{
-    _private::exiting = true;
+    dlclose(_raw_handle);
 }

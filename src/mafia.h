@@ -25,22 +25,23 @@
 #define DEF_MAFIA_CORE_MAFIA_H
 
 #include <cstdint>
+#include <memory>
 
 namespace mafia
 {
+    class Controller;
+
     bool is_exiting();
     void exit();
+    std::shared_ptr<Controller> controller();
 
-    constexpr uint8_t version_major = 0;
-    constexpr uint8_t version_minor = 0;
-    constexpr uint8_t version_revision = 1;
-    constexpr const char* version_suffix = "-alpha";
-
-    /// @private
-    /*extern "C" DLLEXPORT void CDECL handle_unload_internal()
+    namespace version
     {
-        exiting = true;
-    }*/
+        constexpr uint8_t major = 0;
+        constexpr uint8_t minor = 0;
+        constexpr uint8_t revision = 1;
+        constexpr const char* suffix = "-alpha";
+    }
 }
 
 #endif //DEF_MAFIA_CORE_MAFIA_H

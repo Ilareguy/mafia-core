@@ -12,29 +12,33 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 21/03/2021.
+ * File created by Anthony Ilareguy on 28/02/2021.
  * [File Description]
  *
  ********************************************************
- * 
+ *
  * [Credits]
  *
  ********************************************************/
 
-#include "mafia.h"
+#ifndef DEF_MAFIA_CORE_NON_COPYABLE_H
+#define DEF_MAFIA_CORE_NON_COPYABLE_H
 
-namespace mafia::_private
+namespace mafia
 {
-    bool exiting {false};
-    std::shared_ptr<Controller> controller {nullptr};
+    // https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Non-copyable_Mixin
+    class NonCopyable
+    {
+    public:
+        NonCopyable(const NonCopyable&) = delete;
+        NonCopyable(NonCopyable&&) = delete;
+        NonCopyable& operator=(const NonCopyable&) = delete;
+        NonCopyable& operator=(NonCopyable&&) = delete;
+
+    protected:
+        NonCopyable() = default;
+        ~NonCopyable() = default;
+    };
 }
 
-bool mafia::is_exiting()
-{
-    return _private::exiting;
-}
-
-void mafia::exit()
-{
-    _private::exiting = true;
-}
+#endif // DEF_MAFIA_CORE_NON_COPYABLE_H

@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 21/03/2021.
+ * File created by Anthony Ilareguy on 23/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,20 +21,25 @@
  *
  ********************************************************/
 
-#include "mafia.h"
+#ifndef DEF_MAFIA_CORE_CONTROLLER_H
+#define DEF_MAFIA_CORE_CONTROLLER_H
 
-namespace mafia::_private
+#include <memory>
+
+namespace mafia
 {
-    bool exiting {false};
-    std::shared_ptr<Controller> controller {nullptr};
+    class Invoker;
+
+    class Controller
+    {
+    public:
+        Controller();
+        ~Controller();
+
+
+    private:
+        //
+    };
 }
 
-bool mafia::is_exiting()
-{
-    return _private::exiting;
-}
-
-void mafia::exit()
-{
-    _private::exiting = true;
-}
+#endif //DEF_MAFIA_CORE_CONTROLLER_H

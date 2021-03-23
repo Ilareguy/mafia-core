@@ -64,10 +64,10 @@ void __stdcall RVExtensionVersion(char* output, int outputSize)
 {
     sprintf_s(output, outputSize,
               fmt::format("v.{}.{}.{}{}",
-                          mafia::version_major,
-                          mafia::version_minor,
-                          mafia::version_revision,
-                          mafia::version_suffix)
+                          mafia::version::major,
+                          mafia::version::minor,
+                          mafia::version::revision,
+                          mafia::version::suffix)
               .c_str());
     output[outputSize - 1] = 0x00;
 }

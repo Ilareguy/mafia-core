@@ -82,15 +82,22 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/containers/reference_array.cpp
         src/containers/map_string_to_class.cpp
         src/game_types/game_value_impl.h
-        src/logging.cpp src/logging_private.h)
+        src/logging.cpp
+        src/logging_private.h
+        src/controller.cpp
+        src/dll_handle.cpp
+        src/dll_handle.tcc
+        )
 
 ########## Dependencies
 # NOTE: Linked-to library DLLs need to be in Arma'a *root directory*, and not in @mafia/.
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(dlfcn-win32 CONFIG REQUIRED)
 target_link_libraries(${MAFIA_DLL_NAME} PRIVATE
         fmt::fmt
-        spdlog::spdlog)
+        spdlog::spdlog
+        dlfcn-win32::dl)
 
 ########## Misc
 set_target_properties(${MAFIA_DLL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
