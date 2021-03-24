@@ -33,6 +33,11 @@
 #include <vector>
 #include <optional>
 
+namespace mafia
+{
+    class Invoker;
+}
+
 namespace mafia::game_types
 {
     class GameData;
@@ -40,8 +45,8 @@ namespace mafia::game_types
 
     class GameValue: public mafia::game_types::SerializeClass
     {
-        // friend class mafia::invoker;
         friend void set_game_value_vtable(uintptr_t vtable);
+        friend class mafia::Invoker;
 
     protected:
         static uintptr_t __vptr_def;  //Users should not be able to access this

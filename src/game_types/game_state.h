@@ -33,6 +33,18 @@
 #include "../containers/map_string_to_class.h"
 #include <string>
 
+namespace mafia
+{
+    class SQFFunctions;
+
+    namespace _private
+    {
+        class GameFunctions;
+        class GameOperators;
+        class gsNular;
+    }
+}
+
 namespace mafia::game_types
 {
     class GameVarSpace;
@@ -42,15 +54,9 @@ namespace mafia::game_types
     class ParamArchive;
     class GameData;
 
-    namespace _private
-    {
-        class game_functions;
-        class game_operators;
-        class gsNular;
-    }
-
     class GameState
     {
+        friend class ::mafia::SQFFunctions;
     public:
         class GameEvaluator: public RefCount
         {
@@ -110,6 +116,18 @@ namespace mafia::game_types
 
         };
 
+        typedef containers::AutoArray<const ScriptTypeInfo*>
+                ScriptTypes_t;
+        typedef containers::MapStringToClass<::mafia::_private::GameFunctions,
+                                             containers::AutoArray<::mafia::_private::GameFunctions>>
+                ScriptFunctions_t;
+        typedef containers::MapStringToClass<::mafia::_private::GameOperators,
+                                             containers::AutoArray<::mafia::_private::GameOperators>>
+                ScriptOperators_t;
+        typedef containers::MapStringToClass<::mafia::_private::gsNular,
+                                             containers::AutoArray<::mafia::_private::gsNular>>
+                ScriptNulars_t;
+
         enum class namespace_type
         {
             def = 0, //Default
@@ -164,28 +182,20 @@ namespace mafia::game_types
 
         VMContext* get_vm_context() const;
         GameEvaluator* get_evaluator() const;
-        const auto& get_script_types();
-        const auto& get_script_functions();
-        const auto& get_script_operators();
-        const auto& get_script_nulars();
+        const ScriptTypes_t& get_script_types();
+        const ScriptFunctions_t& get_script_functions();
+        const ScriptOperators_t& get_script_operators();
+        const ScriptNulars_t& get_script_nulars();
 
         GameData* create_game_data_from_type(const SQFScriptType& type, ParamArchive* ar) const;
 
     private:
         containers::AutoArray<const ScriptTypeInfo*> _scriptTypes;
-
-        using game_functions = _private::game_functions;
-        using game_operators = _private::game_operators;
-        using gsNular = _private::gsNular;
-
-        mafia::containers::MapStringToClass<game_functions, containers::AutoArray<game_functions>> _scriptFunctions;
-        mafia::containers::MapStringToClass<game_operators, containers::AutoArray<game_operators>> _scriptOperators;
-        mafia::containers::MapStringToClass<gsNular, containers::AutoArray<gsNular>> _scriptNulars;
-
+        ScriptFunctions_t _scriptFunctions;
+        ScriptOperators_t _scriptOperators;
+        ScriptNulars_t _scriptNulars;
         containers::AutoArray<Ref<GameEvaluator>, RVAllocatorLocal<Ref<GameEvaluator>, 64>> context;
-
         GameEvaluator* eval;
-
         Ref<game_data::Namespace> varspace;  //Maybe currentNamespace?
 
         //0: ? parsing maybe?
@@ -196,6 +206,7 @@ namespace mafia::game_types
         bool dummy2;
         bool onscreen_script_errors;
         VMContext* current_context;
+
     };
 }
 

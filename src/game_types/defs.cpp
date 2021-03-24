@@ -22,13 +22,14 @@
  ********************************************************/
 
 #include "defs.h"
+#include <utility>
 
 using namespace mafia::game_types;
 
 constexpr RegisteredSQFFunction::RegisteredSQFFunction() noexcept = default;
 
-RegisteredSQFFunction::RegisteredSQFFunction(std::shared_ptr<registered_sqf_function_impl> func_) noexcept:
-        _function(func_) {}
+RegisteredSQFFunction::RegisteredSQFFunction(std::shared_ptr<RegisteredSQFFunctionImpl> func_) noexcept:
+        _function(std::move(func_)) {}
 
 void RegisteredSQFFunction::clear() noexcept
 {

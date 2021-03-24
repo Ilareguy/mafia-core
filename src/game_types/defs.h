@@ -29,9 +29,13 @@
 #include "rv_string.h"
 #include "sqf_script_type.h"
 
+namespace mafia
+{
+    class RegisteredSQFFunctionImpl;
+}
+
 namespace mafia::game_types
 {
-    class registered_sqf_function_impl;
     class GameState;
     class ScriptTypeInfo;
 
@@ -100,12 +104,12 @@ namespace mafia::game_types
 
     public:
         constexpr RegisteredSQFFunction() noexcept;
-        explicit RegisteredSQFFunction(std::shared_ptr<registered_sqf_function_impl> func_) noexcept;
+        explicit RegisteredSQFFunction(std::shared_ptr<RegisteredSQFFunctionImpl> func_) noexcept;
         void clear() noexcept;
         bool has_function() const noexcept;
 
     private:
-        std::shared_ptr<registered_sqf_function_impl> _function;
+        std::shared_ptr<RegisteredSQFFunctionImpl> _function;
     };
 
 #if defined _MSC_VER && !defined _WIN64

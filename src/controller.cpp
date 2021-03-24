@@ -22,3 +22,18 @@
  ********************************************************/
 
 #include "controller.h"
+
+mafia::Controller::Controller() = default;
+
+mafia::Controller::~Controller() = default;
+
+void mafia::Controller::_initialize()
+{
+    if (_initialized) return;
+    do_initialize();
+    _initialized = true;
+}
+
+mafia::TaskDispatcherBase::TaskDispatcherBase(mafia::Controller* const c) : _controller(c) {}
+
+mafia::TaskDispatcherBase::~TaskDispatcherBase() = default;

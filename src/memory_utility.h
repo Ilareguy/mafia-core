@@ -28,18 +28,20 @@
 
 #include <string_view>
 
-// fwd
-namespace mafia
-{
-    class SQFFunction;
-    struct AllocatorInfo;
-}
-
 namespace mafia::memory_utility
 {
-    void init(uintptr_t stack_base);
+    uintptr_t find_in_memory(uintptr_t baseAddress, uintptr_t moduleSize, const char* pattern, size_t patternLength);
+    uintptr_t find_in_memory_pattern(
+            uintptr_t baseAddress,
+            uintptr_t moduleSize,
+            const char* pattern,
+            const char* mask,
+            uintptr_t offset = 0
+    );
+    const char* get_RTTI_name(uintptr_t vtable);
 
-    AllocatorInfo* get_allocator();
+    // Basically Windows' IsBadReadPtr(). See https://stackoverflow.com/questions/496034/most-efficient-replacement-for-isbadreadptr
+    bool ptr_check(void* p);
 }
 
 #endif // DEF_MAFIA_CORE_MEMORY_UTILITY_H

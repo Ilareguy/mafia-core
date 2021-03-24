@@ -22,14 +22,14 @@
  ********************************************************/
 
 #include "game_data_type.h"
-#include <unordered_map>
+#include <map>
 
 using namespace mafia::game_types;
 using namespace std::literals::string_view_literals;
 
 namespace mafia::game_types::_private
 {
-    static auto additional_types = std::unordered_map<std::string, GameDataType>();
+    static std::map<std::string, GameDataType> additional_types;
 }
 
 void mafia::game_types::_private::add_game_data_type(const mafia::game_types::String name_, const GameDataType type_)

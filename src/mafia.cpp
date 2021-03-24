@@ -22,11 +22,13 @@
  ********************************************************/
 
 #include "mafia.h"
+#include "mafia_private.h"
+#include "rv_controller.h"
 
 namespace mafia::_private
 {
     bool exiting {false};
-    std::shared_ptr<Controller> controller {nullptr};
+    std::shared_ptr<RVController> controller {nullptr};
 }
 
 bool mafia::is_exiting()
@@ -37,4 +39,15 @@ bool mafia::is_exiting()
 void mafia::exit()
 {
     _private::exiting = true;
+}
+
+std::shared_ptr<mafia::RVController> mafia::controller()
+{
+    return _private::controller;
+}
+
+void mafia::_private::init_controller(uintptr_t stack_base)
+{
+    _private::controller = std::make_shared<mafia::RVController>();
+    _private::controller->initialize(stack_base);
 }

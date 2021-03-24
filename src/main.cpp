@@ -22,7 +22,9 @@
  ********************************************************/
 
 #include "mafia.h"
+#include "mafia_private.h"
 #include "memory_utility.h"
+#include "rv_controller.h"
 #include "logging.h"
 #include "logging_private.h"
 #include "shared.h"
@@ -115,15 +117,16 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
     }
     else if (command == "init_patch"sv)
     {
-        mafia::memory_utility::init(reinterpret_cast<uintptr_t>(output) + outputSize);
-        //sprintf_s(output, outputSize, "Memory utility initialized.");
-        mafia::log::info("Memory utility initialized.");
+        mafia::_private::init_controller(reinterpret_cast<uintptr_t>(output) + outputSize);
+
+        mafia::log::info("Controller initialized.");
         output[outputSize - 1] = 0x00;
         return;
     }
 
-    mafia::log::debug(R"(Mafia received command: "{}" with args: "{}")", command, argument_str);
-    output[outputSize - 1] = 0x00;
+    //mafia::log::debug(R"(Mafia received command: "{}" with args: "{}")", command, argument_str);
 
-    //result = mafia::controller().rv_call(command, _args);
+    result = mafia::controller()->rv_call(command, _args);
+    sprintf_s(output, outputSize, result.c_str());
+    output[outputSize - 1] = 0x00;
 }

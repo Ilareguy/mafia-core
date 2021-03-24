@@ -25,6 +25,7 @@ endif ()
 add_library(${MAFIA_DLL_NAME} MODULE
         src/main.cpp
         src/mafia.cpp
+        src/mafia_private.h
         src/arguments.cpp
         src/utils.cpp
         src/memory_utility.cpp
@@ -87,7 +88,8 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/controller.cpp
         src/dll_handle.cpp
         src/dll_handle.tcc
-        )
+        src/task.cpp
+        src/rv_controller.cpp src/invoker.cpp src/invoker.h src/sqf_functions.cpp src/sqf_functions.h src/loader.cpp src/loader.h src/sqf_register_functions.cpp src/sqf_register_functions.h)
 
 ########## Dependencies
 # NOTE: Linked-to library DLLs need to be in Arma'a *root directory*, and not in @mafia/.

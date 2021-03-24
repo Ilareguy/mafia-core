@@ -144,22 +144,22 @@ GameState::GameEvaluator* GameState::get_evaluator() const
     return eval;
 }
 
-const auto& GameState::get_script_types()
+const GameState::ScriptTypes_t& GameState::get_script_types()
 {
     return _scriptTypes;
 }
 
-const auto& GameState::get_script_functions()
+const GameState::ScriptFunctions_t& GameState::get_script_functions()
 {
     return _scriptFunctions;
 }
 
-const auto& GameState::get_script_operators()
+const GameState::ScriptOperators_t& GameState::get_script_operators()
 {
     return _scriptOperators;
 }
 
-const auto& GameState::get_script_nulars()
+const GameState::ScriptNulars_t& GameState::get_script_nulars()
 {
     return _scriptNulars;
 }
