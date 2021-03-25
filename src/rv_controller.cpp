@@ -59,6 +59,35 @@ std::string RVController::rv_call(std::string_view command, Arguments& args)
     return handler_it->second(args);
 }
 
+bool RVController::rv_signal(
+        const std::string& extension_name,
+        const std::string& signal_name,
+        const game_types::GameValue& args
+)
+{
+    // @TODO
+    /*auto signal_module = extensions::get().modules().find(extension_name);
+    if (signal_module == extensions::get().modules().end()) {
+        return false;
+    }
+    auto signal_func_it = signal_module->second.signal_funcs.find(signal_name);
+    module::on_signal_func signal_func;
+    if (signal_func_it == signal_module->second.signal_funcs.end()) {
+
+        signal_func = reinterpret_cast<module::on_signal_func>(GetProcAddress(signal_module->second.handle, signal_name.c_str())); //#TODO why?! The signal module function thingy is commented out.. also has a #TODO with ?! on it
+
+        if (!signal_func)
+            return false;
+        else
+            signal_module->second.signal_funcs[signal_name] = signal_func;
+    } else {
+        signal_func = signal_func_it->second;
+    }
+    _invoker_unlock signal_lock(this);
+    signal_func(args);*/
+    return true;
+}
+
 bool RVController::add_rv_command_handler(
         std::string_view command,
         RVController::RVCommandHandler_t handler
@@ -79,22 +108,22 @@ bool RVController::add_rv_command_handler(
     return true;
 }
 
-std::shared_ptr<Loader>& RVController::get_loader()
+std::shared_ptr<Loader> RVController::get_loader()
 {
     return _loader;
 }
 
-std::shared_ptr<SQFFunctions>& RVController::get_sqf_functions()
+std::shared_ptr<SQFFunctions> RVController::get_sqf_functions()
 {
     return _sqf_functions;
 }
 
-std::shared_ptr<Invoker>& RVController::get_invoker()
+std::shared_ptr<Invoker> RVController::get_invoker()
 {
     return _invoker;
 }
 
-std::shared_ptr<MissionEvents>& RVController::get_mission_events()
+std::shared_ptr<MissionEvents> RVController::get_mission_events()
 {
     return _mission_events;
 }

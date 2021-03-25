@@ -52,13 +52,17 @@ namespace mafia
         virtual ~RVController();
         void initialize(uintptr_t stack_base);
 
-        [[nodiscard]] std::shared_ptr<Loader>& get_loader();
-        [[nodiscard]] std::shared_ptr<SQFFunctions>& get_sqf_functions();
-        [[nodiscard]] std::shared_ptr<Invoker>& get_invoker();
-        [[nodiscard]] std::shared_ptr<MissionEvents>& get_mission_events();
+        [[nodiscard]] std::shared_ptr<Loader> get_loader();
+        [[nodiscard]] std::shared_ptr<SQFFunctions> get_sqf_functions();
+        [[nodiscard]] std::shared_ptr<Invoker> get_invoker();
+        [[nodiscard]] std::shared_ptr<MissionEvents> get_mission_events();
 
         std::string rv_call(std::string_view command, mafia::Arguments& args);
-        bool rv_signal(const std::string& extension_name, const std::string& signal_name, game_types::GameValue& args);
+        bool rv_signal(
+                const std::string& extension_name,
+                const std::string& signal_name,
+                const game_types::GameValue& args
+        );
         bool add_rv_command_handler(std::string_view command, RVCommandHandler_t handler);
 
     protected:

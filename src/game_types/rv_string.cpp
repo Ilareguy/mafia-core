@@ -364,3 +364,5 @@ mafia::containers::CompactArray<char>* String::create(const char* str_)
     { return nullptr; }
     return create(str_, strlen(str_));
 }
+
+String::operator std::string() const { return std::string(data()); }

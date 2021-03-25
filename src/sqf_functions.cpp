@@ -741,3 +741,18 @@ mafia::_private::GameFunctions* mafia::SQFFunctions::findFunctions(std::string n
     { return nullptr; }
     return &found;
 }
+
+RegisteredSQFFunction::RegisteredSQFFunction(std::shared_ptr<RegisteredSQFFunctionImpl> func_) noexcept
+{
+
+}
+
+void RegisteredSQFFunction::clear() noexcept
+{
+    _function = nullptr;
+}
+
+bool RegisteredSQFFunction::has_function() const noexcept
+{
+    return _function.get() != nullptr;
+}

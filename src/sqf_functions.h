@@ -26,6 +26,7 @@
 
 #include "arguments.h"
 #include "sqf_register_functions.h"
+#include "game_types/game_value.h"
 #include "game_types/game_state.h"
 #include "game_types/defs.h"
 #include "game_types/game_data_type.h"
@@ -143,6 +144,94 @@ namespace mafia
         template class RVAllocator<mafia::_private::GameOperators>;
     }
 
+    class RegisteredSQFFunctionImpl;
+
+    class RegisteredSQFFunction
+    {
+        // friend class mafia::sqf_functions;
+
+    public:
+        constexpr RegisteredSQFFunction() noexcept = default;
+        explicit RegisteredSQFFunction(std::shared_ptr<RegisteredSQFFunctionImpl> func_) noexcept;
+        void clear() noexcept;
+        bool has_function() const noexcept;
+
+    private:
+        std::shared_ptr<RegisteredSQFFunctionImpl> _function;
+    };
+
+#if defined _MSC_VER && !defined _WIN64
+#pragma warning(disable : 4731)  //ebp was changed in assembly
+    template <game_value (*T)(game_value_parameter, game_value_parameter)>
+    static game_value userFunctionWrapper(game_state&, game_value_parameter left_arg_, game_value_parameter right_arg_) {
+        void* func = (void*)T;
+        __asm {
+            pop ecx;
+            pop ebp;
+            mov eax, [esp + 12];
+            mov[esp + 8], eax;
+            mov eax, [esp + 16];
+            mov[esp + 12], eax;
+            jmp ecx;
+        }
+    }
+
+    template <game_value (*T)(game_value_parameter)>
+    static game_value userFunctionWrapper(game_state&, game_value_parameter right_arg_) {
+        void* func = (void*)T;
+        __asm {
+            pop ecx;
+            pop ebp;
+            mov eax, [esp + 12];
+            mov[esp + 8], eax;
+            jmp ecx;
+        }
+    }
+
+    template <game_value (*T)()>
+    static game_value userFunctionWrapper(game_state&) {
+        void* func = (void*)T;
+        __asm {
+            pop ecx;
+            pop ebp;
+            jmp ecx;
+        }
+    }
+#pragma warning(default : 4731)  //ebp was changed in assembly
+#else
+
+    template<game_types::GameValue (* T)(game_types::GameValueParameter, game_types::GameValueParameter)>
+    static game_types::GameValue userFunctionWrapper(
+            game_types::GameState&,
+            game_types::GameValueParameter left_arg_,
+            game_types::GameValueParameter right_arg_
+    )
+    {
+        return T(left_arg_, right_arg_);
+    }
+
+    template<game_types::GameValue (* T)(game_types::GameValueParameter)>
+    static game_types::GameValue userFunctionWrapper(game_types::GameState&, game_types::GameValueParameter right_arg_)
+    {
+        return T(right_arg_);
+    }
+
+    template<game_types::GameValue (* T)()>
+    static game_types::GameValue userFunctionWrapper(game_types::GameState&)
+    {
+        return T();
+    }
+
+#endif
+
+    enum class RegisterPluginInterfaceResult
+    {
+        success,
+        interface_already_registered,
+        interface_name_occupied_by_other_module,  //Use list_plugin_interfaces(name_) to find out who registered it
+        invalid_interface_class
+    };
+
     namespace _private
     {
         enum class functionType
@@ -242,7 +331,7 @@ namespace mafia
         * @return A wrapper that should be kept alive as long as the function should be usable
         * @ingroup RSQF
         */
-        [[nodiscard]] game_types::RegisteredSQFFunction
+        [[nodiscard]] RegisteredSQFFunction
         register_sqf_function(
                 std::string_view name, std::string_view description, WrapperFunctionBinary function_,
                 GDT return_arg_type, GDT left_arg_type,
@@ -258,7 +347,7 @@ namespace mafia
         * @return A wrapper that should be kept alive as long as the function should be usable
         * @ingroup RSQF
         */
-        [[nodiscard]] game_types::RegisteredSQFFunction
+        [[nodiscard]] RegisteredSQFFunction
         register_sqf_function(
                 std::string_view name, std::string_view description, WrapperFunctionUnary function_,
                 GDT return_arg_type, GDT right_arg_type
@@ -272,7 +361,7 @@ namespace mafia
         * @return A wrapper that should be kept alive as long as the function should be usable
         * @ingroup RSQF
         */
-        [[nodiscard]] game_types::RegisteredSQFFunction
+        [[nodiscard]] RegisteredSQFFunction
         register_sqf_function(
                 std::string_view name, std::string_view description, WrapperFunctionNular function_,
                 GDT return_arg_type

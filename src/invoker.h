@@ -25,18 +25,18 @@
 #define DEF_MAFIA_CORE_INVOKER_H
 
 
+#include "sqf_functions.h"
 #include "non_copyable.h"
 #include "game_types/game_value.h"
 #include "game_types/defs.h"
 #include "game_types/game_state.h"
-
 #include <mutex>
 #include <string>
 #include <unordered_map>
 
 namespace mafia
 {
-    class arguments;
+    class Arguments;
     class RVController;
     class MissionEvents;
 
@@ -153,11 +153,11 @@ namespace mafia
         static game_types::GameValue _mafia_registerTypes(const game_types::GameValue& left_arg_);
 
     private:
-        std::string _init_invoker(const arguments& args_);
-        std::string _test_invoker(const arguments& args_);
-        std::string _invoker_begin_register(const arguments& args_);
-        std::string _invoker_register(const arguments& args_);
-        std::string _invoker_end_register(const arguments& args_);
+        std::string _init_invoker(const Arguments& args_);
+        std::string _test_invoker(const Arguments& args_);
+        std::string _invoker_begin_register(const Arguments& args_);
+        std::string _invoker_register(const Arguments& args_);
+        std::string _invoker_end_register(const Arguments& args_);
 
     public:
         static game_types::GameState* sqf_game_state;
@@ -175,10 +175,10 @@ namespace mafia
         std::atomic<uint32_t> _thread_waiting_for_lock_count;
         uintptr_t _sqf_game_state;
         std::string _registration_type;
-        game_types::RegisteredSQFFunction _event_function;
-        game_types::RegisteredSQFFunction _signal_function;
-        game_types::RegisteredSQFFunction _registerTypes_function;
-        game_types::RegisteredSQFFunction _do_invoke_period_function;
+        RegisteredSQFFunction _event_function;
+        RegisteredSQFFunction _signal_function;
+        RegisteredSQFFunction _registerTypes_function;
+        RegisteredSQFFunction _do_invoke_period_function;
         RVController& _rv_controller;
 
     protected:

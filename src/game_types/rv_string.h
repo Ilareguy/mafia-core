@@ -38,21 +38,22 @@ namespace mafia::game_types
     public:
         constexpr String() noexcept = default;
         String(std::string_view str_);
-        String(mafia::containers::CompactArray<char>* dat_) noexcept;
+        explicit String(mafia::containers::CompactArray<char>* dat_) noexcept;
         String(String&& move_) noexcept;
         String(const String& copy_);
         String& operator=(String&& move_) noexcept;
         String& operator=(const String& copy_);
         String& operator=(std::string_view copy_);
-        const char* data() const noexcept;
-        const char* c_str() const noexcept;
+        [[nodiscard]] const char* data() const noexcept;
+        [[nodiscard]] const char* c_str() const noexcept;
         void make_mutable(); /// This will copy the underlying container if we cannot safely modify this String
         explicit operator const char*() const noexcept;
         operator std::string_view() const noexcept;
-        size_t length() const noexcept; /// This calls strlen so O(N)
-        size_t size() const noexcept; /// This calls strlen so O(N)
-        bool empty() const noexcept;
-        size_t capacity() const noexcept;
+        explicit operator std::string() const; //non explicit will break string_view operator because std::string operator because it becomes ambiguous
+        [[nodiscard]] size_t length() const noexcept; /// This calls strlen so O(N)
+        [[nodiscard]] size_t size() const noexcept; /// This calls strlen so O(N)
+        [[nodiscard]] bool empty() const noexcept;
+        [[nodiscard]] size_t capacity() const noexcept;
         bool operator==(const char* other_) const; ///== is case insensitive just like scripting
         bool operator==(std::string_view other_) const; ///== is case insensitive just like scripting
         bool operator==(const String& other_) const; ///== is case insensitive just like scripting
@@ -62,20 +63,20 @@ namespace mafia::game_types
         bool operator!=(const std::string_view other_) const; ///!= is case insensitive just like scripting
         bool operator<(const String& other_) const;
         bool operator>(const String& other_) const;
-        bool compare_case_sensitive(std::string_view other_) const;
-        bool compare_case_insensitive(std::string_view other_) const;
-        std::string_view substr(size_t offset, size_t length) const;
-        size_t find(const char ch_, const size_t start_ = 0) const;
-        size_t find(std::string_view substring_, const size_t start_ = 0) const;
+        [[nodiscard]] bool compare_case_sensitive(std::string_view other_) const;
+        [[nodiscard]] bool compare_case_insensitive(std::string_view other_) const;
+        [[nodiscard]] std::string_view substr(size_t offset, size_t length) const;
+        [[nodiscard]] size_t find(const char ch_, const size_t start_ = 0) const;
+        [[nodiscard]] size_t find(std::string_view substring_, const size_t start_ = 0) const;
         void clear();
-        size_t hash() const noexcept;
-        String append(std::string_view right_) const;
+        [[nodiscard]] size_t hash() const noexcept;
+        [[nodiscard]] String append(std::string_view right_) const;
         String& append_modify(std::string_view right_);
         String operator+(const std::string_view right_) const;
         friend String operator+(const char* left, const String& right_);
         String& operator+=(const std::string_view right_);
         String& to_lower();
-        char front() const noexcept;
+        [[nodiscard]] char front() const noexcept;
 
         ///Be careful! This returns nullptr on empty string
         mafia::containers::CompactArray<char>::const_iterator begin() const noexcept;
@@ -112,5 +113,17 @@ namespace mafia::game_types
         mafia::Ref<mafia::containers::CompactArray<char>> _ref;
     };
 }
+
+namespace std
+{
+    template<>
+    struct hash<mafia::game_types::String>
+    {
+        size_t operator()(const mafia::game_types::String& x) const
+        {
+            return x.hash();
+        }
+    };
+}  // namespace std
 
 #endif // DEF_MAFIA_CORE_GAME_TYPES_STRING_H

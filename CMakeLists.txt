@@ -89,7 +89,12 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/dll_handle.cpp
         src/dll_handle.tcc
         src/task.cpp
-        src/rv_controller.cpp src/invoker.cpp src/invoker.h src/sqf_functions.cpp src/sqf_functions.h src/loader.cpp src/loader.h src/sqf_register_functions.cpp src/sqf_register_functions.h)
+        src/rv_controller.cpp
+        src/invoker.cpp
+        src/sqf_functions.cpp
+        src/loader.cpp
+        src/sqf_register_functions.cpp
+        src/mission_events.cpp)
 
 ########## Dependencies
 # NOTE: Linked-to library DLLs need to be in Arma'a *root directory*, and not in @mafia/.

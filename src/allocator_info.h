@@ -34,6 +34,7 @@ namespace mafia
         class GameValue;
         class GameState;
         class String;
+        class RVPoolAllocator;
 
         namespace game_data
         {

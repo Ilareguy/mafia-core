@@ -22,6 +22,9 @@
  ********************************************************/
 
 #include "rv_allocator.h"
+#include "../mafia.h"
+#include "../rv_controller.h"
+#include "../loader.h"
 #include "../memory_utility.h"
 #include "../allocator_info.h"
 
@@ -68,21 +71,21 @@ namespace mafia::game_types::_private
 
 void* _private::rv_allocator_allocate_generic(size_t _size)
 {
-    static auto allocatorBase = mafia::memory_utility::get_allocator();
+    static auto allocatorBase = mafia::controller()->get_loader()->get_allocator();
     auto* alloc = reinterpret_cast<MemTableFunctions*>(allocatorBase->genericAllocBase);
     return alloc->New(_size);
 }
 
 void _private::rv_allocator_deallocate_generic(void* _Ptr)
 {
-    static auto allocatorBase = mafia::memory_utility::get_allocator();
+    static auto allocatorBase = mafia::controller()->get_loader()->get_allocator();
     auto* alloc = reinterpret_cast<MemTableFunctions*>(allocatorBase->genericAllocBase);
     alloc->Delete(_Ptr);
 }
 
 void* _private::rv_allocator_reallocate_generic(void* _Ptr, size_t _size)
 {
-    static auto allocatorBase = mafia::memory_utility::get_allocator();
+    static auto allocatorBase = mafia::controller()->get_loader()->get_allocator();
     auto* alloc = reinterpret_cast<MemTableFunctions*>(allocatorBase->genericAllocBase);
     return alloc->Realloc(_Ptr, _size);
 }

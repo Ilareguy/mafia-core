@@ -22,9 +22,9 @@
  ********************************************************/
 
 #include "param_archive.h"
-#include "game_state.h"
-#include "../allocator_info.h"
-#include "../memory_utility.h"
+#include "../mafia.h"
+#include "../rv_controller.h"
+#include "../loader.h"
 #include "../unique_ref.h"
 
 using namespace mafia::game_types;
@@ -43,7 +43,7 @@ ParamArchive::~ParamArchive()
 
 GameState* ParamArchive::get_game_state()
 {
-    auto* allocinfo = mafia::memory_utility::get_allocator();
+    auto* allocinfo = mafia::controller()->get_loader()->get_allocator();
     return allocinfo->gameState;
 }
 

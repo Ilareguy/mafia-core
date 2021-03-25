@@ -29,11 +29,6 @@
 #include "rv_string.h"
 #include "sqf_script_type.h"
 
-namespace mafia
-{
-    class RegisteredSQFFunctionImpl;
-}
-
 namespace mafia::game_types
 {
     class GameState;
@@ -96,89 +91,6 @@ namespace mafia::game_types
         const char* name;
         uintptr_t procedure_ptr_addr;
         NularOperator* op;
-    };
-
-    class RegisteredSQFFunction
-    {
-        // friend class mafia::sqf_functions;
-
-    public:
-        constexpr RegisteredSQFFunction() noexcept;
-        explicit RegisteredSQFFunction(std::shared_ptr<RegisteredSQFFunctionImpl> func_) noexcept;
-        void clear() noexcept;
-        bool has_function() const noexcept;
-
-    private:
-        std::shared_ptr<RegisteredSQFFunctionImpl> _function;
-    };
-
-#if defined _MSC_VER && !defined _WIN64
-#pragma warning(disable : 4731)  //ebp was changed in assembly
-    template <game_value (*T)(game_value_parameter, game_value_parameter)>
-    static game_value userFunctionWrapper(game_state&, game_value_parameter left_arg_, game_value_parameter right_arg_) {
-        void* func = (void*)T;
-        __asm {
-            pop ecx;
-            pop ebp;
-            mov eax, [esp + 12];
-            mov[esp + 8], eax;
-            mov eax, [esp + 16];
-            mov[esp + 12], eax;
-            jmp ecx;
-        }
-    }
-
-    template <game_value (*T)(game_value_parameter)>
-    static game_value userFunctionWrapper(game_state&, game_value_parameter right_arg_) {
-        void* func = (void*)T;
-        __asm {
-            pop ecx;
-            pop ebp;
-            mov eax, [esp + 12];
-            mov[esp + 8], eax;
-            jmp ecx;
-        }
-    }
-
-    template <game_value (*T)()>
-    static game_value userFunctionWrapper(game_state&) {
-        void* func = (void*)T;
-        __asm {
-            pop ecx;
-            pop ebp;
-            jmp ecx;
-        }
-    }
-#pragma warning(default : 4731)  //ebp was changed in assembly
-#else
-
-    template<GameValue (* T)(GameValueParameter, GameValueParameter)>
-    static GameValue
-    userFunctionWrapper(GameState&, GameValueParameter left_arg_, GameValueParameter right_arg_)
-    {
-        return T(left_arg_, right_arg_);
-    }
-
-    template<GameValue (* T)(GameValueParameter)>
-    static GameValue userFunctionWrapper(GameState&, GameValueParameter right_arg_)
-    {
-        return T(right_arg_);
-    }
-
-    template<GameValue (* T)()>
-    static GameValue userFunctionWrapper(GameState&)
-    {
-        return T();
-    }
-
-#endif
-
-    enum class RegisterPluginInterfaceResult
-    {
-        success,
-        interface_already_registered,
-        interface_name_occupied_by_other_module,  //Use list_plugin_interfaces(name_) to find out who registered it
-        invalid_interface_class
     };
 }
 

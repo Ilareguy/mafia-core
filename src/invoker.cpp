@@ -25,9 +25,8 @@
 #include "rv_controller.h"
 #include "mafia.h"
 #include "loader.h"
-#include "sqf_functions.h"
+#include "mission_events.h"
 #include "game_types/game_value_impl.h"
-#include "game_types/script_type_info.h"
 #include "game_types/game_data/all.h"
 #include <utility>
 
@@ -65,13 +64,13 @@ Invoker::Invoker(RVController& c): _rv_controller(c)
 
 Invoker::~Invoker() = default;
 
-std::string Invoker::_init_invoker(const mafia::arguments& args_)
+std::string Invoker::_init_invoker(const mafia::Arguments& args_)
 {
     _invoker_unlock init_lock(*this);
     return "";
 }
 
-std::string Invoker::_test_invoker(const mafia::arguments& args_)
+std::string Invoker::_test_invoker(const mafia::Arguments& args_)
 {
     std::string result = "-1";
     _invoker_unlock test_lock(*this);
@@ -80,9 +79,9 @@ std::string Invoker::_test_invoker(const mafia::arguments& args_)
     return result;
 }
 
-std::string Invoker::_invoker_begin_register(const arguments& args_)
+std::string Invoker::_invoker_begin_register(const mafia::Arguments& args_)
 {
-    auto& sqf_functions = _rv_controller.get_sqf_functions();
+    auto sqf_functions = _rv_controller.get_sqf_functions();
     sqf_functions->initialize();
 
     _registerTypes_function = sqf_functions->register_sqf_function(
@@ -117,12 +116,12 @@ std::string Invoker::_invoker_begin_register(const arguments& args_)
     return "";
 }
 
-std::string Invoker::_invoker_register(const arguments& args_)
+std::string Invoker::_invoker_register(const mafia::Arguments& args_)
 {
     return std::string();
 }
 
-std::string Invoker::_invoker_end_register(const arguments& args_)
+std::string Invoker::_invoker_end_register(const mafia::Arguments& args_)
 {
     return std::string();
 }
