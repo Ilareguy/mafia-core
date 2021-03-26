@@ -64,13 +64,16 @@ std::optional<std::string_view> get_command(std::string_view input)
 
 void __stdcall RVExtensionVersion(char* output, int outputSize)
 {
-    sprintf_s(output, outputSize,
-              fmt::format("v.{}.{}.{}{}",
-                          mafia::version::major,
-                          mafia::version::minor,
-                          mafia::version::revision,
-                          mafia::version::suffix)
-              .c_str());
+    sprintf_s(
+            output, outputSize,
+            fmt::format(
+                    "v.{}.{}.{}{}",
+                    mafia::version::major,
+                    mafia::version::minor,
+                    mafia::version::revision,
+                    mafia::version::suffix
+            )
+                    .c_str());
     output[outputSize - 1] = 0x00;
 }
 
@@ -107,8 +110,11 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
 
     if (command == "init"sv)
     {
-        mafia::log::_private::init();
-        mafia::_private::initialized = true;
+        if (!mafia::_private::initialized)
+        {
+            mafia::log::_private::init();
+            mafia::_private::initialized = true;
+        }
 
         sprintf_s(output, outputSize, "Mafia DLL initialized.");
         mafia::log::info("Mafia DLL initialized.");
@@ -118,15 +124,13 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
     else if (command == "init_patch"sv)
     {
         mafia::_private::init_controller(reinterpret_cast<uintptr_t>(output) + outputSize);
-
         mafia::log::info("Controller initialized.");
         output[outputSize - 1] = 0x00;
         return;
     }
 
-    //mafia::log::debug(R"(Mafia received command: "{}" with args: "{}")", command, argument_str);
-
     result = mafia::controller()->rv_call(command, _args);
-    sprintf_s(output, outputSize, result.c_str());
+    if (result.length() > 0) sprintf_s(output, outputSize, result.c_str());
     output[outputSize - 1] = 0x00;
+    //mafia::log::debug(R"(Mafia received command: "{}" with args: "{}")", command, argument_str);
 }

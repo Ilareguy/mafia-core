@@ -59,7 +59,11 @@ namespace mafia
 #if _WIN64 || __X86_64__
                        10
 #else
-                    11
+                    #ifdef __linux__
+                8
+            #else
+                11
+            #endif
 #endif
             > securityStuff {};  //Will scale with x64
             //size_t securityStuff[11];
@@ -77,7 +81,7 @@ namespace mafia
             game_types::String _example2;
             game_types::String placeholder_11;
             game_types::String placeholder_12;
-            game_types::String _category {std::string_view {"mafia"}}; //0x48
+            game_types::String _category {std::string_view {"intercept"}}; //0x48
             //const rv_string* placeholder13;
         };
         class gsOperator: public gsFuncBase
@@ -94,7 +98,7 @@ namespace mafia
             game_types::String placeholder_11;//0x60
             game_types::String _version;//0x64 some version number
             game_types::String placeholder_12;//0x68
-            game_types::String _category {std::string_view {"mafia"}}; //0x6c
+            game_types::String _category {std::string_view {"intercept"}}; //0x6c
         };
         class gsNular: public gsFuncBase
         {

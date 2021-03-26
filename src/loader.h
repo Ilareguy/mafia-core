@@ -197,6 +197,8 @@ namespace mafia
         */
         [[nodiscard]] const SQFRegisterFunctions& get_register_sqf_info() const;
 
+        [[nodiscard]] game_types::GameState* get_game_state();
+
     protected:
         /*!
         @name Function Maps

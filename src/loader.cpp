@@ -22,16 +22,23 @@
  ********************************************************/
 
 #include "loader.h"
+#include "mafia.h"
+#include "rv_controller.h"
 #include "memory_utility.h"
+#include "sqf_functions.h"
+#include "logging.h"
+#include "game_types/game_data/code.h"
 #include <future>
 #include <Windows.h>
 #include <Psapi.h>
+#include <cassert>
 
 #pragma comment (lib, "Psapi.lib")
 #pragma comment (lib, "version.lib")
 
 using namespace mafia;
 using namespace mafia::game_types;
+using namespace std::literals::string_view_literals;
 
 Loader::Loader(): _attached(false), _patched(false) {}
 
@@ -138,7 +145,8 @@ const SQFRegisterFunctions& Loader::get_register_sqf_info() const
 
 void Loader::init(uintptr_t stack_base)
 {
-    _game_state_ptr = reinterpret_cast<mafia::game_types::GameState*>(find_game_state(stack_base));
+    const auto game_state_addr = find_game_state(stack_base);
+    _game_state_ptr = reinterpret_cast<mafia::game_types::GameState*>(game_state_addr);
 
     MODULEINFO modInfo = {nullptr};
     HMODULE hModule = GetModuleHandleA(nullptr);
@@ -278,10 +286,138 @@ void Loader::init(uintptr_t stack_base)
     );
 #endif
 
+    //We need the allocator before we run the command scanning because the logging calls need r_string allocations
     const uintptr_t allocatorVtablePtr = future_allocatorVtablePtr.get();
-    //const char* test = _private::get_RTTI_name(allocatorVtablePtr);
-    //assert(strcmp(test, ".?AVMemTableFunctions@@") == 0);
+    const char* test = memory_utility::get_RTTI_name(allocatorVtablePtr);
+    assert(strcmp(test, ".?AVMemTableFunctions@@") == 0);
     _allocator.genericAllocBase = allocatorVtablePtr;
+
+    /*
+        Unary Hashmap
+
+        This is a hashmap using a key->bucket system, so an array of arrays keyed by a hash.
+        We don't give a fuck about that though, we just want to iterate through all of the
+        buckets and in turn each item in the bucket, because they are our operator entries.
+        */
+    for (auto& it : _game_state_ptr->_scriptFunctions)
+    {
+        for (auto& entry : it)
+        {
+            mafia::game_types::UnaryEntry new_entry {};
+            new_entry.op = entry._operator;
+            new_entry.procedure_ptr_addr = reinterpret_cast<uintptr_t>(&entry._operator->procedure_addr);
+            new_entry.name = entry._name.data();
+            /*log::info("Found unary operator: {} {} ({}) @{:x}",
+                new_entry.op->return_type.type_str(), new_entry.name,
+                new_entry.op->arg_type.type_str(), reinterpret_cast<uintptr_t>(new_entry.op->procedure_addr));*/
+            _unary_operators[entry._name2].push_back(new_entry);
+        }
+    }
+
+    /*
+    Binary Hashmap
+    */
+    for (auto& it : _game_state_ptr->_scriptOperators)
+    {
+        for (auto& entry : it)
+        {
+            mafia::game_types::BinaryEntry new_entry {};
+            new_entry.op = entry._operator;
+            new_entry.procedure_ptr_addr = reinterpret_cast<uintptr_t>(&entry._operator->procedure_addr);
+            new_entry.name = entry._name.data();
+            /*log::debug("Found binary operator: {} ({}) {} ({}) @{:x}",
+                new_entry.op->return_type.type_str(), new_entry.op->arg1_type.type_str(), new_entry.name,
+                new_entry.op->arg2_type.type_str(), reinterpret_cast<uintptr_t>(new_entry.op->procedure_addr));*/
+            _binary_operators[entry._name2].push_back(new_entry);
+        }
+    }
+
+    /*
+    Nular Hashmap
+    */
+    for (auto& entry : _game_state_ptr->_scriptNulars)
+    {
+        mafia::game_types::NularEntry new_entry {};
+        new_entry.op = entry._operator;
+        new_entry.procedure_ptr_addr = reinterpret_cast<uintptr_t>(&entry._operator->procedure_addr);
+        new_entry.name = entry._name.data();
+        //log::debug("Found nular operator: {} {} @{:x}", new_entry.op->return_type.type_str(), new_entry.name, reinterpret_cast<uintptr_t>(new_entry.op->procedure_addr));
+        _nular_operators[entry._name2].push_back(new_entry);
+    }
+
+    //GameData pool allocators
+    for (auto& entry : _game_state_ptr->_scriptTypes)
+    {
+        if (!entry->_createFunction) continue; //Some types don't have create functions. Example: VECTOR.
+#if _WIN64 || __X86_64__
+        auto baseOffset = 0x7;
+        if (entry->_name == "CODE"sv) baseOffset += 2;
+
+        auto instructionPointer = reinterpret_cast<uintptr_t>(entry->_createFunction) + baseOffset + 0x4;
+        auto offset = *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(entry->_createFunction) + baseOffset);
+        uintptr_t poolAlloc = /*reinterpret_cast<uintptr_t>*/(instructionPointer + offset);
+#else
+        #ifdef __linux__
+            uintptr_t poolAlloc = 1;
+#else
+            auto p1 = reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(entry->_createFunction) + 0x3);
+            uintptr_t poolAlloc = *reinterpret_cast<uintptr_t*>(p1);
+#endif
+#endif
+        //log::debug("{} {} {}", entry->_localizedName, entry->_javaFunc, entry->_readableName);
+        //log::debug("Found Type operator: {} create@{:x} pool@{:x}", entry->_name, reinterpret_cast<uintptr_t>(entry->_createFunction), poolAlloc);
+
+        log::flush();
+
+        const auto type = game_types::from_string(entry->_name);
+        if (poolAlloc && type != game_types::GameDataType::end)
+        {
+            _allocator._poolAllocs[static_cast<size_t>(type)] = reinterpret_cast<RVPoolAllocator*>(poolAlloc);
+            _sqf_register_funcs._types[static_cast<size_t>(type)] = entry;
+        }
+    }
+
+    //File Banks
+#ifndef __linux__
+    //_sqf_register_funcs._file_banks = future_fileBanks.get(); //fixed in 1.76. broken again in prof v1
+#endif
+
+    _sqf_register_funcs._type_vtable = _binary_operators["arrayintersect"sv].front().op->arg1_type.get_vtable();
+    _sqf_register_funcs._compoundtype_vtable = _unary_operators["isnil"sv].front().op->arg_type.compound_type->get_vtable();
+
+    _sqf_register_funcs._gameState = game_state_addr;
+
+#ifndef __linux__
+    _allocator.poolFuncAlloc = future_poolFuncAlloc.get();
+    _allocator.poolFuncDealloc = future_poolFuncDealloc.get();
+#endif
+    _allocator.gameState = _game_state_ptr;
+
+#if _WIN32
+    //via profile context "scrpt"
+    evaluate_script_function = future_evaluateScript.get();
+    varset_function = future_varSetLocal.get();
+
+    if (evaluate_script_function)
+    {
+        _allocator.evaluate_func = [](const game_data::Code& code, void* ns, const String& name) -> GameValue {
+            typedef GameState* (__thiscall* evaluate_func)(GameState* gs, GameValue& ret, const String& code,
+                                                            void* instruction_list, void* context, void* ns,
+                                                            const String& name);
+            auto func = reinterpret_cast<evaluate_func>(mafia::controller()->get_loader()->evaluate_script_function);
+
+            struct contextType
+            {
+                bool _local;
+                bool _nilerror;
+            } c {false, true};
+            GameValue ret;
+            func(mafia::controller()->get_loader()->_game_state_ptr, ret, code.code_string, (void*) &code.instructions,
+                 &c, ns, name);
+            return ret;
+        };
+    }
+#endif
 }
 
 uintptr_t Loader::find_game_state(uintptr_t stack_base)
@@ -329,4 +465,9 @@ uintptr_t Loader::find_game_state(uintptr_t stack_base)
     }
 
     return 0x0;
+}
+
+game_types::GameState* Loader::get_game_state()
+{
+    return _game_state_ptr;
 }

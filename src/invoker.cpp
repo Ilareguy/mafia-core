@@ -22,6 +22,7 @@
  ********************************************************/
 
 #include "invoker.h"
+#include "logging.h"
 #include "rv_controller.h"
 #include "mafia.h"
 #include "loader.h"
@@ -118,12 +119,16 @@ std::string Invoker::_invoker_begin_register(const mafia::Arguments& args_)
 
 std::string Invoker::_invoker_register(const mafia::Arguments& args_)
 {
-    return std::string();
+    _registration_type = args_.as_string(0);
+    return "true";
 }
 
 std::string Invoker::_invoker_end_register(const mafia::Arguments& args_)
 {
-    return std::string();
+    controller()->get_sqf_functions()->setDisabled();
+    //init_file_bank_list();
+
+    return "true";
 }
 
 Invoker::_invoker_unlock::_invoker_unlock(Invoker& instance_, bool all_threads_, bool delayed_): _unlocked(false),
@@ -426,6 +431,7 @@ mafia::game_types::GameValue Invoker::_mafia_registerTypes(const GameValue& left
     invoker->type_map[structure.first] = "SQF_SCRIPT_TYPE"sv;
     invoker->type_structures["SQF_SCRIPT_TYPE"sv] = structure;
 
-    //LOG(INFO, "invoker::_intercept_registerTypes done");
+    log::debug("invoker::_mafia_registerTypes done");
+    log::flush();
     return true;
 }

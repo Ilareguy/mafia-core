@@ -83,3 +83,8 @@ void mafia::log::_trace(std::string_view s)
 {
     _private::logger->trace(s);
 }
+
+void mafia::log::flush()
+{
+    _private::logger->flush();
+}

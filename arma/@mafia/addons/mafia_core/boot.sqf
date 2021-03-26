@@ -6,12 +6,11 @@ diag_log text format["Mafia initialization part 1/3: %1", _res];
 _res = "mafia" callExtension format["init_patch:%1", (productVersion select 3)]; // find a patch
 "mafia" callExtension "invoker_begin_register:";
 
-
 _registerTypesResult = (call compile "mafiaRegisterTypes parsingNamespace") param [0, false];
 
 diag_log text format["Mafia initialization part 2/3: %1", _registerTypesResult];
 
-private _mafia_projects = configFile >> "Mafia";
+/*private _mafia_projects = configFile >> "Mafia";
 for "_i" from 0 to (count _mafia_projects)-1 do {
     private _project = _mafia_projects select _i;
     if(isClass _project) then {
@@ -33,7 +32,7 @@ for "_i" from 0 to (count _mafia_projects)-1 do {
     };
 };
 
-"mafia" callExtension "load_modules:";
+"mafia" callExtension "load_modules:";*/
 
 if (_registerTypesResult) then {
     uiNamespace setVariable ["mafia_fnc_event", compileFinal preprocessFileLineNumbers "\x\mafia\core\event.sqf"];

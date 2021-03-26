@@ -36,6 +36,7 @@
 namespace mafia
 {
     class SQFFunctions;
+    class Loader;
 
     namespace _private
     {
@@ -57,6 +58,7 @@ namespace mafia::game_types
     class GameState
     {
         friend class ::mafia::SQFFunctions;
+        friend class ::mafia::Loader;
     public:
         class GameEvaluator: public RefCount
         {

@@ -34,6 +34,7 @@ namespace mafia::log
     void _error(std::string_view);
     void _critical(std::string_view);
     void _trace(std::string_view);
+    void flush();
 
     template<typename... Args>
     void info(std::string_view fmt, Args&& ... args)

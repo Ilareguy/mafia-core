@@ -28,7 +28,8 @@
 
 using namespace mafia;
 
-RVController::RVController() = default;
+RVController::RVController():
+        _sqf_functions(std::make_shared<SQFFunctions>()){}
 
 RVController::~RVController()
 {
@@ -40,6 +41,7 @@ void RVController::initialize(uintptr_t stack_base)
 {
     _invoker = std::make_shared<Invoker>(*this);
     _loader = std::make_shared<Loader>();
+    _sqf_functions = std::make_shared<SQFFunctions>();
 
     _loader->init(stack_base);
 }
