@@ -26,7 +26,7 @@
 
 #include "controller.h"
 #include "arguments.h"
-#include "game_types/game_value.h"
+#include "game_types/game_data.h"
 #include <functional>
 #include <unordered_map>
 

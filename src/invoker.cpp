@@ -27,7 +27,7 @@
 #include "mafia.h"
 #include "loader.h"
 #include "mission_events.h"
-#include "game_types/game_value_impl.h"
+#include "game_types/game_data.h"
 #include "game_types/game_data/all.h"
 #include <utility>
 
@@ -300,7 +300,7 @@ mafia::game_types::GameValue Invoker::_mafia_registerTypes(const GameValue& left
     auto loader = controller()->get_loader();
     auto regInfo = loader->get_register_sqf_info();
 
-    //LOG(INFO, "Registration Hook Function Called: {}", invoker->_registration_type);
+    log::debug("Registration Hook Function Called: {}", invoker->_registration_type);
     auto step = invoker->_registration_type;
     invoker->_sqf_game_state = regInfo._gameState;
     sqf_game_state = reinterpret_cast<GameState*>(regInfo._gameState);
@@ -420,7 +420,7 @@ mafia::game_types::GameValue Invoker::_mafia_registerTypes(const GameValue& left
     game_data::Nothing::data_type_def = structure.second;
     //#TODO add nothing and Nil
 
-    structure = {left_arg_.impl->data->get_vtable(), left_arg_.impl->data->get_secondary_vtable()};
+    structure = {left_arg_.data->get_vtable(), left_arg_.data->get_secondary_vtable()};
     invoker->type_map[structure.first] = "NAMESPACE"sv;
     invoker->type_structures["NAMESPACE"sv] = structure;
     game_data::Namespace::type_def = structure.first;

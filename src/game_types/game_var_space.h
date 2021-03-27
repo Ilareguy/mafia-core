@@ -26,7 +26,6 @@
 
 #include "serialization.h"
 #include "game_variable.h"
-#include "game_value.h"
 #include "../containers/auto_array.h"
 #include "../containers/map_string_to_class.h"
 

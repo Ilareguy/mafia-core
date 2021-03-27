@@ -224,9 +224,9 @@ namespace mafia
         */
         SQFRegisterFunctions _sqf_register_funcs;
 
-        game_types::GameState* _game_state_ptr;
-        uintptr_t evaluate_script_function;
-        uintptr_t varset_function;
+        game_types::GameState* _game_state_ptr {nullptr};
+        uintptr_t evaluate_script_function {0};
+        uintptr_t varset_function {0};
 
         bool _attached;
         bool _patched;

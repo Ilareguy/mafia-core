@@ -24,7 +24,7 @@
 #ifndef DEF_MAFIA_CORE_GAME_TYPES_GAME_VARIABLE_H
 #define DEF_MAFIA_CORE_GAME_TYPES_GAME_VARIABLE_H
 
-#include "game_value.h"
+#include "game_data.h"
 #include "rv_string.h"
 
 namespace mafia::game_types

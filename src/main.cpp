@@ -107,6 +107,10 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
     }
     mafia::Arguments _args(argument_str);
     std::string result = "-1";
+    if (mafia::_private::initialized)
+    {
+        mafia::log::debug(R"(Mafia received command: "{}" with args: "{}")", command, argument_str);
+    }
 
     if (command == "init"sv)
     {
@@ -125,12 +129,12 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
     {
         mafia::_private::init_controller(reinterpret_cast<uintptr_t>(output) + outputSize);
         mafia::log::info("Controller initialized.");
-        output[outputSize - 1] = 0x00;
+        //output[outputSize - 1] = 0x00;
         return;
     }
 
     result = mafia::controller()->rv_call(command, _args);
-    if (result.length() > 0) sprintf_s(output, outputSize, result.c_str());
+    if (result.length() > 0)
+    { sprintf_s(output, outputSize, result.c_str()); }
     output[outputSize - 1] = 0x00;
-    //mafia::log::debug(R"(Mafia received command: "{}" with args: "{}")", command, argument_str);
 }

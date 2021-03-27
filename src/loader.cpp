@@ -366,8 +366,7 @@ void Loader::init(uintptr_t stack_base)
 #endif
         //log::debug("{} {} {}", entry->_localizedName, entry->_javaFunc, entry->_readableName);
         //log::debug("Found Type operator: {} create@{:x} pool@{:x}", entry->_name, reinterpret_cast<uintptr_t>(entry->_createFunction), poolAlloc);
-
-        log::flush();
+        //log::flush();
 
         const auto type = game_types::from_string(entry->_name);
         if (poolAlloc && type != game_types::GameDataType::end)
@@ -384,7 +383,6 @@ void Loader::init(uintptr_t stack_base)
 
     _sqf_register_funcs._type_vtable = _binary_operators["arrayintersect"sv].front().op->arg1_type.get_vtable();
     _sqf_register_funcs._compoundtype_vtable = _unary_operators["isnil"sv].front().op->arg_type.compound_type->get_vtable();
-
     _sqf_register_funcs._gameState = game_state_addr;
 
 #ifndef __linux__
@@ -392,8 +390,8 @@ void Loader::init(uintptr_t stack_base)
     _allocator.poolFuncDealloc = future_poolFuncDealloc.get();
 #endif
     _allocator.gameState = _game_state_ptr;
-
 #if _WIN32
+
     //via profile context "scrpt"
     evaluate_script_function = future_evaluateScript.get();
     varset_function = future_varSetLocal.get();

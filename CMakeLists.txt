@@ -44,7 +44,6 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/game_types/serialization.cpp
         src/game_types/rv_string.cpp
         src/game_types/param_archive.cpp
-        src/game_types/game_value.cpp
         src/game_types/game_data/number.cpp
         src/game_types/game_data/bool.cpp
         src/game_types/game_data/array.cpp
@@ -82,7 +81,6 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/containers/find_key_array.cpp
         src/containers/reference_array.cpp
         src/containers/map_string_to_class.cpp
-        src/game_types/game_value_impl.h
         src/logging.cpp
         src/logging_private.h
         src/controller.cpp

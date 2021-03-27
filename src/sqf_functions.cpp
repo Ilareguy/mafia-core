@@ -26,7 +26,7 @@
 #include "mafia.h"
 #include "rv_controller.h"
 #include "loader.h"
-#include "game_types/game_value.h"
+#include "game_types/game_data.h"
 #include "game_types/game_data_type.h"
 
 using namespace mafia;

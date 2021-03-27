@@ -25,7 +25,7 @@
 #define DEF_MAFIA_CORE_GAME_TYPES_DEFS_H
 
 #include "v_table.h"
-#include "game_value.h"
+#include "game_data.h"
 #include "rv_string.h"
 #include "sqf_script_type.h"
 

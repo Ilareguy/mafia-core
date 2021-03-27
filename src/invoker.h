@@ -27,7 +27,7 @@
 
 #include "sqf_functions.h"
 #include "non_copyable.h"
-#include "game_types/game_value.h"
+#include "game_types/game_data.h"
 #include "game_types/defs.h"
 #include "game_types/game_state.h"
 #include <mutex>

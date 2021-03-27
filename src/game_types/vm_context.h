@@ -25,7 +25,6 @@
 #define DEF_MAFIA_CORE_GAME_TYPES_VM_CONTEXT_H
 
 #include "serialization.h"
-#include "game_value.h"
 #include "game_variable.h"
 #include "game_instruction.h"
 #include "game_state.h"

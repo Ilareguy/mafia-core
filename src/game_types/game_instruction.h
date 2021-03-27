@@ -27,7 +27,7 @@
 #include "../ref_count.h"
 #include "rv_string.h"
 #include "source_doc.h"
-#include "game_value.h"
+#include "game_data.h"
 
 namespace mafia::game_types
 {

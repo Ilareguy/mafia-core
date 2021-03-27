@@ -26,7 +26,7 @@
 
 #include "arguments.h"
 #include "sqf_register_functions.h"
-#include "game_types/game_value.h"
+#include "game_types/game_data.h"
 #include "game_types/game_state.h"
 #include "game_types/defs.h"
 #include "game_types/game_data_type.h"

@@ -24,7 +24,7 @@
 #ifndef DEF_MAFIA_CORE_MISSION_EVENTS_H
 #define DEF_MAFIA_CORE_MISSION_EVENTS_H
 
-#include "game_types/game_value.h"
+#include "game_types/game_data.h"
 #include <string_view>
 #include <functional>
 
