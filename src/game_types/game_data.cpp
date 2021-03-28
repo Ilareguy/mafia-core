@@ -414,7 +414,8 @@ GameValue::operator std::string() const
     if (data)
     {
         const auto type = data->get_vtable();
-        if (type == game_data::Code::type_def || type == game_data::String::type_def){
+        if (type == game_data::Code::type_def || type == game_data::String::type_def)
+        {
             std::string res = static_cast<std::string>(data->get_as_string());
             return res;
         }
@@ -443,38 +444,38 @@ mafia::containers::AutoArray<GameValue>& GameValue::to_array() const
 
 GameValue& GameValue::operator[](size_t i_) const
 {
-if (data)
-{
-if (data->get_vtable() != game_data::Array::type_def)
-{
-throw GameValueConversionError(
-"Invalid array access"
-);
-}
-auto& array = data->get_as_array();
-if (array.count() > i_)
-{
-return array[i_];
-}
-}
-static GameValue dummy;//else we would return a temporary.
-dummy.clear(); //In case user modified it before
-return dummy;
+    if (data)
+    {
+        if (data->get_vtable() != game_data::Array::type_def)
+        {
+            throw GameValueConversionError(
+                    "Invalid array access"
+            );
+        }
+        auto& array = data->get_as_array();
+        if (array.count() > i_)
+        {
+            return array[i_];
+        }
+    }
+    static GameValue dummy;//else we would return a temporary.
+    dummy.clear(); //In case user modified it before
+    return dummy;
 }
 
 std::optional<GameValue> GameValue::get(size_t i_) const
 {
-if (data)
-{
-if (data->get_vtable() != game_data::Array::type_def)
-{ return *this; }
-auto& array = data->get_as_array();
-if (array.count() > i_)
-{
-return array[i_];
-}
-}
-return {};
+    if (data)
+    {
+        if (data->get_vtable() != game_data::Array::type_def)
+        { return *this; }
+        auto& array = data->get_as_array();
+        if (array.count() > i_)
+        {
+            return array[i_];
+        }
+    }
+    return {};
 }
 
 uintptr_t GameValue::type() const
@@ -737,7 +738,9 @@ GameValueStatic::GameValueStatic(): GameValue() {}
 GameValueStatic::~GameValueStatic()
 {
     if (mafia::is_exiting())
-    { data._ref = nullptr; }
+    {
+        data._ref = nullptr;
+    }
 }
 
 /*GameValueStatic::GameValueStatic(const GameValue& copy): GameValue(copy) {}

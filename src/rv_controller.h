@@ -51,6 +51,7 @@ namespace mafia
         RVController();
         virtual ~RVController();
         void initialize(uintptr_t stack_base);
+        void shutdown();
 
         [[nodiscard]] std::shared_ptr<Loader> get_loader();
         [[nodiscard]] std::shared_ptr<SQFFunctions> get_sqf_functions();
@@ -69,11 +70,11 @@ namespace mafia
         //
 
     private:
-        RVCommandHandlers_t _command_handlers;
         std::shared_ptr<Loader> _loader;
         std::shared_ptr<SQFFunctions> _sqf_functions;
-        std::shared_ptr<Invoker> _invoker; // _sqf_functions' destructor references _invoker to unregister RSQFs
+        std::shared_ptr<Invoker> _invoker;
         std::shared_ptr<MissionEvents> _mission_events;
+        RVCommandHandlers_t _command_handlers;
     };
 }
 

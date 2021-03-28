@@ -39,6 +39,11 @@ bool mafia::is_exiting()
 void mafia::exit()
 {
     _private::exiting = true;
+    if (_private::controller)
+    {
+        _private::controller->shutdown();
+        _private::controller = nullptr;
+    }
 }
 
 std::shared_ptr<mafia::RVController> mafia::controller()

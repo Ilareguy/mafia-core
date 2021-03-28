@@ -31,6 +31,7 @@
 #include "arguments.h"
 #include <optional>
 #include <string_view>
+#include <Windows.h>
 
 // See https://community.bistudio.com/wiki/callExtension
 // See https://community.bistudio.com/wiki/Extensions
@@ -143,4 +144,22 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
         output[0] = 0x00;
     }
     output[outputSize - 1] = 0x00;
+}
+
+BOOL APIENTRY DllMain(
+        HMODULE hModule,
+        DWORD ul_reason_for_call,
+        LPVOID lpReserved
+)
+{
+    switch (ul_reason_for_call)
+    {
+        case DLL_PROCESS_ATTACH:break;
+        case DLL_THREAD_ATTACH:break;
+        case DLL_THREAD_DETACH:break;
+        case DLL_PROCESS_DETACH:
+            mafia::exit();
+            break;
+    }
+    return TRUE;
 }

@@ -72,11 +72,9 @@ std::string Invoker::_init_invoker(const mafia::Arguments& args_)
 
 std::string Invoker::_test_invoker(const mafia::Arguments& args_)
 {
-    std::string result = "-1";
     _invoker_unlock test_lock(*this);
     mafia::game_types::GameValue res = invoke_raw("profilenamesteam"sv);
-    result = static_cast<std::string>(res);
-    return result;
+    return static_cast<std::string>(res);
 }
 
 std::string Invoker::_invoker_begin_register(const mafia::Arguments& args_)

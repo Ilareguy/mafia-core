@@ -29,14 +29,9 @@
 
 using namespace mafia;
 
-RVController::RVController():
-        _sqf_functions(std::make_shared<SQFFunctions>()){}
+RVController::RVController() = default;
 
-RVController::~RVController()
-{
-    // Not disabling this will result in a crash upon DLL unloading
-    _sqf_functions->setDisabled();
-}
+RVController::~RVController() = default;
 
 void RVController::initialize(uintptr_t stack_base)
 {
@@ -46,6 +41,14 @@ void RVController::initialize(uintptr_t stack_base)
     _mission_events = std::make_shared<MissionEvents>();
 
     _loader->init(stack_base);
+}
+
+void RVController::shutdown()
+{
+    _mission_events = nullptr;
+    _invoker = nullptr;
+    _sqf_functions = nullptr;
+    _loader = nullptr;
 }
 
 std::string RVController::rv_call(std::string_view command, Arguments& args)
