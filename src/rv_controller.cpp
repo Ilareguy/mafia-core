@@ -23,6 +23,7 @@
 
 #include "rv_controller.h"
 #include "sqf_functions.h"
+#include "mission_events.h"
 #include "invoker.h"
 #include "loader.h"
 
@@ -42,6 +43,7 @@ void RVController::initialize(uintptr_t stack_base)
     _invoker = std::make_shared<Invoker>(*this);
     _loader = std::make_shared<Loader>();
     _sqf_functions = std::make_shared<SQFFunctions>();
+    _mission_events = std::make_shared<MissionEvents>();
 
     _loader->init(stack_base);
 }

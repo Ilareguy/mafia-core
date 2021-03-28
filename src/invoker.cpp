@@ -27,7 +27,6 @@
 #include "mafia.h"
 #include "loader.h"
 #include "mission_events.h"
-#include "game_types/game_data.h"
 #include "game_types/game_data/all.h"
 #include <utility>
 
@@ -43,23 +42,23 @@ Invoker::Invoker(RVController& c): _rv_controller(c)
 {
     _rv_controller.add_rv_command_handler(
             "init_invoker"sv,
-            [this](const auto& args_) -> std::string { return _init_invoker(args_); }
+            [this](const auto& args_) { return _init_invoker(args_); }
     );
     _rv_controller.add_rv_command_handler(
             "test_invoker"sv,
-            [this](const auto args_) -> std::string { return _test_invoker(args_); }
+            [this](const auto args_) { return _test_invoker(args_); }
     );
     _rv_controller.add_rv_command_handler(
             "invoker_begin_register"sv,
-            [this](const auto args_) -> std::string { return _invoker_begin_register(args_); }
+            [this](const auto args_) { return _invoker_begin_register(args_); }
     );
     _rv_controller.add_rv_command_handler(
             "invoker_register"sv,
-            [this](const auto args_) -> std::string { return _invoker_register(args_); }
+            [this](const auto args_) { return _invoker_register(args_); }
     );
     _rv_controller.add_rv_command_handler(
             "invoker_end_register"sv,
-            [this](const auto args_) -> std::string { return _invoker_end_register(args_); }
+            [this](const auto args_) { return _invoker_end_register(args_); }
     );
 }
 
@@ -68,7 +67,7 @@ Invoker::~Invoker() = default;
 std::string Invoker::_init_invoker(const mafia::Arguments& args_)
 {
     _invoker_unlock init_lock(*this);
-    return "";
+    return "OK";
 }
 
 std::string Invoker::_test_invoker(const mafia::Arguments& args_)
@@ -300,10 +299,10 @@ mafia::game_types::GameValue Invoker::_mafia_registerTypes(const GameValue& left
     auto loader = controller()->get_loader();
     auto regInfo = loader->get_register_sqf_info();
 
-    log::debug("Registration Hook Function Called: {}", invoker->_registration_type);
+    //log::debug("Registration Hook Function Called: {}", invoker->_registration_type);
     auto step = invoker->_registration_type;
     invoker->_sqf_game_state = regInfo._gameState;
-    sqf_game_state = reinterpret_cast<GameState*>(regInfo._gameState);
+    Invoker::sqf_game_state = reinterpret_cast<GameState*>(regInfo._gameState);
 
     GameValue::__vptr_def = left_arg_.get_vtable();
     invoker->type_structures["GV"sv] = {GameValue::__vptr_def, GameValue::__vptr_def};
@@ -431,7 +430,7 @@ mafia::game_types::GameValue Invoker::_mafia_registerTypes(const GameValue& left
     invoker->type_map[structure.first] = "SQF_SCRIPT_TYPE"sv;
     invoker->type_structures["SQF_SCRIPT_TYPE"sv] = structure;
 
-    log::debug("invoker::_mafia_registerTypes done");
-    log::flush();
+    //log::debug("invoker::_mafia_registerTypes done");
+    //log::flush();
     return true;
 }

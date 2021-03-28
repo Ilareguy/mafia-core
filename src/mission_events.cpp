@@ -43,7 +43,7 @@ bool mafia::MissionEvents::add_event_handler(std::string_view name, mafia::Missi
 
 bool mafia::MissionEvents::rv_event(const std::string& event_name_, const mafia::game_types::GameValue& params_)
 {
-    mafia::log::info("{}: \"{}\"(size:{})", __FUNCTION__, event_name_, params_.size());
+    //log::debug("{}: \"{}\"(size:{})", __FUNCTION__, event_name_, params_.size());
 
     auto handler = _event_handlers.find(event_name_);
     if (handler != _event_handlers.end())

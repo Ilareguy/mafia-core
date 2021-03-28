@@ -98,7 +98,7 @@ namespace mafia
         constexpr Ref(const Ref<T>& source_ref_) noexcept
         {
             static_assert(
-                    std::is_constructible_v < Type * , T * > || std::is_base_of_v < T, Type > ,
+                    std::is_constructible_v<Type*, T*> || std::is_base_of_v<T, Type>,
                     "Cannot convert mafia::Ref to incompatible type"
             );
             T* source = source_ref_.get();
@@ -112,7 +112,7 @@ namespace mafia
         Ref& operator=(const Ref<T>& other_)
         {
             static_assert(
-                    std::is_constructible_v < Type * , T * > || std::is_base_of_v < T, Type > ,
+                    std::is_constructible_v<Type*, T*> || std::is_base_of_v<T, Type>,
                     "Cannot convert mafia::Ref to incompatible type"
             );
             T* source = other_.get();
@@ -145,11 +145,14 @@ namespace mafia
         ///This returns a pointer to the underlying object. Use with caution!
         constexpr Type* get() const noexcept { return _ref; }
 
-        constexpr Type* operator->() const noexcept { return _ref; }
+        constexpr Type* operator->() const noexcept
+        {
+            return _ref;
+        }
 
         operator Type*() const noexcept { return _ref; }
 
-        bool operator!=(const Ref <Type>& other_) const noexcept { return _ref != other_._ref; }
+        bool operator!=(const Ref<Type>& other_) const noexcept { return _ref != other_._ref; }
 
         size_t ref_count() const noexcept { return _ref ? _ref->ref_count() : 0; }
     };

@@ -43,4 +43,16 @@ namespace mafia::game_types::game_data
     };
 }
 
+namespace std
+{
+    template<>
+    struct hash<mafia::game_types::game_data::Display>
+    {
+        size_t operator()(const mafia::game_types::game_data::Display& x) const
+        {
+            return x.hash();
+        }
+    };
+}
+
 #endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_DISPLAY_H

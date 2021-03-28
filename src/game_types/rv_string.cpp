@@ -25,12 +25,19 @@
 #include <cctype>
 #include <algorithm>
 
+#pragma push_macro("min")
+#pragma push_macro("max")
+#undef min
+#undef max
+
 using namespace mafia::game_types;
 
 String::String(std::string_view str_)
 {
     if (str_.length())
-    { _ref = create(str_.data(), str_.length()); }
+    {
+        _ref = create(str_.data(), str_.length());
+    }
 }
 
 String::String(mafia::containers::CompactArray<char>* dat_) noexcept:
@@ -67,7 +74,9 @@ String& String::operator=(std::string_view copy_)
 const char* String::data() const noexcept
 {
     if (_ref)
-    { return _ref->data(); }
+    {
+        return _ref->data();
+    }
     return "";
 }
 
@@ -365,4 +374,5 @@ mafia::containers::CompactArray<char>* String::create(const char* str_)
     return create(str_, strlen(str_));
 }
 
-String::operator std::string() const { return std::string(data()); }
+#pragma pop_macro("min")
+#pragma pop_macro("max")

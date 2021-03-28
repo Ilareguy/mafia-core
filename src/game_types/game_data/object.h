@@ -83,4 +83,16 @@ namespace mafia::game_types::game_data
     };
 }
 
+namespace std
+{
+    template<>
+    struct hash<mafia::game_types::game_data::Object>
+    {
+        size_t operator()(const mafia::game_types::game_data::Object& x) const
+        {
+            return x.hash();
+        }
+    };
+}
+
 #endif // DEF_MAFIA_CORE_GAME_TYPES_GAME_DATA_OBJECT_H

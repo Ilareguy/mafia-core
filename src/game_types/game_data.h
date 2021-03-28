@@ -37,26 +37,33 @@
 #include <vector>
 #include <optional>
 
-namespace mafia::game_types
+namespace mafia
 {
-    class RVPoolAllocator;
-    class SQFScriptType;
+    class Invoker;
 }
 
 namespace mafia::game_types
 {
+    class RVPoolAllocator;
+    class SQFScriptType;
     class GameValue;
+
     class GameData: public mafia::RefCount,
                     public mafia::game_types::DebugValue
     {
-        // friend class game_value;
-        // friend class mafia::invoker;
+        /**
+         * Note: The order of members in this class matters because it is polymorphic and instances of this type (and
+         * their sub-types) are created by Arma/the RV engine.
+         */
+
+        friend class GameValue;
+        friend class mafia::Invoker;
 
     public:
         virtual const SQFScriptType& type() const;
         virtual ~GameData();
-        virtual mafia::game_types::GameData* copy() const;
 
+    protected:
         virtual bool get_as_bool() const;
         virtual float get_as_number() const;
         /// Only usable on String and Code! Use to_string instead!
@@ -65,8 +72,11 @@ namespace mafia::game_types
         virtual const mafia::containers::AutoArray<mafia::game_types::GameValue>& get_as_const_array() const;
         virtual mafia::containers::AutoArray<mafia::game_types::GameValue>& get_as_array();
 
+    public:
+        virtual mafia::game_types::GameData* copy() const;
+
     protected:
-        virtual void set_readonly(bool);
+        virtual void set_readonly(bool); //No clue what this does...
         virtual bool get_readonly() const;
         virtual bool get_final() const;
         virtual void set_final(bool); ///Only on GameDataCode AFAIK
@@ -102,7 +112,7 @@ namespace mafia
 namespace mafia::game_types
 {
     class GameData;
-    class GameValueImpl;
+    class InternalObject;
 
     class GameValue: public mafia::game_types::SerializeClass
     {
@@ -149,7 +159,7 @@ namespace mafia::game_types
             static_assert(std::is_convertible<Type, GameValue>::value);
         }
 
-        //GameValue(const internal_object& internal_);
+        GameValue(const InternalObject& internal_);
         GameValue& operator=(const GameValue& copy_);
         GameValue& operator=(GameValue&& move_) noexcept;
         GameValue& operator=(float val_);
@@ -161,7 +171,7 @@ namespace mafia::game_types
         GameValue& operator=(const std::vector<GameValue>& list_);
         GameValue& operator=(const vector3& vec_);
         GameValue& operator=(const vector2& vec_);
-        //GameValue& operator=(const internal_object& internal_);
+        GameValue& operator=(const InternalObject& internal_);
 
         operator int() const;
         operator float() const;
@@ -211,10 +221,9 @@ namespace mafia::game_types
 
         SerializationReturn serialize(ParamArchive& ar) override;
 
-        // `data` is defined in game_value_impl.h. Include that file if you need to access it.
         mafia::Ref<GameData> data;
-        //GameValueImpl* impl;
 
+        [[deprecated]] static void* operator new(std::size_t sz_);  //Should never be used
         static void operator delete(void* ptr_, std::size_t sz_);
 #ifndef __linux__
     protected:
@@ -224,7 +233,7 @@ namespace mafia::game_types
         void set_vtable(uintptr_t vt) noexcept;
 
     public:
-        /*template<class T>
+        template<class T>
         mafia::Ref<T> get_as()
         {
             static_assert(
@@ -240,7 +249,7 @@ namespace mafia::game_types
                     std::is_convertible_v<T, GameData>, "GameValue::get_as() can only convert to GameData types"
             );
             return static_cast<const mafia::Ref<T>>(data);
-        }*/
+        }
     };
 
     class GameValueConversionError: public std::runtime_error
@@ -273,6 +282,15 @@ namespace std
         {
             return x.hash();
         }
+    };
+
+    //custom conversion from std::string& to const std::string& inside reference_wrapper
+    template<>
+    class reference_wrapper<const std::string>
+            : public reference_wrapper<std::string> {
+    public:
+        reference_wrapper(string& _Val) noexcept
+                : reference_wrapper<std::string>(_Val) {};
     };
 }  // namespace std
 

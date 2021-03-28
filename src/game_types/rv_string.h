@@ -27,8 +27,11 @@
 #include "../containers/compact_array.h"
 #include "../ref.h"
 #include <string_view>
-#include <ostream>
-#include <istream>
+#include <iostream>
+#include <algorithm>
+#include <optional>
+#include <cstring>
+#include <vector>
 
 namespace mafia::game_types
 {
@@ -49,7 +52,6 @@ namespace mafia::game_types
         void make_mutable(); /// This will copy the underlying container if we cannot safely modify this String
         explicit operator const char*() const noexcept;
         operator std::string_view() const noexcept;
-        explicit operator std::string() const; //non explicit will break string_view operator because std::string operator because it becomes ambiguous
         [[nodiscard]] size_t length() const noexcept; /// This calls strlen so O(N)
         [[nodiscard]] size_t size() const noexcept; /// This calls strlen so O(N)
         [[nodiscard]] bool empty() const noexcept;
@@ -100,7 +102,7 @@ namespace mafia::game_types
                 { break; }
                 tmp.push_back(inp);
             }
-            _t._ref = create(tmp.data(), tmp.length());
+            _t._ref = String::create(tmp.data(), tmp.length());
             return _in;
         }
 

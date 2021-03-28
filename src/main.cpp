@@ -135,6 +135,12 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
 
     result = mafia::controller()->rv_call(command, _args);
     if (result.length() > 0)
-    { sprintf_s(output, outputSize, result.c_str()); }
+    {
+        sprintf_s(output, outputSize, result.c_str());
+    }
+    else
+    {
+        output[0] = 0x00;
+    }
     output[outputSize - 1] = 0x00;
 }

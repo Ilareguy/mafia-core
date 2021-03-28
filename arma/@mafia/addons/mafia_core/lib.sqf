@@ -25,6 +25,7 @@ mafia_fnc_isNilWrapper = {
 
 diag_log text "Mafia Invoker SQF handler initializing...";
 private _res = "mafia" callExtension "init_invoker:";
+diag_log text format["Mafia Invoker SQF handler initializing result: %1", _res];
 
 //Check if invoker is working
 private _res = "mafia" callExtension "test_invoker:";

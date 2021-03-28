@@ -24,9 +24,15 @@
 #include "game_data.h"
 #include "param_archive.h"
 #include "sqf_script_type.h"
+#include "internal_object.h"
 #include "game_data/all.h"
 #include "../pair_hash.h"
 #include "../mafia.h"
+
+#pragma push_macro("min")
+#pragma push_macro("max")
+#undef min
+#undef max
 
 using namespace mafia::game_types;
 using namespace std::literals::string_view_literals;
@@ -174,7 +180,7 @@ GameValue::operator mafia::game_types::String() const
 
 void GameValue::copy(const GameValue& copy_) noexcept
 {
-    set_vtable(__vptr_def);  //Whatever vtable copy_ has.. if it's different then it's wrong
+    set_vtable(__vptr_def);
     data = copy_.data;
 }
 
@@ -187,7 +193,7 @@ GameValue::GameValue(const GameValue& copy_) noexcept
 
 GameValue::GameValue(GameValue&& move_) noexcept
 {
-    set_vtable(__vptr_def);  //Whatever vtable move_ has.. if it's different then it's wrong
+    set_vtable(__vptr_def);
     data = nullptr;
     data.swap(move_.data);
 }
@@ -252,11 +258,11 @@ GameValue::GameValue(const vector2& vec_)
     data = new game_data::Array({vec_.x, vec_.y});
 }
 
-/*GameValue::GameValue(const internal_object& internal_)
+GameValue::GameValue(const InternalObject& internal_)
 {
     set_vtable(__vptr_def); //object class has bugged vtable :u
     data = internal_.data;
-}*/
+}
 
 GameValue& GameValue::operator=(const GameValue& copy_)
 {
@@ -329,12 +335,12 @@ GameValue& GameValue::operator=(const vector2& vec_)
     return *this;
 }
 
-/*GameValue& GameValue::operator=(const internal_object& internal_)
+GameValue& GameValue::operator=(const InternalObject& internal_)
 {
     data = internal_.data;
     set_vtable(__vptr_def);
     return *this;
-}*/
+}
 
 GameValue::operator int() const
 {
@@ -408,9 +414,9 @@ GameValue::operator std::string() const
     if (data)
     {
         const auto type = data->get_vtable();
-        if (type == game_data::Code::type_def || type == game_data::String::type_def)
-        {
-            return static_cast<std::string>(data->get_as_string());
+        if (type == game_data::Code::type_def || type == game_data::String::type_def){
+            std::string res = static_cast<std::string>(data->get_as_string());
+            return res;
         }
         return static_cast<std::string>(data->to_string());
     }
@@ -689,10 +695,10 @@ size_t GameValue::hash() const
 
 void GameValue::clear() { data = nullptr; }
 
-/*void* GameValue::operator new(const std::size_t sz_)
+void* GameValue::operator new(const std::size_t sz_)
 {
     return RVAllocator<GameValue>::create_array(sz_);
-}*/
+}
 
 void GameValue::operator delete(void* ptr_, std::size_t)
 {
@@ -743,3 +749,6 @@ GameValueStatic& GameValueStatic::operator=(const GameValue& copy)
     data = copy.data;
     return *this;
 }
+
+#pragma pop_macro("min")
+#pragma pop_macro("max")
