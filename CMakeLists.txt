@@ -22,21 +22,7 @@ else ()
 endif ()
 
 ########## Targets
-add_library(${MAFIA_DLL_NAME} MODULE
-        src/main.cpp
-        src/mafia.cpp
-        src/mafia_private.h
-        src/arguments.cpp
-        src/utils.cpp
-        src/memory_utility.cpp
-        src/allocator_info.h
-        src/vector.cpp
-        src/shared.h
-        src/game_types/game_state.cpp
-        src/ref_count.cpp
-        src/game_types/rv_pool_allocator.cpp
-        src/game_types/rv_allocator.cpp
-        src/ref.cpp
+add_library(mafia-types STATIC
         src/game_types/game_data_type.cpp
         src/game_types/rv_allocator_local.cpp
         src/game_types/game_data.cpp
@@ -44,6 +30,20 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/game_types/serialization.cpp
         src/game_types/rv_string.cpp
         src/game_types/param_archive.cpp
+        src/game_types/v_table.h
+        src/game_types/game_variable.cpp
+        src/game_types/game_instruction.cpp
+        src/game_types/vm_context.cpp
+        src/game_types/game_var_space.cpp
+        src/game_types/script_type_info.cpp
+        src/game_types/sqf_script_type.cpp
+        src/game_types/defs.cpp
+        src/game_types/internal_object.cpp
+        src/game_types/source_doc.cpp
+        src/game_types/source_doc.h
+        src/game_types/rv_pool_allocator.cpp
+        src/game_types/rv_allocator.cpp
+        src/game_types/game_state.cpp
         src/game_types/game_data/number.cpp
         src/game_types/game_data/bool.cpp
         src/game_types/game_data/array.cpp
@@ -58,29 +58,38 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/game_types/game_data/rv_text.cpp
         src/game_types/game_data/team_member.cpp
         src/game_types/game_data/namespace.cpp
-        src/game_types/v_table.h
-        src/game_types/game_variable.cpp
         src/game_types/game_data/nothing.cpp
         src/game_types/game_data/code.cpp
-        src/game_types/game_instruction.cpp
-        src/game_types/vm_context.cpp
-        src/game_types/game_var_space.cpp
         src/game_types/game_data/object.cpp
-        src/game_types/script_type_info.cpp
-        src/game_types/sqf_script_type.cpp
-        src/game_types/defs.cpp
-        src/game_types/internal_object.cpp
-        src/game_types/source_doc.cpp
-        src/game_types/source_doc.h
-        src/pair_hash.h
-        src/unique_ref.cpp
+        )
+
+add_library(mafia-containers STATIC
         src/containers/compact_array.cpp
         src/containers/rv_array.cpp
         src/containers/auto_array.cpp
         src/containers/stack_array.cpp
         src/containers/find_key_array.cpp
         src/containers/reference_array.cpp
-        src/containers/map_string_to_class.cpp
+        src/containers/map_string_to_class.cpp)
+
+add_library(mafia-runtime-javascript MODULE
+        src/runtime/javascript/javascript_runtime.cpp
+        src/runtime/javascript/duktape/duktape.c)
+
+add_library(${MAFIA_DLL_NAME} MODULE
+        src/main.cpp
+        src/mafia.cpp
+        src/mafia_private.h
+        src/arguments.cpp
+        src/utils.cpp
+        src/memory_utility.cpp
+        src/allocator_info.h
+        src/vector.cpp
+        src/shared.h
+        src/ref_count.cpp
+        src/ref.cpp
+        src/pair_hash.h
+        src/unique_ref.cpp
         src/logging.cpp
         src/logging_private.h
         src/controller.cpp
@@ -92,19 +101,31 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/sqf_functions.cpp
         src/loader.cpp
         src/sqf_register_functions.cpp
-        src/mission_events.cpp)
+        src/mission_events.cpp
+        src/runtime/module.cpp
+        src/runtime/errors.h
+        src/runtime/module_info.cpp src/runtime/runtime.cpp src/runtime/runtime.h)
+
+target_compile_definitions(${MAFIA_DLL_NAME} PRIVATE -DMAFIA_CORE)
 
 ########## Dependencies
 # NOTE: Linked-to library DLLs need to be in Arma'a *root directory*, and not in @mafia/.
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(dlfcn-win32 CONFIG REQUIRED)
+target_link_libraries(mafia-runtime-javascript PUBLIC
+        mafia-types
+        mafia-containers
+        fmt::fmt)
 target_link_libraries(${MAFIA_DLL_NAME} PRIVATE
+        mafia-types
+        mafia-containers
         fmt::fmt
         spdlog::spdlog
         dlfcn-win32::dl)
 
 ########## Misc
 set_target_properties(${MAFIA_DLL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
+set_target_properties(mafia-runtime-javascript PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")

@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 21/03/2021.
+ * File created by Anthony Ilareguy on 28/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,27 +21,23 @@
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_MAFIA_H
-#define DEF_MAFIA_CORE_MAFIA_H
+#ifndef DEF_MAFIA_CORE_RUNTIME_JAVASCRIPT_RUNTIME_H
+#define DEF_MAFIA_CORE_RUNTIME_JAVASCRIPT_RUNTIME_H
 
-#include <cstdint>
-#include <memory>
+#include "../mafia.h"
 
-namespace mafia
+namespace mafia::runtime::javascript
 {
-    class RVController;
+    extern "C" {
+    MAFIA_API_FUNC void CDECL initialize();
+    MAFIA_API_FUNC void CDECL shutdown();
 
-    bool is_exiting();
-    void exit();
-    std::shared_ptr<RVController> controller();
-
-    namespace version
-    {
-        constexpr uint8_t major = 0;
-        constexpr uint8_t minor = 0;
-        constexpr uint8_t revision = 1;
-        constexpr const char* suffix = "-alpha";
+    /**
+     * Your runtime should load the module specified and return true on success and false on error.
+     * If an error occurred, you must set `err` to a relevant error object describing what happened.
+     */
+    MAFIA_API_FUNC bool CDECL load_module(const ModuleInfo& info, runtime::ErrorBase& err);
     }
 }
 
-#endif // DEF_MAFIA_CORE_MAFIA_H
+#endif // DEF_MAFIA_CORE_RUNTIME_JAVASCRIPT_RUNTIME_H

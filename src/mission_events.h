@@ -25,6 +25,7 @@
 #define DEF_MAFIA_CORE_MISSION_EVENTS_H
 
 #include "game_types/game_data.h"
+#include "sqf_functions.h"
 #include <string_view>
 #include <functional>
 
@@ -38,38 +39,32 @@ namespace mafia
     public:
         MissionEvents();
         ~MissionEvents();
-
-        /**
-         * Registers an event handler to be executed when a specific event occurs.
-         * @param name
-         * @param handler
-         * @return
-         */
+        void initialize();
+        void shutdown();
         bool add_event_handler(std::string_view name, EventHandler_t handler);
-
-        /**
-         *
-         * @param event_name_
-         * @param params_
-         * @return
-         */
         bool rv_event(const std::string& event_name_, const game_types::GameValue& params_);
 
-    public:
-        static game_types::GameValue client_event_handler(game_types::GameValue& left_arg,
-                                                             game_types::GameValue& right_arg);
-        static void pre_init(game_types::GameValue& args_);
-        static void pre_pre_init(game_types::GameValue& args_);
-        static void pre_start(game_types::GameValue& args_);
-        static void post_start(game_types::GameValue& args_);
-        static void post_init(game_types::GameValue& args_);
-        static void mission_ended(game_types::GameValue& args_);
+    private:
+        void pre_init(const game_types::GameValue& args_);
+        void pre_pre_init(const game_types::GameValue& args_);
+        void pre_start(const game_types::GameValue& args_);
+        void post_start(const game_types::GameValue& args_);
+        void post_init(const game_types::GameValue& args_);
+        void mission_ended(const game_types::GameValue& args_);
+
+    private:
+        static game_types::GameValue client_event_handler(
+                const game_types::GameValue& left_arg,
+                const game_types::GameValue& right_arg
+        );
 
     private:
         static bool _stopping;
 
     private:
         std::unordered_map<std::string, EventHandler_t> _event_handlers;
+        RegisteredSQFFunction _event_handler_function;
+
     };
 }
 

@@ -26,6 +26,7 @@
 #include "logging.h"
 #include "invoker.h"
 #include "rv_controller.h"
+#include <utility>
 
 using namespace std::literals::string_view_literals;
 
@@ -36,9 +37,32 @@ mafia::MissionEvents::MissionEvents()
 
 mafia::MissionEvents::~MissionEvents() = default;
 
-bool mafia::MissionEvents::add_event_handler(std::string_view name, mafia::MissionEvents::EventHandler_t handler)
+void mafia::MissionEvents::initialize()
 {
-    return false;
+    add_event_handler("pre_init"sv, [this](const game_types::GameValue& a) { pre_init(a); });
+    add_event_handler("pre_pre_init"sv, [this](const game_types::GameValue& a) { pre_pre_init(a); });
+    add_event_handler("pre_start"sv, [this](const game_types::GameValue& a) { pre_start(a); });
+    add_event_handler("post_start"sv, [this](const game_types::GameValue& a) { post_start(a); });
+    add_event_handler("post_init"sv, [this](const game_types::GameValue& a) { post_init(a); });
+    add_event_handler("mission_ended"sv, [this](const game_types::GameValue& a) { mission_ended(a); });
+}
+
+void mafia::MissionEvents::shutdown()
+{
+    _event_handlers.clear();
+}
+
+bool mafia::MissionEvents::add_event_handler(std::string_view name_, mafia::MissionEvents::EventHandler_t handler)
+{
+    std::string name(name_);
+    if (_event_handlers.find(name) != _event_handlers.end())
+    {
+        // @TODO: Exceptions
+        return false;
+    }
+    _event_handlers[name] = std::move(handler);
+
+    return true;
 }
 
 bool mafia::MissionEvents::rv_event(const std::string& event_name_, const mafia::game_types::GameValue& params_)
@@ -66,39 +90,47 @@ bool mafia::MissionEvents::rv_event(const std::string& event_name_, const mafia:
 }
 
 mafia::game_types::GameValue mafia::MissionEvents::client_event_handler(
-        mafia::game_types::GameValue& left_arg,
-        mafia::game_types::GameValue& right_arg
+        const mafia::game_types::GameValue& left_arg,
+        const mafia::game_types::GameValue& right_arg
 )
 {
     return mafia::game_types::GameValue();
 }
 
-void mafia::MissionEvents::pre_init(mafia::game_types::GameValue& args_)
+void mafia::MissionEvents::pre_init(const game_types::GameValue& args_)
 {
-
+    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }
 
-void mafia::MissionEvents::pre_pre_init(mafia::game_types::GameValue& args_)
+void mafia::MissionEvents::pre_pre_init(const game_types::GameValue& args_)
 {
-
+    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }
 
-void mafia::MissionEvents::pre_start(mafia::game_types::GameValue& args_)
+void mafia::MissionEvents::pre_start(const game_types::GameValue& args_)
 {
-
+    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
+    _event_handler_function = mafia::controller()->get_sqf_functions()->register_sqf_function(
+            "MafiaClientEvent"sv,
+            "Forwarder used to call functions in Intercept Plugins"sv,
+            userFunctionWrapper<client_event_handler>,
+            game_types::GameDataType::ANY,
+            game_types::GameDataType::ARRAY,
+            game_types::GameDataType::ARRAY
+    ); // @TODO what is this? Currently unused.
 }
 
-void mafia::MissionEvents::post_start(mafia::game_types::GameValue& args_)
+void mafia::MissionEvents::post_start(const game_types::GameValue& args_)
 {
-
+    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }
 
-void mafia::MissionEvents::post_init(mafia::game_types::GameValue& args_)
+void mafia::MissionEvents::post_init(const game_types::GameValue& args_)
 {
-
+    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }
 
-void mafia::MissionEvents::mission_ended(mafia::game_types::GameValue& args_)
+void mafia::MissionEvents::mission_ended(const game_types::GameValue& args_)
 {
-
+    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }

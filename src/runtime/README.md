@@ -1,0 +1,2 @@
+A "runtime" is responsible for hosting (or running) modules written in a specific language. For example, the 
+``javascript`` runtime is capable of loading, unloading and running Mafia modules written in Javascript.

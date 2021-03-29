@@ -36,11 +36,8 @@ namespace mafia
     class Loader;
     class SQFFunctions;
     class MissionEvents;
+    class Runtime;
 
-    /**
-     * Base class for a Controller with features specific to Arma's RV engine. This includes a Loader, an Invoker, and
-     * an SQFFunctions object.
-     */
     class RVController
     {
     private:
@@ -75,6 +72,7 @@ namespace mafia
         std::shared_ptr<Invoker> _invoker;
         std::shared_ptr<MissionEvents> _mission_events;
         RVCommandHandlers_t _command_handlers;
+        std::unique_ptr<Runtime> _javascript_runtime {nullptr};
     };
 }
 

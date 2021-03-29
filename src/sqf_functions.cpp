@@ -22,7 +22,6 @@
  ********************************************************/
 
 #include "sqf_functions.h"
-#include "logging.h"
 #include "mafia.h"
 #include "rv_controller.h"
 #include "loader.h"
@@ -289,7 +288,7 @@ RegisteredSQFFunction mafia::SQFFunctions::register_sqf_function(
     //insertBinary(_registerFuncs._gameState, op);
 
     //auto inserted = findBinary(name, left_arg_type, right_arg_type);
-    log::debug(
+    /*log::debug(
             "{} binary {} {} = {:x} {} = {:x} {} = {:x} @ {:x}", __FUNCTION__, name,
             game_types::to_string(return_arg_type),
             reinterpret_cast<uintptr_t>(_registerFuncs._types[static_cast<size_t>(return_arg_type)]),
@@ -298,7 +297,7 @@ RegisteredSQFFunction mafia::SQFFunctions::register_sqf_function(
             game_types::to_string(right_arg_type),
             reinterpret_cast<uintptr_t>(_registerFuncs._types[static_cast<size_t>(right_arg_type)]),
             reinterpret_cast<uintptr_t>(inserted)
-    );
+    );*/
 
     auto wrapper = std::make_shared<RegisteredSQFFunctionWrapper>(
             return_arg_type, left_arg_type, right_arg_type,
@@ -409,14 +408,14 @@ RegisteredSQFFunction mafia::SQFFunctions::register_sqf_function(
 
 
     //auto inserted = findUnary(name, right_arg_type); //Could use this to check if == ref returned by push_back.. But I'm just assuming it works right now
-    mafia::log::debug(
+    /*mafia::log::debug(
             "{} unary {} {} = {:x} {} = {:x} @ {:x}", __FUNCTION__, name,
             game_types::to_string(return_arg_type),
             reinterpret_cast<uintptr_t>(_registerFuncs._types[static_cast<size_t>(return_arg_type)]),
             game_types::to_string(right_arg_type),
             reinterpret_cast<uintptr_t>(_registerFuncs._types[static_cast<size_t>(right_arg_type)]),
             reinterpret_cast<uintptr_t>(inserted)
-    );
+    );*/
 
     auto wrapper = std::make_shared<RegisteredSQFFunctionWrapper>(return_arg_type, right_arg_type, inserted);
     return RegisteredSQFFunction(std::make_shared<RegisteredSQFFunctionImpl>(wrapper));
@@ -509,11 +508,11 @@ RegisteredSQFFunction mafia::SQFFunctions::register_sqf_function(
     auto inserted = static_cast<_private::gsNular*>(table->push_back(op));
 
     //auto inserted = findNular(name);  Could use this to confirm that inserted points to correct value
-    log::debug(
+    /*log::debug(
             "{} nular {} {} = {:x} @ {:x}", __FUNCTION__, name, game_types::to_string(return_arg_type),
             reinterpret_cast<uintptr_t>(_registerFuncs._types[static_cast<size_t>(return_arg_type)]),
             reinterpret_cast<uintptr_t>(inserted)
-    );
+    );*/
     auto wrapper = std::make_shared<RegisteredSQFFunctionWrapper>(return_arg_type, inserted);
     return RegisteredSQFFunction(std::make_shared<RegisteredSQFFunctionImpl>(wrapper));
 }
@@ -629,7 +628,7 @@ std::pair<GameDataType, SQFScriptType> mafia::SQFFunctions::register_sqf_type(
     gs->_scriptTypes.emplace_back(newType);
     const auto newIndex = _registerFuncs._types.size();
     _registerFuncs._types.emplace_back(newType);
-    log::debug("{} {} {} {} ", __FUNCTION__, name, localizedName, description, typeName);
+    //log::debug("{} {} {} {} ", __FUNCTION__, name, localizedName, description, typeName);
     game_types::_private::add_game_data_type(name, static_cast<GameDataType>(newIndex));
     return {static_cast<GameDataType>(newIndex), {_registerFuncs._type_vtable, newType, nullptr}};
 }

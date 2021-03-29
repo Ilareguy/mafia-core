@@ -26,8 +26,10 @@
 #include "mission_events.h"
 #include "invoker.h"
 #include "loader.h"
+#include "runtime/runtime.h"
 
 using namespace mafia;
+using namespace std::literals::string_view_literals;
 
 RVController::RVController() = default;
 
@@ -41,10 +43,24 @@ void RVController::initialize(uintptr_t stack_base)
     _mission_events = std::make_shared<MissionEvents>();
 
     _loader->init(stack_base);
+    _mission_events->initialize();
+
+    _javascript_runtime = std::make_unique<Runtime>(
+            R"(C:\Steam\steamapps\common\Arma 3\@mafia\mafia-runtime-javascript.dll)"
+    );
+    _javascript_runtime->initialize();
 }
 
 void RVController::shutdown()
 {
+    if(_javascript_runtime)
+    {
+        _javascript_runtime->shutdown();
+        _javascript_runtime = nullptr;
+    }
+
+    _mission_events->shutdown();
+
     _mission_events = nullptr;
     _invoker = nullptr;
     _sqf_functions = nullptr;

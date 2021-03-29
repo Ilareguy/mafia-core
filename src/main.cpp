@@ -110,7 +110,8 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
     std::string result = "-1";
     if (mafia::_private::initialized)
     {
-        mafia::log::debug(R"(Mafia received command: "{}" with args: "{}")", command, argument_str);
+        mafia::log::debug(
+                R"(Mafia received command: "{}" with args: "{}")", command, static_cast<std::string>(argument_str));
     }
 
     if (command == "init"sv)
@@ -157,8 +158,7 @@ BOOL APIENTRY DllMain(
         case DLL_PROCESS_ATTACH:break;
         case DLL_THREAD_ATTACH:break;
         case DLL_THREAD_DETACH:break;
-        case DLL_PROCESS_DETACH:
-            mafia::exit();
+        case DLL_PROCESS_DETACH:mafia::exit();
             break;
     }
     return TRUE;

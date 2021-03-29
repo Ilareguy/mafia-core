@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 21/03/2021.
+ * File created by Anthony Ilareguy on 28/03/2021.
  * [File Description]
  *
  ********************************************************
@@ -21,27 +21,12 @@
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_MAFIA_H
-#define DEF_MAFIA_CORE_MAFIA_H
+#ifndef DEF_MAFIA_CORE_RUNTIME_ERRORS_H
+#define DEF_MAFIA_CORE_RUNTIME_ERRORS_H
 
-#include <cstdint>
-#include <memory>
-
-namespace mafia
+namespace mafia::runtime
 {
-    class RVController;
-
-    bool is_exiting();
-    void exit();
-    std::shared_ptr<RVController> controller();
-
-    namespace version
-    {
-        constexpr uint8_t major = 0;
-        constexpr uint8_t minor = 0;
-        constexpr uint8_t revision = 1;
-        constexpr const char* suffix = "-alpha";
-    }
+    struct ErrorBase{};
 }
 
-#endif // DEF_MAFIA_CORE_MAFIA_H
+#endif // DEF_MAFIA_CORE_RUNTIME_ERRORS_H

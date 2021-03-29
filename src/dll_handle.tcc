@@ -32,7 +32,7 @@ T mafia::DLLHandle::get(std::string_view symbol, bool mandatory)
     if (mandatory && nullptr == sym_address)
     {
         throw SymbolNotFound {
-                fmt::format(R"(Mandatory symbol "{}" with type "{}" not found.)", symbol, typeid(T).name())
+                fmt::format(R"(Symbol "{}" with type "{}" not found.)", symbol, typeid(T).name()).c_str()
         };
     }
     return reinterpret_cast<T>(sym_address);
