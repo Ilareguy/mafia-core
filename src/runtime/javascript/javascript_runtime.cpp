@@ -23,7 +23,6 @@
 
 #include "javascript_runtime.h"
 #include "duktape/duktape.h"
-#include <future>
 
 using namespace mafia;
 using namespace mafia::runtime;
@@ -43,7 +42,6 @@ namespace mafia::runtime::javascript::_private
 
 void javascript::initialize()
 {
-    //log::info("Hello, World!");
     constexpr void* duk_user_ptr = nullptr;
 
     _private::javascript_context = duk_create_heap(nullptr, nullptr, nullptr, duk_user_ptr, &_private::duktape_error);
