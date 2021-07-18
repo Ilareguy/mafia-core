@@ -109,7 +109,8 @@ add_library(${MAFIA_DLL_NAME} MODULE
 target_compile_definitions(${MAFIA_DLL_NAME} PRIVATE -DMAFIA_CORE)
 
 ########## Dependencies
-# NOTE: Linked-to library DLLs need to be in Arma'a *root directory*, and not in @mafia/.
+# NOTE: Linked-to library DLLs need to be in Arma's *root directory*, and not in @mafia/.
+# If you get a "module could not be found"/"not found"/"module not found", this might be why.
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(dlfcn-win32 CONFIG REQUIRED)

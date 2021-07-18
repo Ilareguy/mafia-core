@@ -47,7 +47,7 @@ Runtime::Runtime(std::string_view dll_path)
     *(_handle->get < void(CDECL**)(const char*)>("_log_error"sv, true)) = [](const char* c) { log::_error(c); };
     *(_handle->get < void(CDECL**)(const char*)>("_log_critical"sv, true)) = [](const char* c) { log::_critical(c); };
     *(_handle->get < void(CDECL**)(const char*)>("_log_trace"sv, true)) = [](const char* c) { log::_trace(c); };
-    *(_handle->get < void(CDECL**)(void)>("_log_flush"sv, true)) = []() { log::flush(); };
+    *(_handle->get < void(CDECL**)(void) > ("_log_flush"sv, true)) = []() { log::flush(); };
 }
 
 Runtime::~Runtime()

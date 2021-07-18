@@ -46,7 +46,7 @@ void RVController::initialize(uintptr_t stack_base)
     _mission_events->initialize();
 
     _javascript_runtime = std::make_unique<Runtime>(
-            R"(C:\Steam\steamapps\common\Arma 3\@mafia\mafia-runtime-javascript.dll)"
+            R"(C:\Program Files (x86)\Steam\steamapps\common\Arma 3\@mafia\mafia-runtime-javascript.dll)"
     );
     _javascript_runtime->initialize();
 }

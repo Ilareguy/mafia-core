@@ -58,7 +58,10 @@ namespace mafia
         constexpr const char* suffix = "-alpha";
     }
 
-    class ModuleInfo;
+    namespace runtime
+    {
+        struct ModuleInfo;
+    }
 
     namespace runtime::log
     {
@@ -75,7 +78,7 @@ namespace mafia
 
         void flush()
         {
-            if(_log_flush)
+            if (_log_flush)
             {
                 _log_flush();
             }

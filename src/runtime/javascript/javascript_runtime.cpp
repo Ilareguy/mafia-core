@@ -23,6 +23,7 @@
 
 #include "javascript_runtime.h"
 #include "duktape/duktape.h"
+#include "../module_info.h"
 
 using namespace mafia;
 using namespace mafia::runtime;
@@ -52,8 +53,12 @@ void javascript::initialize()
         return; // @TODO Signal runtime initialization failure somehow (return bool instead of void)
     }
 
+    duk_push_string(ctx,
+                    R"(
+        function hello(){ return "Hello, World!"; }
+        hello();
+)");
 
-    duk_push_string(ctx, "print('Hello world!'); 123;");
     if (duk_peval(ctx) != 0)
     {
         log::error("eval failed: {}", duk_safe_to_string(ctx, -1));
@@ -63,6 +68,17 @@ void javascript::initialize()
         log::info("Success! Result is {}", duk_safe_to_string(ctx, -1));
     }
     duk_pop(ctx);
+
+    /**
+     * @TODO:
+     * - Expose logging functions to Javascript;
+     * - Expose RV functions to Javascript;
+     * - Allow reloading Javascript runtime DLL at runtime;
+     * - Write initial Javascript/Typescript interface files, which will be available to third-party modules written
+     *      in Javascript/Typescript;
+     * - Allow loading, unloading and reloading Javascript modules at runtime;
+     * - Allow sending commands to Mafia from a console or something to control the server;
+     */
 
     log::flush();
 }
@@ -78,5 +94,6 @@ void javascript::shutdown()
 
 bool javascript::load_module(const ModuleInfo& info, ErrorBase& err)
 {
+    log::info("Javascript runtime requested to load module {} at {}", info.name, info.path);
     return false;
 }

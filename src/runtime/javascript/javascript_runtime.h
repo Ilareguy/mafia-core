@@ -36,7 +36,7 @@ namespace mafia::runtime::javascript
      * Your runtime should load the module specified and return true on success and false on error.
      * If an error occurred, you must set `err` to a relevant error object describing what happened.
      */
-    MAFIA_API_FUNC bool CDECL load_module(const ModuleInfo& info, runtime::ErrorBase& err);
+    MAFIA_API_FUNC bool CDECL load_module(const runtime::ModuleInfo& info, runtime::ErrorBase& err);
     }
 }
 
