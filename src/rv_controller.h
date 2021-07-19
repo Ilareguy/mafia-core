@@ -24,7 +24,6 @@
 #ifndef DEF_MAFIA_CORE_RV_CONTROLLER_H
 #define DEF_MAFIA_CORE_RV_CONTROLLER_H
 
-#include "controller.h"
 #include "arguments.h"
 #include "game_types/game_data.h"
 #include <functional>
@@ -37,6 +36,7 @@ namespace mafia
     class SQFFunctions;
     class MissionEvents;
     class Runtime;
+    class SSHServer;
 
     class RVController
     {
@@ -73,7 +73,8 @@ namespace mafia
         std::shared_ptr<MissionEvents> _mission_events;
         RVCommandHandlers_t _command_handlers;
         std::unique_ptr<Runtime> _javascript_runtime {nullptr};
+        std::unique_ptr<SSHServer> _ssh_server {nullptr};
     };
 }
 
-#endif //DEF_MAFIA_CORE_RV_CONTROLLER_H
+#endif // DEF_MAFIA_CORE_RV_CONTROLLER_H

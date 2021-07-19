@@ -26,6 +26,7 @@
 #include "mission_events.h"
 #include "invoker.h"
 #include "loader.h"
+#include "ssh_server.h"
 #include "runtime/runtime.h"
 
 using namespace mafia;
@@ -41,12 +42,15 @@ void RVController::initialize(uintptr_t stack_base)
     _loader = std::make_shared<Loader>();
     _sqf_functions = std::make_shared<SQFFunctions>();
     _mission_events = std::make_shared<MissionEvents>();
-
     _loader->init(stack_base);
     _mission_events->initialize();
 
+    // @TODO Load config file
+
+    _ssh_server = std::make_unique<SSHServer>("test"sv, "test"sv, 23456);
+
     _javascript_runtime = std::make_unique<Runtime>(
-            R"(C:\Program Files (x86)\Steam\steamapps\common\Arma 3\@mafia\mafia-runtime-javascript.dll)"
+            R"(@mafia\mafia-runtime-javascript.dll)"
     );
     _javascript_runtime->initialize();
 }

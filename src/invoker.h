@@ -24,7 +24,6 @@
 #ifndef DEF_MAFIA_CORE_INVOKER_H
 #define DEF_MAFIA_CORE_INVOKER_H
 
-
 #include "sqf_functions.h"
 #include "non_copyable.h"
 #include "game_types/game_data.h"

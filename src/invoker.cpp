@@ -73,6 +73,12 @@ std::string Invoker::_init_invoker(const mafia::Arguments& args_)
 std::string Invoker::_test_invoker(const mafia::Arguments& args_)
 {
     _invoker_unlock test_lock(*this);
+
+    /*log::debug("Attempting to #lock the server...");
+    mafia::game_types::GameValue test_res = invoke_raw("servercommand"sv, "toronto123"sv, "#lock"sv);
+    log::debug("#locking result is {}", static_cast<bool>(test_res));*/
+
+    //
     mafia::game_types::GameValue res = invoke_raw("profilenamesteam"sv);
     return static_cast<std::string>(res);
 }
@@ -117,6 +123,9 @@ std::string Invoker::_invoker_begin_register(const mafia::Arguments& args_)
 std::string Invoker::_invoker_register(const mafia::Arguments& args_)
 {
     _registration_type = args_.as_string(0);
+
+    // @TODO Load SQF function/commands pointers
+
     return "true";
 }
 
