@@ -26,6 +26,7 @@
 
 #include <string_view>
 #include <libssh/server.h>
+#include <thread>
 
 namespace mafia
 {
@@ -35,14 +36,21 @@ namespace mafia
         SSHServer(std::string_view username, std::string_view password, unsigned int port);
         ~SSHServer();
 
-        bool auth(std::string_view username, std::string_view password);
+    private:
+        bool _auth(std::string_view username, std::string_view password);
+        void _ssh_thread();
+        bool _ssh_accept_connection();
+        bool _ssh_open_channel();
+        bool _ssh_open_shell_channel();
 
     private:
-        std::string_view _username, _password;
+        std::string _username, _password;
         ssh_session _session;
         ssh_bind _ssh_bind;
         ssh_message _message;
         ssh_channel _channel {nullptr};
+        std::thread _ssh_worker;
+        bool _stop_ssh {false};
     };
 }
 
