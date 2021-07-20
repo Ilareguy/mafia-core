@@ -28,17 +28,11 @@
 using namespace mafia;
 
 SSHServer::SSHServer(std::string_view username, std::string_view password, unsigned int port):
-        _ssh_bind {ssh_bind_new()},
-        _session {ssh_new()},
-        _message {},
         _username(username),
         _password(password)
 {
-    ssh_bind_options_set(_ssh_bind, SSH_BIND_OPTIONS_DSAKEY, R"(@mafia/ssh_dsa)");
-    ssh_bind_options_set(_ssh_bind, SSH_BIND_OPTIONS_RSAKEY, R"(@mafia/ssh_rsa)");
-    ssh_bind_options_set(_ssh_bind, SSH_BIND_OPTIONS_BINDPORT, &port);
     log::info("Starting SSH worker thread");
-    _ssh_worker = std::thread(&SSHServer::_ssh_thread, this);
+    _ssh_worker = std::thread(&SSHServer::_ssh_thread, this, port);
 }
 
 SSHServer::~SSHServer()
@@ -54,6 +48,17 @@ SSHServer::~SSHServer()
     {
         _ssh_worker.join();
     }
+}
+
+void SSHServer::send(const std::string_view message)
+{
+    if (!ssh_is_connected(_session))
+    {
+        return;
+    }
+
+    std::lock_guard l {_m};
+    _messages_to_send.push(std::string {message});
 }
 
 bool SSHServer::_ssh_accept_connection()
@@ -158,20 +163,25 @@ bool SSHServer::_ssh_open_shell_channel()
     return false;
 }
 
-void SSHServer::_ssh_thread()
+void SSHServer::_ssh_thread(unsigned int port)
 {
-    if (ssh_bind_listen(_ssh_bind) < 0)
-    {
-        log::error("SSH Thread: Error initializing SSH server: {}", ssh_get_error(_ssh_bind));
-    }
-
     do
     {
         char buf[2048];
         int i = 0;
         int r = 0;
 
-        // @FIXME When a user closes connection, it's currently impossible to re-establish a new connection
+        _ssh_bind = ssh_bind_new();
+        _session = ssh_new();
+
+        ssh_bind_options_set(_ssh_bind, SSH_BIND_OPTIONS_DSAKEY, R"(@mafia/ssh_dsa)");
+        ssh_bind_options_set(_ssh_bind, SSH_BIND_OPTIONS_RSAKEY, R"(@mafia/ssh_rsa)");
+        ssh_bind_options_set(_ssh_bind, SSH_BIND_OPTIONS_BINDPORT, &port);
+
+        if (ssh_bind_listen(_ssh_bind) < 0)
+        {
+            log::error("SSH Thread: Error initializing SSH server: {}", ssh_get_error(_ssh_bind));
+        }
 
         log::info("SSH Thread: Waiting for user authentication...");
         log::flush();
@@ -190,27 +200,55 @@ void SSHServer::_ssh_thread()
         log::info("SSH Thread: Connection established!");
         log::flush();
 
+        send("Welcome!");
+        bool send_receive_loop {true};
+
         do
         {
-            i = ssh_channel_read(_channel, buf, 2048, 0);
+            // Message to send?
+            {
+                std::lock_guard l {_m};
+                if (!_messages_to_send.empty())
+                {
+                    const auto message = _messages_to_send.front();
+                    _messages_to_send.pop();
+                    _do_send(message);
+                }
+            }
+
+            i = ssh_channel_read_timeout(_channel, buf, 2048, 0, 10);
             if (i > 0)
             {
-                ssh_channel_write(_channel, buf, i);
-                /*if (write(1, buf, i) < 0)
-                {
-                    log::error("SSH Thread: Error writing to buffer!");
-                }*/
+                buf[i - 1] = '\0';
+                std::string received_message {buf};
+                const auto response = _process_message(std::string {buf});
+                _do_send(response);
             }
-        } while (i > 0);
+            else if (i == SSH_ERROR)
+            {
+                log::error("SSH Thread: {}", ssh_get_error(_session));
+                send_receive_loop = false;
+            }
+        } while (send_receive_loop && !_stop_ssh);
 
+        ssh_disconnect(_session);
+        ssh_bind_free(_ssh_bind);
+        ssh_free(_session);
     } while (!_stop_ssh);
 
-    ssh_disconnect(_session);
-    ssh_bind_free(_ssh_bind);
     ssh_finalize();
-
     log::info("Stopping SSH worker thread");
     log::flush();
+}
+
+std::string SSHServer::_process_message(std::string_view)
+{
+    return "Whatever\n";
+}
+
+void SSHServer::_do_send(const std::string& m)
+{
+    ssh_channel_write(_channel, m.c_str(), m.length());
 }
 
 bool SSHServer::_auth(std::string_view username, std::string_view password)
