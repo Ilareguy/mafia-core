@@ -23,14 +23,80 @@
 
 #include "ssh_server.h"
 #include "logging.h"
-#include <libssh/libssh.h>
+// #include <libssh/libssh.h>
 
 using namespace mafia;
 
+SSHServer::Arguments::Arguments(char** argv_, int argc_): argv(argv_), argc(argc_)
+{
+
+}
+
+SSHServer::Arguments::~Arguments()
+{
+    for (int i = 0; i < argc; i++)
+    {
+        delete[] argv[i];
+    }
+    delete[] argv;
+}
+
+std::unique_ptr<SSHServer::Arguments> SSHServer::_parse_arguments(std::string_view cmd)
+{
+    std::vector<std::string> parsed_arguments;
+    std::ostringstream current_argument;
+    bool in_quotes = false;
+
+    auto complete_argument = [&parsed_arguments, &current_argument]() {
+        auto current_argument_str = current_argument.str();
+
+        if (!current_argument_str.empty())
+        {
+            parsed_arguments.push_back(current_argument_str);
+            current_argument = std::ostringstream();
+        }
+    };
+
+    for (const char& c: cmd)
+    {
+        if (c == '"')
+        {
+            in_quotes = !in_quotes;
+            if (!in_quotes)
+            {
+                complete_argument();
+            }
+        }
+        else if (!in_quotes && c == ' ')
+        {
+            complete_argument();
+        }
+        else
+        {
+            current_argument << c;
+        }
+    }
+
+    complete_argument();
+
+    char** argv = new char* [parsed_arguments.size()];
+    for (int i = 0; i < parsed_arguments.size(); i++)
+    {
+        const auto size = parsed_arguments[i].size();
+        argv[i] = new char[size + 1];
+        strcpy_s(argv[i], size + 1, parsed_arguments[i].c_str());
+    }
+
+    // argv will be deleted later in ~Arguments()
+    return std::make_unique<SSHServer::Arguments>(argv, parsed_arguments.size());
+}
+
 SSHServer::SSHServer(std::string_view username, std::string_view password, unsigned int port):
         _username(username),
-        _password(password)
+        _password(password),
+        _ssh_interface("Mafia SSH Interface", "SSH interface to control and manage a Mafia instance")
 {
+    _init_interface();
     log::info("Starting SSH worker thread");
     _ssh_worker = std::thread(&SSHServer::_ssh_thread, this, port);
 }
@@ -48,6 +114,14 @@ SSHServer::~SSHServer()
     {
         _ssh_worker.join();
     }
+}
+
+void SSHServer::_init_interface()
+{
+    _ssh_interface.add_options()
+                          ("l,load", "Load a module", cxxopts::value<std::string>())
+                          ("u,unload", "Unload a module", cxxopts::value<std::string>())
+                          ("r,reload", "Reloads a loaded module", cxxopts::value<std::string>());
 }
 
 void SSHServer::send(const std::string_view message)
@@ -241,14 +315,24 @@ void SSHServer::_ssh_thread(unsigned int port)
     log::flush();
 }
 
-std::string SSHServer::_process_message(std::string_view)
+std::string SSHServer::_process_message(std::string_view raw_message)
 {
-    return "Whatever\n";
+    auto args = _parse_arguments(raw_message);
+
+    std::ostringstream os;
+    os << fmt::format("Number of args received: {}\n\r", (*args).argc);
+    for (int i = 0; i < (*args).argc; i++)
+    {
+        os << fmt::format("\t[{}] = {}\n\r", i, (*args).argv[i]);
+    }
+
+    return os.str();
 }
 
 void SSHServer::_do_send(const std::string& m)
 {
     ssh_channel_write(_channel, m.c_str(), m.length());
+    ssh_channel_write(_channel, "\n\r", 2);
 }
 
 bool SSHServer::_auth(std::string_view username, std::string_view password)

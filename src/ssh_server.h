@@ -29,11 +29,25 @@
 #include <thread>
 #include <queue>
 #include <mutex>
+#include <cxxopts.hpp>
 
 namespace mafia
 {
     class SSHServer
     {
+    private:
+        /**
+         * Parsed command-line arguments.
+         */
+        struct Arguments
+        {
+            Arguments(char** argv, int argc); // ctor takes ownership of argv, which will be freed on destruction
+            ~Arguments();
+            char** const argv;
+            const int argc;
+        };
+        static std::unique_ptr<SSHServer::Arguments> _parse_arguments(std::string_view);
+
     public:
         SSHServer(std::string_view username, std::string_view password, unsigned int port);
         ~SSHServer();
@@ -51,7 +65,8 @@ namespace mafia
         bool _ssh_open_channel();
         bool _ssh_open_shell_channel();
         std::string _process_message(std::string_view);
-        void _do_send(const std::string&);
+        void _do_send(const std::string&); // Only call from SSH thread. Use ``send()`` otherwise, which is thread-safe
+        void _init_interface();
 
     private:
         std::string _username, _password;
@@ -63,7 +78,8 @@ namespace mafia
         bool _stop_ssh {false};
         std::queue<std::string> _messages_to_send;
         std::recursive_mutex _m;
+        cxxopts::Options _ssh_interface;
     };
 }
 
-#endif //DEF_MAFIA_CORE_SSH_SERVER_H
+#endif // DEF_MAFIA_CORE_SSH_SERVER_H

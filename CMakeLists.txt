@@ -103,7 +103,10 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/mission_events.cpp
         src/runtime/module.cpp
         src/runtime/errors.h
-        src/runtime/module_info.cpp src/runtime/runtime.cpp src/runtime/runtime.h src/ssh_server.cpp src/ssh_server.h)
+        src/runtime/module_info.cpp
+        src/runtime/runtime.cpp
+        src/ssh_server.cpp
+        src/ssh/command.cpp)
 
 target_compile_definitions(${MAFIA_DLL_NAME} PRIVATE -DMAFIA_CORE)
 
@@ -114,6 +117,7 @@ find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(dlfcn-win32 CONFIG REQUIRED)
 find_package(libssh CONFIG REQUIRED)
+find_package(cxxopts CONFIG REQUIRED)
 target_link_libraries(mafia-runtime-javascript PUBLIC
         mafia-types
         mafia-containers
@@ -124,7 +128,8 @@ target_link_libraries(${MAFIA_DLL_NAME} PRIVATE
         fmt::fmt
         spdlog::spdlog
         dlfcn-win32::dl
-        ssh)
+        ssh
+        cxxopts::cxxopts)
 
 ########## Misc
 set_target_properties(${MAFIA_DLL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
