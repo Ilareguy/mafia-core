@@ -27,9 +27,17 @@
 
 using namespace mafia;
 
-SSHServer::Arguments::Arguments(char** argv_, int argc_): argv(argv_), argc(argc_)
+SSHServer::Arguments::Arguments(std::vector<std::string>&& argv_vec_): argv_vec(std::move(argv_vec_))
 {
+    argc = argv_vec.size();
 
+    argv = new char* [argv_vec.size()];
+    for (int i = 0; i < argv_vec.size(); i++)
+    {
+        const auto size = argv_vec[i].size();
+        argv[i] = new char[size + 1];
+        strcpy_s(argv[i], size + 1, argv_vec[i].c_str());
+    }
 }
 
 SSHServer::Arguments::~Arguments()
@@ -76,19 +84,8 @@ std::unique_ptr<SSHServer::Arguments> SSHServer::_parse_arguments(std::string_vi
             current_argument << c;
         }
     }
-
     complete_argument();
-
-    char** argv = new char* [parsed_arguments.size()];
-    for (int i = 0; i < parsed_arguments.size(); i++)
-    {
-        const auto size = parsed_arguments[i].size();
-        argv[i] = new char[size + 1];
-        strcpy_s(argv[i], size + 1, parsed_arguments[i].c_str());
-    }
-
-    // argv will be deleted later in ~Arguments()
-    return std::make_unique<SSHServer::Arguments>(argv, parsed_arguments.size());
+    return std::make_unique<SSHServer::Arguments>(std::move(parsed_arguments));
 }
 
 SSHServer::SSHServer(std::string_view username, std::string_view password, unsigned int port):
@@ -121,7 +118,8 @@ void SSHServer::_init_interface()
     _ssh_interface.add_options()
                           ("l,load", "Load a module", cxxopts::value<std::string>())
                           ("u,unload", "Unload a module", cxxopts::value<std::string>())
-                          ("r,reload", "Reloads a loaded module", cxxopts::value<std::string>());
+                          ("r,reload", "Reloads a loaded module", cxxopts::value<std::string>())
+                          ("help", "Shows this help message");
 }
 
 void SSHServer::send(const std::string_view message)
@@ -318,15 +316,48 @@ void SSHServer::_ssh_thread(unsigned int port)
 std::string SSHServer::_process_message(std::string_view raw_message)
 {
     auto args = _parse_arguments(raw_message);
-
-    std::ostringstream os;
-    os << fmt::format("Number of args received: {}\n\r", (*args).argc);
-    for (int i = 0; i < (*args).argc; i++)
+    if (args->argc == 0)
     {
-        os << fmt::format("\t[{}] = {}\n\r", i, (*args).argv[i]);
+        return "";
     }
 
-    return os.str();
+    try
+    {
+        auto result = _ssh_interface.parse(args->argc, args->argv);
+        const auto command = args->argv_vec.front();
+
+        if (command == "help")
+        {
+            return _ssh_interface.help();
+        }
+        else if (command == "module")
+        {
+            if (result.count("load"))
+            {
+                return fmt::format("Loading module \"{}\"", result["load"].as<std::string>());
+            }
+            else if (result.count("unload"))
+            {
+                return fmt::format("Unloading module \"{}\"", result["unload"].as<std::string>());
+            }
+            else if (result.count("reload"))
+            {
+                return fmt::format("Reloading module \"{}\"", result["reload"].as<std::string>());
+            }
+            else
+            {
+                return R"(Received command "module" without arguments; run "help" for usage.)";
+            }
+        }
+
+        return fmt::format("Unrecognized command \"{}\".", command);
+    }
+    catch (const cxxopts::OptionParseException& e)
+    {
+        return fmt::format("Error while parsing options: {}", e.what());
+    }
+
+
 }
 
 void SSHServer::_do_send(const std::string& m)

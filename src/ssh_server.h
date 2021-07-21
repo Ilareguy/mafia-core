@@ -41,10 +41,11 @@ namespace mafia
          */
         struct Arguments
         {
-            Arguments(char** argv, int argc); // ctor takes ownership of argv, which will be freed on destruction
+            explicit Arguments(std::vector<std::string>&& argv_vec);
             ~Arguments();
-            char** const argv;
-            const int argc;
+            char** argv;
+            int argc;
+            std::vector<std::string> argv_vec;
         };
         static std::unique_ptr<SSHServer::Arguments> _parse_arguments(std::string_view);
 
