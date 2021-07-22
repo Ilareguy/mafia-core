@@ -25,6 +25,7 @@
 #ifndef DEF_MAFIA_CORE_SSH_COMMAND_H
 #define DEF_MAFIA_CORE_SSH_COMMAND_H
 
+#include "scheduled_command.h"
 #include <string>
 #include <cxxopts.hpp>
 
@@ -45,6 +46,16 @@ namespace mafia::ssh
 
     protected:
         /**
+         * Schedules a function to be run on the given target thread.
+         * @param function The function to be invoked
+         * @param target_thread Target thread. See ``enum QueuedFunctionThread``
+         * @return Returns a unique_ptr to a ScheduledCommand object. Once this unique_ptr goes out of scope, the
+         * function is actually scheduled for execution. This gives you time to configure the command before it is
+         * executed.
+         */
+        static ScheduledCommandHandler schedule(QueuedFunction_t&& function, QueuedFunctionThread target_thread);
+
+        /**
          * Your command should execute now with the given arguments. This will be invoked from a worker thread to
          * prevent hanging the program.
          * @param command_name Command name that was requested to run
@@ -57,6 +68,9 @@ namespace mafia::ssh
          * Implement this method to add options to your SSH interface.
          */
         virtual void init_ssh_interface(cxxopts::OptionAdder&&) = 0;
+
+    private:
+        static void _do_schedule(ScheduledCommand*);
 
     private:
         cxxopts::Options _ssh_interface;

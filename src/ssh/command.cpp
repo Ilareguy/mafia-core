@@ -22,7 +22,6 @@
  ********************************************************/
 
 #include "command.h"
-
 #include <utility>
 
 using namespace mafia;
@@ -48,4 +47,33 @@ void ssh::Command::init()
 std::string ssh::Command::help()
 {
     return _ssh_interface.help();
+}
+
+ssh::ScheduledCommandHandler
+ssh::Command::schedule(ssh::QueuedFunction_t&& function, ssh::QueuedFunctionThread target_thread)
+{
+    return ScheduledCommandHandler(
+            new ScheduledCommand(std::move(function), target_thread),
+            Command::_do_schedule
+    );
+}
+
+void ssh::Command::_do_schedule(ssh::ScheduledCommand* command_ptr)
+{
+    // Schedule the command to be executed
+    switch(command_ptr->_thread)
+    {
+        case THREAD_MAIN:
+            // No need to actually execute on Arma's thread; lock a
+            break;
+
+        case THREAD_SSH_WORKER:
+            break;
+
+        case THREAD_ISOLATED:
+            break;
+    }
+
+    // Once everything is done being executed, delete
+    delete command_ptr;
 };

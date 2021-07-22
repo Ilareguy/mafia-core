@@ -106,7 +106,7 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/runtime/module_info.cpp
         src/runtime/runtime.cpp
         src/ssh_server.cpp
-        src/ssh/command.cpp)
+        src/ssh/command.cpp src/ssh/module.cpp src/ssh/module.h src/ssh/scheduled_command.cpp src/ssh/scheduled_command.h)
 
 target_compile_definitions(${MAFIA_DLL_NAME} PRIVATE -DMAFIA_CORE)
 

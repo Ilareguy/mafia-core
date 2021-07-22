@@ -63,9 +63,6 @@ namespace mafia
         );
         bool add_rv_command_handler(std::string_view command, RVCommandHandler_t handler);
 
-    protected:
-        //
-
     private:
         std::shared_ptr<Loader> _loader;
         std::shared_ptr<SQFFunctions> _sqf_functions;
