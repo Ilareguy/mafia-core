@@ -1,0 +1,64 @@
+#define true 1
+#define false 0
+
+author = "Anthony Ilareguy";
+onLoadName = "Mafia";
+onLoadMission= "www.ilareguy.com";
+//loadScreen = "exile_assets\texture\mod\logo.paa";
+loadScreen = "";
+disableChannels[] = {0, 2};
+OnLoadIntro = "";
+OnLoadIntroTime = false;
+OnLoadMissionTime = false;
+
+class Header
+{
+    gameType = Survive;
+    minPlayers = 1;
+    maxPlayers = 100;
+};
+
+forceRotorLibSimulation = 2;
+skipLobby = 1;
+joinUnassigned = 1;
+respawn = "BIRD"; // ?
+respawnDelay = 30;
+respawnDialog = 0;
+respawnOnStart = 0;
+respawnButton = 1;
+respawnTemplates[] = {"Exile"}; // ?
+corpseManagerMode = 0;
+corpseLimit = 20;
+corpseRemovalMinTime = 1800;
+corpseRemovalMaxTime = 3600;
+wreckManagerMode = 0;
+wreckLimit = 2;
+wreckRemovalMinTime = 60;
+wreckRemovalMaxTime = 360;
+scriptedPlayer = 1;
+disabledAI = 1;
+enableItemsDropping = 0;
+briefing = 0;
+debriefing = 0;
+allowFunctionsLog = 1;
+enableDebugConsole = 0;
+allowFunctionsRecompile = 0;
+showSquadRadar = 0;
+showUAVFeed = 0;
+reviveDelay = 6;
+reviveForceRespawnDelay = 3;
+reviveBleedOutDelay = 120;
+saving = 0;
+
+showHUD[] =
+{
+    true,   // Scripted HUD (same as showHUD command)
+    true,   // Vehicle + soldier info
+    true,   // Vehicle radar
+    true,   // Vehicle compass
+    true,   // Tank direction indicator
+    false,  // Commanding menu
+    false,  // Group Bar
+    true,   // HUD Weapon Cursors
+    true   // Vehicle Panel (Required for GPS)
+};

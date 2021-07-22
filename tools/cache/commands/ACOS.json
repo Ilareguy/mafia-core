@@ -1,0 +1,9 @@
+{
+    "parse": {
+        "title": "acos",
+        "pageid": 1361,
+        "parsetree": {
+            "*": "<root><template><title>RV</title><part><name>type</name>=<value>command\n\n</value></part><part><name>gam1</name>=<value> ofp\n\n</value></part><part><name>version1</name>=<value> 1.00\n\n</value></part><part><name>gr1</name>=<value> Math - Geometry\n\n</value></part><part><name>descr</name>=<value> ArcCosine of a number, result in [[Number#Degrees|Degrees]]\n\n</value></part><part><name>s1</name>=<value> [[Number]] <ext><name>nowiki</name><attr/><inner>=</inner><close>&lt;/nowiki&gt;</close></ext> '''acos''' x\n\n</value></part><part><name>p1</name>=<value>  x: [[Number]]\n\n</value></part><part><name>r1</name>=<value> [[Number]]\n\t\t  \n</value></part><part><name>x1</name>=<value> &lt;code&gt;_degrees = [[acos]] 0.5; <template><title>cc</title><part><name index=\"1\"/><value>Returns 60</value></part></template>&lt;/code&gt;\n\n</value></part><part><name>seealso</name>=<value> [[atan]] [[asin]] [[sin]] [[cos]] [[tan]]\n</value></part></template>\n\n[[Category:Scripting Commands OFP 1.99|ACOS]]\n[[Category:Scripting Commands OFP 1.96|ACOS]]\n[[Category:Scripting Commands OFP 1.46|ACOS]]\n<template lineStart=\"1\"><title>GameCategory</title><part><name index=\"1\"/><value>arma1</value></part><part><name index=\"2\"/><value>Scripting Commands</value></part></template>\n<template lineStart=\"1\"><title>GameCategory</title><part><name index=\"1\"/><value>arma2</value></part><part><name index=\"2\"/><value>Scripting Commands</value></part></template>\n<template lineStart=\"1\"><title>GameCategory</title><part><name index=\"1\"/><value>arma3</value></part><part><name index=\"2\"/><value>Scripting Commands</value></part></template>\n<template lineStart=\"1\"><title>GameCategory</title><part><name index=\"1\"/><value>tkoh</value></part><part><name index=\"2\"/><value>Scripting Commands</value></part></template></root>"
+        }
+    }
+}
