@@ -23,6 +23,7 @@
 
 #include "ssh_server.h"
 #include "logging.h"
+#include "ssh/module.h"
 // #include <libssh/libssh.h>
 
 using namespace mafia;
@@ -90,10 +91,10 @@ std::unique_ptr<SSHServer::Arguments> SSHServer::_parse_arguments(std::string_vi
 
 SSHServer::SSHServer(std::string_view username, std::string_view password, unsigned int port):
         _username(username),
-        _password(password),
-        _ssh_interface("Mafia SSH Interface", "SSH interface to control and manage a Mafia instance")
+        _password(password)
+// _ssh_interface("Mafia SSH Interface", "SSH interface to control and manage a Mafia instance")
 {
-    _init_interface();
+    _init_interfaces();
     log::info("Starting SSH worker thread");
     _ssh_worker = std::thread(&SSHServer::_ssh_thread, this, port);
 }
@@ -113,13 +114,14 @@ SSHServer::~SSHServer()
     }
 }
 
-void SSHServer::_init_interface()
+void SSHServer::_init_interfaces()
 {
-    _ssh_interface.add_options()
-                          ("l,load", "Load a module", cxxopts::value<std::string>())
-                          ("u,unload", "Unload a module", cxxopts::value<std::string>())
-                          ("r,reload", "Reloads a loaded module", cxxopts::value<std::string>())
-                          ("help", "Shows this help message");
+    _ssh_command_interfaces[SSH_INTERFACE_MODULE] = std::make_unique<ssh::ModuleInterface>();
+
+    for(auto & s : _ssh_command_interfaces)
+    {
+        s->init();
+    }
 }
 
 void SSHServer::send(const std::string_view message)
@@ -321,43 +323,27 @@ std::string SSHServer::_process_message(std::string_view raw_message)
         return "";
     }
 
+    const auto command_name = args->argv_vec.front();
+
     try
     {
-        auto result = _ssh_interface.parse(args->argc, args->argv);
-        const auto command = args->argv_vec.front();
-
-        if (command == "help")
+        if (command_name == "help")
         {
-            return _ssh_interface.help();
+            return "(Not yet implemented)";
         }
-        else if (command == "module")
+        else if (command_name == "module")
         {
-            if (result.count("load"))
-            {
-                return fmt::format("Loading module \"{}\"", result["load"].as<std::string>());
-            }
-            else if (result.count("unload"))
-            {
-                return fmt::format("Unloading module \"{}\"", result["unload"].as<std::string>());
-            }
-            else if (result.count("reload"))
-            {
-                return fmt::format("Reloading module \"{}\"", result["reload"].as<std::string>());
-            }
-            else
-            {
-                return R"(Received command "module" without arguments; run "help" for usage.)";
-            }
+            return _ssh_command_interfaces[SSH_INTERFACE_MODULE]->execute(command_name, args->argc, args->argv);
         }
-
-        return fmt::format("Unrecognized command \"{}\".", command);
+        else
+        {
+            return fmt::format("Unrecognized command \"{}\".", command_name);
+        }
     }
     catch (const cxxopts::OptionParseException& e)
     {
         return fmt::format("Error while parsing options: {}", e.what());
     }
-
-
 }
 
 void SSHServer::_do_send(const std::string& m)

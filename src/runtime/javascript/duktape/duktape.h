@@ -1165,7 +1165,7 @@ DUK_EXTERNAL_DECL void duk_set_magic(duk_context *ctx, duk_idx_t idx, duk_int_t 
 DUK_EXTERNAL_DECL duk_int_t duk_get_current_magic(duk_context *ctx);
 
 /*
- *  Module helpers: put multiple function or constant properties
+ *  ModuleInterface helpers: put multiple function or constant properties
  */
 
 DUK_EXTERNAL_DECL void duk_put_function_list(duk_context *ctx, duk_idx_t obj_idx, const duk_function_list_entry *funcs);

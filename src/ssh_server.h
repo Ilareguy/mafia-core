@@ -33,6 +33,11 @@
 
 namespace mafia
 {
+    namespace ssh
+    {
+        class Command;
+    }
+
     class SSHServer
     {
     private:
@@ -67,7 +72,14 @@ namespace mafia
         bool _ssh_open_shell_channel();
         std::string _process_message(std::string_view);
         void _do_send(const std::string&); // Only call from SSH thread. Use ``send()`` otherwise, which is thread-safe
-        void _init_interface();
+        void _init_interfaces();
+
+    private:
+        enum SSHCommandInterfaces
+        {
+            SSH_INTERFACE_MODULE = 0,
+            SSH_INTERFACE_COUNT_
+        };
 
     private:
         std::string _username, _password;
@@ -79,7 +91,7 @@ namespace mafia
         bool _stop_ssh {false};
         std::queue<std::string> _messages_to_send;
         std::recursive_mutex _m;
-        cxxopts::Options _ssh_interface;
+        std::unique_ptr<ssh::Command> _ssh_command_interfaces[SSH_INTERFACE_COUNT_]; // Heap-allocated for now
     };
 }
 
