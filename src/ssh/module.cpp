@@ -38,14 +38,14 @@ std::string ssh::ModuleInterface::execute_command(
         ::mafia::SSHServer& ssh_server
 )
 {
-    ssh_server.post_task([&ssh_server](){
+    schedule([&ssh_server](){
         ssh_server.send("Hello, Task!");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         ssh_server.send("Hello, Task! (2)");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         ssh_server.send("Hello, Task! (3)");
-    });
-    return "Tasks posted";
+    }, THREAD_MAIN);
+    return "Tasks scheduled";
 }
 
 void ssh::ModuleInterface::init_ssh_interface(cxxopts::OptionAdder&& opts)

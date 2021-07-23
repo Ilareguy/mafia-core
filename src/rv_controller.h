@@ -27,6 +27,7 @@
 #include "arguments.h"
 #include "game_types/game_data.h"
 #include "synchronous_executor.h"
+#include "asynchronous_executor.h"
 #include <functional>
 #include <unordered_map>
 
@@ -64,6 +65,9 @@ namespace mafia
         );
         bool add_rv_command_handler(std::string_view command, RVCommandHandler_t handler);
 
+        void post_task_async(Task_t&&);
+        void post_task_async(Task_t&& task, Task_t&& then, TaskExecutor& then_executor);
+
     private:
         std::shared_ptr<Loader> _loader;
         std::shared_ptr<SQFFunctions> _sqf_functions;
@@ -72,6 +76,7 @@ namespace mafia
         RVCommandHandlers_t _command_handlers;
         std::unique_ptr<Runtime> _javascript_runtime {nullptr};
         std::unique_ptr<SSHServer> _ssh_server {nullptr};
+        AsynchronousTaskExecutor _async_executor;
     };
 }
 

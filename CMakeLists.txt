@@ -108,7 +108,6 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/ssh_server.cpp
         src/ssh/command.cpp
         src/ssh/module.cpp
-        src/ssh/scheduled_command.cpp
         src/task_executor.cpp
         src/synchronous_executor.cpp
         src/asynchronous_executor.cpp

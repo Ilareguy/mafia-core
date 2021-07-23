@@ -22,6 +22,8 @@
  ********************************************************/
 
 #include "command.h"
+#include "../mafia.h"
+#include "../rv_controller.h"
 #include <utility>
 
 using namespace mafia;
@@ -49,28 +51,19 @@ std::string ssh::Command::help()
     return _ssh_interface.help();
 }
 
-ssh::ScheduledCommandHandler
-ssh::Command::schedule(ssh::QueuedFunction_t&& function, ssh::QueuedFunctionThread target_thread)
-{
-    return ScheduledCommandHandler(
-            new ScheduledCommand(std::move(function), target_thread),
-            Command::_do_schedule
-    );
-}
-
-void ssh::Command::_do_schedule(ssh::ScheduledCommand* command_ptr)
+void ssh::Command::schedule(ScheduledFunction_t&& function, QueuedFunctionThread target_thread)
 {
     // Schedule the command to be executed
-    switch(command_ptr->_thread)
+    switch(target_thread)
     {
         case THREAD_MAIN:
-            // No need to actually execute on Arma's thread; lock a
+            // Schedule on the Arma's main thread (through the RVController)
+            controller()->post_task(std::move(function));
             break;
 
         case THREAD_ISOLATED:
+            // Schedule on the RVController's asynchronous executor
+            controller()->post_task_async(std::move(function));
             break;
     }
-
-    // Once everything is done being executed, delete
-    delete command_ptr;
-};
+}

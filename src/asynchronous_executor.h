@@ -43,8 +43,6 @@ namespace mafia
 
         void post_task(Task_t&&) override;
         void post_task(Task_t&& task, Task_t&& then, TaskExecutor& then_executor) override;
-
-    protected:
         void run_tasks() override;
 
     private:
