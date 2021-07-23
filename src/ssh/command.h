@@ -29,15 +29,21 @@
 #include <string>
 #include <cxxopts.hpp>
 
+namespace mafia
+{
+    class SSHServer;
+}
+
 namespace mafia::ssh
 {
+
     class Command
     {
     public:
         Command(std::string command_name, std::string command_description);
         virtual ~Command();
         void init();
-        std::string execute(const std::string& command_name, int argc, char** argv);
+        std::string execute(const std::string& command_name, int argc, char** argv, ::mafia::SSHServer&);
 
         /**
          * @return Returns the help string for a command
@@ -62,7 +68,7 @@ namespace mafia::ssh
          * @param args Parsed command arguments
          * @return Return a string message that will be sent over to the connected SSH client
          */
-        virtual std::string execute_command(const std::string& command_name, const cxxopts::ParseResult& args) = 0;
+        virtual std::string execute_command(const std::string& command_name, const cxxopts::ParseResult& args, ::mafia::SSHServer&) = 0;
 
         /**
          * Implement this method to add options to your SSH interface.

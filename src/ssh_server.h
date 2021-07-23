@@ -24,6 +24,7 @@
 #ifndef DEF_MAFIA_CORE_SSH_SERVER_H
 #define DEF_MAFIA_CORE_SSH_SERVER_H
 
+#include "asynchronous_executor.h"
 #include <string_view>
 #include <libssh/server.h>
 #include <thread>
@@ -38,7 +39,7 @@ namespace mafia
         class Command;
     }
 
-    class SSHServer
+    class SSHServer : public AsynchronousTaskExecutor
     {
     private:
         /**

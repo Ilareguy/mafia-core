@@ -36,7 +36,7 @@ namespace mafia::ssh
         virtual ~ModuleInterface();
 
     protected:
-        virtual std::string execute_command(const std::string& command_name, const cxxopts::ParseResult& args) override;
+        virtual std::string execute_command(const std::string& command_name, const cxxopts::ParseResult& args, ::mafia::SSHServer&) override;
         virtual void init_ssh_interface(cxxopts::OptionAdder&&) override;
     };
 }

@@ -36,15 +36,13 @@ namespace mafia::ssh
     typedef std::function<void(void)> QueuedFunctionThen_t;
     enum QueuedFunctionThread
     {
-        /* Main Arma thread. Invoking functions here will hang the game until the functions return.
-         * It is safe to invoke SQF functions in here. */
+        /* Main Arma thread. Invoking tasks here will hang the game until the task return.
+         * It is safe to invoke SQF functions in here. Prefer this when you need to run quick tasks that need to
+         * invoke SQF functions. */
         THREAD_MAIN = 0,
 
-        /* SSH's worker thread. Prefer this for functions that don't hang and when you don't need to invoke SQF
-         * functions. */
-        THREAD_SSH_WORKER,
-
-        /* A new isolated thread spawned for your function. Prefer this for long-running functions. */
+        /* A new isolated thread spawned for your task. Prefer this for long-running tasks or for tasks that do
+         * not need to invoke SQF functions. */
         THREAD_ISOLATED
     };
 

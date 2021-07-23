@@ -90,9 +90,9 @@ std::unique_ptr<SSHServer::Arguments> SSHServer::_parse_arguments(std::string_vi
 }
 
 SSHServer::SSHServer(std::string_view username, std::string_view password, unsigned int port):
+        AsynchronousTaskExecutor(1),
         _username(username),
         _password(password)
-// _ssh_interface("Mafia SSH Interface", "SSH interface to control and manage a Mafia instance")
 {
     _init_interfaces();
     log::info("Starting SSH worker thread");
@@ -290,6 +290,9 @@ void SSHServer::_ssh_thread(unsigned int port)
                 }
             }
 
+            // Tasks to run?
+            run_tasks();
+
             i = ssh_channel_read_timeout(_channel, buf, 2048, 0, 10);
             if (i > 0)
             {
@@ -333,7 +336,7 @@ std::string SSHServer::_process_message(std::string_view raw_message)
         }
         else if (command_name == "module")
         {
-            return _ssh_command_interfaces[SSH_INTERFACE_MODULE]->execute(command_name, args->argc, args->argv);
+            return _ssh_command_interfaces[SSH_INTERFACE_MODULE]->execute(command_name, args->argc, args->argv, *this);
         }
         else
         {

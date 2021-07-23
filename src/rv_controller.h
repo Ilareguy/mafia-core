@@ -26,6 +26,7 @@
 
 #include "arguments.h"
 #include "game_types/game_data.h"
+#include "synchronous_executor.h"
 #include <functional>
 #include <unordered_map>
 
@@ -38,7 +39,7 @@ namespace mafia
     class Runtime;
     class SSHServer;
 
-    class RVController
+    class RVController: public SynchronousTaskExecutor
     {
     private:
         typedef std::function<std::string(mafia::Arguments& args)> RVCommandHandler_t;

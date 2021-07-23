@@ -33,10 +33,10 @@ ssh::Command::Command(std::string command_name, std::string command_description)
 
 ssh::Command::~Command() = default;
 
-std::string ssh::Command::execute(const std::string& command_name, int argc, char** argv)
+std::string ssh::Command::execute(const std::string& command_name, int argc, char** argv, ::mafia::SSHServer& s)
 {
     const auto parse_result = _ssh_interface.parse(argc, argv);
-    return execute_command(command_name, parse_result);
+    return execute_command(command_name, parse_result, s);
 }
 
 void ssh::Command::init()
@@ -65,9 +65,6 @@ void ssh::Command::_do_schedule(ssh::ScheduledCommand* command_ptr)
     {
         case THREAD_MAIN:
             // No need to actually execute on Arma's thread; lock a
-            break;
-
-        case THREAD_SSH_WORKER:
             break;
 
         case THREAD_ISOLATED:
