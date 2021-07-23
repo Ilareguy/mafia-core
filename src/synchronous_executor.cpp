@@ -29,10 +29,10 @@ mafia::SynchronousTaskExecutor::~SynchronousTaskExecutor() = default;
 
 void mafia::SynchronousTaskExecutor::post_task(mafia::TaskExecutor::Task_t&& t)
 {
-    auto new_taskflow = std::make_unique<tf::Taskflow>();
+    auto new_taskflow = new tf::Taskflow();
     new_taskflow->emplace(t);
     std::lock_guard<std::mutex> _l(_m);
-    _tasks.push(std::move(new_taskflow));
+    _tasks.push(new_taskflow);
 }
 
 void mafia::SynchronousTaskExecutor::post_task(
@@ -41,7 +41,7 @@ void mafia::SynchronousTaskExecutor::post_task(
         mafia::TaskExecutor& then_executor
 )
 {
-    auto new_taskflow = std::make_unique<tf::Taskflow>();
+    auto new_taskflow = new tf::Taskflow();
     auto task = new_taskflow->emplace(t);
     auto then_task = new_taskflow->emplace(
             [&]() {
@@ -51,7 +51,7 @@ void mafia::SynchronousTaskExecutor::post_task(
     task.precede(then_task);
 
     std::lock_guard<std::mutex> _l(_m);
-    _tasks.push(std::move(new_taskflow));
+    _tasks.push(new_taskflow);
 }
 
 void mafia::SynchronousTaskExecutor::run_tasks()
@@ -59,9 +59,8 @@ void mafia::SynchronousTaskExecutor::run_tasks()
     std::lock_guard<std::mutex> _l(_m);
     if (!_tasks.empty())
     {
-        auto t = std::move(_tasks.front());
+        auto t = _tasks.front();
         _tasks.pop();
         _executor.run(*t).wait();
-        t = nullptr;
     }
 }

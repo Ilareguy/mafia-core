@@ -49,7 +49,7 @@ namespace mafia
 
     private:
         std::mutex _m;
-        std::queue<std::unique_ptr<tf::Taskflow>> _tasks;
+        std::queue<tf::Taskflow*> _tasks;
         tf::Executor _executor;
     };
 }
