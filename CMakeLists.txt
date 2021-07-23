@@ -106,7 +106,12 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/runtime/module_info.cpp
         src/runtime/runtime.cpp
         src/ssh_server.cpp
-        src/ssh/command.cpp)
+        src/ssh/command.cpp
+        src/ssh/module.cpp
+        src/task_executor.cpp
+        src/synchronous_executor.cpp
+        src/asynchronous_executor.cpp
+        )
 
 target_compile_definitions(${MAFIA_DLL_NAME} PRIVATE -DMAFIA_CORE)
 
@@ -118,10 +123,15 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(dlfcn-win32 CONFIG REQUIRED)
 find_package(libssh CONFIG REQUIRED)
 find_package(cxxopts CONFIG REQUIRED)
+find_package(Taskflow CONFIG REQUIRED)
 target_link_libraries(mafia-runtime-javascript PUBLIC
         mafia-types
         mafia-containers
         fmt::fmt)
+
+target_link_libraries(mafia-types PUBLIC
+        Taskflow::Taskflow)
+
 target_link_libraries(${MAFIA_DLL_NAME} PRIVATE
         mafia-types
         mafia-containers
@@ -129,7 +139,8 @@ target_link_libraries(${MAFIA_DLL_NAME} PRIVATE
         spdlog::spdlog
         dlfcn-win32::dl
         ssh
-        cxxopts::cxxopts)
+        cxxopts::cxxopts
+        Taskflow::Taskflow)
 
 ########## Misc
 set_target_properties(${MAFIA_DLL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")

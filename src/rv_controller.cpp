@@ -32,7 +32,7 @@
 using namespace mafia;
 using namespace std::literals::string_view_literals;
 
-RVController::RVController() = default;
+RVController::RVController(): _async_executor(3) {}
 
 RVController::~RVController() = default;
 
@@ -57,7 +57,7 @@ void RVController::initialize(uintptr_t stack_base)
 
 void RVController::shutdown()
 {
-    if(_javascript_runtime)
+    if (_javascript_runtime)
     {
         _javascript_runtime->shutdown();
         _javascript_runtime = nullptr;
@@ -153,4 +153,17 @@ std::shared_ptr<Invoker> RVController::get_invoker()
 std::shared_ptr<MissionEvents> RVController::get_mission_events()
 {
     return _mission_events;
+}
+
+void RVController::post_task_async(TaskExecutor::Task_t&& t)
+{
+    _async_executor.post_task(std::move(t));
+    _async_executor.run_tasks();
+}
+
+void
+RVController::post_task_async(TaskExecutor::Task_t&& task, TaskExecutor::Task_t&& then, TaskExecutor& then_executor)
+{
+    _async_executor.post_task(std::move(task), std::move(then), then_executor);
+    _async_executor.run_tasks();
 }
