@@ -22,7 +22,6 @@
  ********************************************************/
 
 #include "javascript_runtime.h"
-#include "duktape/duktape.h"
 #include "../module_info.h"
 
 using namespace mafia;
@@ -30,34 +29,39 @@ using namespace mafia::runtime;
 
 // https://duktape.org/guide.html#gettingstarted.3
 
-namespace mafia::runtime::javascript::_private
+::mafia::RuntimeAPI* javascript::get_runtime()
 {
-    duk_context* javascript_context {nullptr};
-
-    void duktape_error(void* user_data, const char* msg)
-    {
-        log::error("Javascript error: {}", msg);
-        log::flush();
-    }
+    return new JavascriptRuntime();
 }
 
-void javascript::initialize()
+javascript::JavascriptRuntime::~JavascriptRuntime() = default;
+
+
+void javascript::JavascriptRuntime::duktape_error(void* user_data, const char* msg)
+{
+    log::error("Javascript error: {}", msg);
+    log::flush();
+}
+
+void javascript::JavascriptRuntime::initialize()
 {
     constexpr void* duk_user_ptr = nullptr;
 
-    _private::javascript_context = duk_create_heap(nullptr, nullptr, nullptr, duk_user_ptr, &_private::duktape_error);
-    auto* ctx = _private::javascript_context;
-    if (!_private::javascript_context)
+    javascript_context = duk_create_heap(nullptr, nullptr, nullptr, duk_user_ptr, &JavascriptRuntime::duktape_error);
+    auto* ctx = javascript_context;
+    if (!javascript_context)
     {
         log::critical("Duktape initialization failed!");
         return; // @TODO Signal runtime initialization failure somehow (return bool instead of void)
     }
 
-    duk_push_string(ctx,
-                    R"(
-        function hello(){ return "Hello, World!"; }
+    duk_push_string(
+            ctx,
+            R"(
+        function hello(){ return "VERY NICE!"; }
         hello();
-)");
+)"
+    );
 
     if (duk_peval(ctx) != 0)
     {
@@ -83,17 +87,17 @@ void javascript::initialize()
     log::flush();
 }
 
-void javascript::shutdown()
+void javascript::JavascriptRuntime::shutdown()
 {
-    if (_private::javascript_context)
+    if (javascript_context)
     {
-        duk_destroy_heap(_private::javascript_context);
-        _private::javascript_context = nullptr;
+        duk_destroy_heap(javascript_context);
+        javascript_context = nullptr;
     }
 }
 
-bool javascript::load_module(const ModuleInfo& info, ErrorBase& err)
+/*bool javascript::load_module(const ModuleInfo& info, ErrorBase& err)
 {
     log::info("Javascript runtime requested to load module {} at {}", info.name, info.path);
     return false;
-}
+}*/

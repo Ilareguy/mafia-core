@@ -52,14 +52,14 @@ void RVController::initialize(uintptr_t stack_base)
     _javascript_runtime = std::make_unique<Runtime>(
             R"(@mafia\mafia-runtime-javascript.dll)"
     );
-    _javascript_runtime->initialize();
+    _javascript_runtime->api().initialize();
 }
 
 void RVController::shutdown()
 {
     if (_javascript_runtime)
     {
-        _javascript_runtime->shutdown();
+        _javascript_runtime->api().shutdown();
         _javascript_runtime = nullptr;
     }
 
@@ -101,7 +101,7 @@ bool RVController::rv_signal(
     module::on_signal_func signal_func;
     if (signal_func_it == signal_module->second.signal_funcs.end()) {
 
-        signal_func = reinterpret_cast<module::on_signal_func>(GetProcAddress(signal_module->second.handle, signal_name.c_str())); //#TODO why?! The signal module function thingy is commented out.. also has a #TODO with ?! on it
+        signal_func = reinterpret_cast<module::on_signal_func>(GetProcAddress(signal_module->second.dll_handle, signal_name.c_str())); //#TODO why?! The signal module function thingy is commented out.. also has a #TODO with ?! on it
 
         if (!signal_func)
             return false;

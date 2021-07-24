@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 28/03/2021.
+ * File created by Anthony Ilareguy on 2021-07-24.
  * [File Description]
  *
  ********************************************************
@@ -21,22 +21,20 @@
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_RUNTIME_ERRORS_H
-#define DEF_MAFIA_CORE_RUNTIME_ERRORS_H
+#ifndef DEF_MAFIA_CORE_MAFIA_RUNTIME_API_H
+#define DEF_MAFIA_CORE_MAFIA_RUNTIME_API_H
 
-#include <exception>
-
-namespace mafia::runtime
+namespace mafia
 {
-    struct ErrorBase: public std::exception
+    class RuntimeAPI
     {
-        explicit ErrorBase(char const* const m) noexcept: std::exception(m){}
-    };
+    public:
+        RuntimeAPI() = default;
+        virtual ~RuntimeAPI() = default;
 
-    struct LoadModuleError: public ErrorBase
-    {
-        explicit LoadModuleError(char const* const m) noexcept: ErrorBase(m){}
+        virtual void initialize() = 0;
+        virtual void shutdown() = 0;
     };
 }
 
-#endif // DEF_MAFIA_CORE_RUNTIME_ERRORS_H
+#endif // DEF_MAFIA_CORE_MAFIA_RUNTIME_API_H

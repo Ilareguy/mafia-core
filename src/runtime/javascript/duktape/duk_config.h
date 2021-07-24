@@ -2161,7 +2161,7 @@ typedef struct duk_hthread duk_context;
 
 /* Special naming to avoid conflict with e.g. DUK_FREE() in duk_heap.h
  * (which is unfortunately named).  May sometimes need replacement, e.g.
- * some compilers don't handle zero length or NULL correctly in realloc().
+ * some compilers don't dll_handle zero length or NULL correctly in realloc().
  */
 #if !defined(DUK_ANSI_MALLOC)
 #define DUK_ANSI_MALLOC      malloc

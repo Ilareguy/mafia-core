@@ -25,19 +25,28 @@
 #define DEF_MAFIA_CORE_RUNTIME_JAVASCRIPT_RUNTIME_H
 
 #include "../mafia.h"
+#include "../mafia_runtime.h"
+#include "duktape/duktape.h"
 
 namespace mafia::runtime::javascript
 {
     extern "C" {
-    MAFIA_API_FUNC void CDECL initialize();
-    MAFIA_API_FUNC void CDECL shutdown();
-
-    /**
-     * Your runtime should load the module specified and return true on success and false on error.
-     * If an error occurred, you must set `err` to a relevant error object describing what happened.
-     */
-    MAFIA_API_FUNC bool CDECL load_module(const runtime::ModuleInfo& info, runtime::ErrorBase& err);
+    MAFIA_API_FUNC ::mafia::RuntimeAPI* CDECL get_runtime();
     }
+
+    class JavascriptRuntime: public ::mafia::RuntimeAPI
+    {
+    public:
+        virtual ~JavascriptRuntime();
+        void initialize() override;
+        void shutdown() override;
+
+    private:
+        static void duktape_error(void* user_data, const char* msg);
+
+    private:
+        duk_context* javascript_context {nullptr};
+    };
 }
 
 #endif // DEF_MAFIA_CORE_RUNTIME_JAVASCRIPT_RUNTIME_H

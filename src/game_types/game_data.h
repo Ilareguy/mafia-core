@@ -201,7 +201,7 @@ namespace mafia::game_types
         std::optional<GameValue> get(size_t i_) const;
 
         uintptr_t type() const;
-        /// doesn't handle all types. Will return game_data_type::ANY if not handled
+        /// doesn't dll_handle all types. Will return game_data_type::ANY if not handled
         mafia::game_types::GameDataType type_enum() const;
 
         size_t size() const;
