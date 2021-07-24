@@ -28,17 +28,20 @@
 
 namespace mafia
 {
-    class Module
+    namespace runtime
     {
-    public:
+        class Module
+        {
+        public:
 
-        [[nodiscard]] virtual const char* name() const = 0;
+            [[nodiscard]] virtual const char* name() const = 0;
 
-        /**
-         * @return A path pointing to the directory containing a module's files.
-         */
-        [[nodiscard]] virtual const char* directory_path() const = 0;
-    };
+            /**
+             * @return A path pointing to the directory containing a module's files.
+             */
+            [[nodiscard]] virtual const char* directory_path() const = 0;
+        };
+    }
 
     class RuntimeAPI
     {
@@ -48,8 +51,8 @@ namespace mafia
 
         virtual void initialize() = 0;
         virtual void shutdown() = 0;
-        virtual runtime::Result load_module(const Module& module_to_load) = 0;
-        virtual runtime::Result unload_module(const Module& module_to_unload) = 0;
+        virtual runtime::Result load_module(const runtime::Module& module_to_load) = 0;
+        virtual runtime::Result unload_module(const runtime::Module& module_to_unload) = 0;
     };
 }
 

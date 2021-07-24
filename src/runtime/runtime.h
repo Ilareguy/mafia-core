@@ -51,7 +51,7 @@ namespace mafia
         DLLHandle _dll_handle;
         GetRuntimeFunction_t _get_runtime_function;
         RuntimeAPI* _runtime_api;
-        // std::vector<>
+        // std::vector<> _loaded_modules;
 
     };
 }

@@ -167,3 +167,21 @@ RVController::post_task_async(TaskExecutor::Task_t&& task, TaskExecutor::Task_t&
     _async_executor.post_task(std::move(task), std::move(then), then_executor);
     _async_executor.run_tasks();
 }
+
+void RVController::load_module(
+        std::string_view name,
+        RVController::ModuleLoadCompleteFunction_t&& then,
+        TaskExecutor& then_exec
+)
+{
+
+}
+
+void RVController::unload_module(
+        std::string_view name,
+        RVController::ModuleUnloadCompleteFunction_t&& then,
+        TaskExecutor& then_exec
+)
+{
+
+}

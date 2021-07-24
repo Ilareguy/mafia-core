@@ -42,6 +42,8 @@ namespace mafia::runtime
     {
         explicit ResultBase(bool is_successful) noexcept: _s(is_successful){}
 
+        // @TODO implicit conversion to bool
+
         [[nodiscard]] inline bool success() const { return _s; }
 
     private:

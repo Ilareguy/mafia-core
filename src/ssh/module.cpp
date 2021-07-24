@@ -22,7 +22,10 @@
  ********************************************************/
 
 #include "module.h"
+#include "../runtime/mafia_runtime.h"
 #include "../ssh_server.h"
+#include "../mafia.h"
+#include "../rv_controller.h"
 
 using namespace mafia;
 
@@ -37,15 +40,17 @@ std::string ssh::ModuleInterface::execute_command(
         ::mafia::SSHServer& ssh_server
 )
 {
-    if(args.count("load"))
+    if (args.count("load"))
     {
         // Load a module
         auto module_name = args["load"].as<std::string>();
-
-        schedule([&module_name](){
-            //
-        }, THREAD_MAIN);
-
+        controller()->load_module(
+                module_name,
+                [&ssh_server](const runtime::Module& new_module, const runtime::Result r) {
+                    ssh_server.send("Successfully loaded module `{}`!", new_module.name());
+                },
+                (*controller())
+        );
         return fmt::format("Loading module \"{}\"...", module_name);
     }
 
