@@ -40,6 +40,8 @@ namespace mafia::runtime::javascript
         virtual ~JavascriptRuntime();
         void initialize() override;
         void shutdown() override;
+        Result load_module(const Module& module_to_load) override;
+        Result unload_module(const Module& module_to_unload) override;
 
     private:
         static void duktape_error(void* user_data, const char* msg);

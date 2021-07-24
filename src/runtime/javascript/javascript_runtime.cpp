@@ -22,7 +22,6 @@
  ********************************************************/
 
 #include "javascript_runtime.h"
-#include "../module_info.h"
 
 using namespace mafia;
 using namespace mafia::runtime;
@@ -94,6 +93,21 @@ void javascript::JavascriptRuntime::shutdown()
         duk_destroy_heap(javascript_context);
         javascript_context = nullptr;
     }
+}
+
+Result javascript::JavascriptRuntime::load_module(const Module& module_to_load)
+{
+    log::info(
+            "Javascript runtime requested to load module \"{}\" in {}", module_to_load.name(),
+            module_to_load.directory_path());
+    return runtime::Result::success();
+}
+
+Result javascript::JavascriptRuntime::unload_module(const Module& module_to_unload)
+{
+    log::info(
+            "Javascript runtime requested to unload module \"{}\".", module_to_unload.name());
+    return runtime::Result::success();
 }
 
 /*bool javascript::load_module(const ModuleInfo& info, ErrorBase& err)

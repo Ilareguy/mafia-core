@@ -68,6 +68,9 @@ namespace mafia
         void post_task_async(Task_t&&);
         void post_task_async(Task_t&& task, Task_t&& then, TaskExecutor& then_executor);
 
+        void load_module(std::string_view module_name);
+        void unload_module(std::string_view module_name);
+
     private:
         std::shared_ptr<Loader> _loader;
         std::shared_ptr<SQFFunctions> _sqf_functions;

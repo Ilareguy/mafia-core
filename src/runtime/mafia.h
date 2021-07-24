@@ -58,11 +58,6 @@ namespace mafia
         constexpr const char* suffix = "-alpha";
     }
 
-    namespace runtime
-    {
-        struct ModuleInfo;
-    }
-
     namespace runtime::log
     {
         // Don't put declared here in ::mafia::log because they would clash with these declared in ``../logging.h``.

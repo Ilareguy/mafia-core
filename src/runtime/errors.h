@@ -28,14 +28,36 @@
 
 namespace mafia::runtime
 {
-    struct ErrorBase: public std::exception
+    // Don't derive from std::exception because these objects will be shared across DLL boundaries.
+    struct ErrorBase
     {
-        explicit ErrorBase(char const* const m) noexcept: std::exception(m){}
+        explicit ErrorBase(char const* const m) noexcept: _m(m){}
+        [[nodiscard]] inline const char* what() const { return _m; }
+
+    private:
+        char const* const _m;
     };
 
-    struct LoadModuleError: public ErrorBase
+    struct ResultBase
     {
-        explicit LoadModuleError(char const* const m) noexcept: ErrorBase(m){}
+        explicit ResultBase(bool is_successful) noexcept: _s(is_successful){}
+
+        [[nodiscard]] inline bool success() const { return _s; }
+
+    private:
+        const bool _s;
+    };
+
+    struct Result: public ErrorBase, public ResultBase
+    {
+        // Indicate success
+        explicit Result() noexcept: ErrorBase(""), ResultBase(true){}
+
+        // Indicate failure/error
+        explicit Result(char const* const m) noexcept: ErrorBase(m), ResultBase(false){}
+
+        static inline Result success() { return Result(); }
+        static inline Result error(char const* const message) { return Result(message); }
     };
 }
 

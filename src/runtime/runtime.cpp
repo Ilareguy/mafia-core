@@ -22,8 +22,6 @@
  ********************************************************/
 
 #include "runtime.h"
-#include "module.h"
-#include "module_info.h"
 #include "errors.h"
 #include "../logging.h"
 

@@ -99,17 +99,17 @@ mafia::game_types::GameValue mafia::MissionEvents::client_event_handler(
 
 void mafia::MissionEvents::pre_init(const game_types::GameValue& args_)
 {
-    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
+    //log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }
 
 void mafia::MissionEvents::pre_pre_init(const game_types::GameValue& args_)
 {
-    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
+    //log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }
 
 void mafia::MissionEvents::pre_start(const game_types::GameValue& args_)
 {
-    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
+    //log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
     _event_handler_function = mafia::controller()->get_sqf_functions()->register_sqf_function(
             "MafiaClientEvent"sv,
             "Forwarder used to call functions in Intercept Plugins"sv,
@@ -122,15 +122,15 @@ void mafia::MissionEvents::pre_start(const game_types::GameValue& args_)
 
 void mafia::MissionEvents::post_start(const game_types::GameValue& args_)
 {
-    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
+    //log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }
 
 void mafia::MissionEvents::post_init(const game_types::GameValue& args_)
 {
-    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
+    //log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }
 
 void mafia::MissionEvents::mission_ended(const game_types::GameValue& args_)
 {
-    log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
+    //log::debug("{} with args {}.", __FUNCTION__, static_cast<std::string>(args_));
 }

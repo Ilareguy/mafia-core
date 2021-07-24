@@ -23,7 +23,6 @@
 
 #include "module.h"
 #include "../ssh_server.h"
-#include <thread>
 
 using namespace mafia;
 
@@ -41,18 +40,16 @@ std::string ssh::ModuleInterface::execute_command(
     if(args.count("load"))
     {
         // Load a module
+        auto module_name = args["load"].as<std::string>();
+
+        schedule([&module_name](){
+            //
+        }, THREAD_MAIN);
+
+        return fmt::format("Loading module \"{}\"...", module_name);
     }
 
     return "<not implemented>";
-
-    /*schedule([&ssh_server](){
-        ssh_server.send("Hello, Task!");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        ssh_server.send("Hello, Task! (2)");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        ssh_server.send("Hello, Task! (3)");
-    }, THREAD_MAIN);
-    return "Tasks scheduled";*/
 }
 
 void ssh::ModuleInterface::init_ssh_interface(cxxopts::OptionAdder&& opts)
