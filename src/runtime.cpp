@@ -22,8 +22,7 @@
  ********************************************************/
 
 #include "runtime.h"
-#include "errors.h"
-#include "../logging.h"
+#include "logging.h"
 
 using namespace mafia;
 using namespace std::literals::string_view_literals;

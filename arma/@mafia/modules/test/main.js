@@ -1,6 +1,6 @@
 function hello()
 {
-    return "Hello, Test Module!";
+    return "Hello dawg";
 }
 
 hello();

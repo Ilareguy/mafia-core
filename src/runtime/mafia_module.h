@@ -12,38 +12,31 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 2021-07-24.
+ * File created by Anthony Ilareguy on 2021-07-25.
  * [File Description]
  *
  ********************************************************
- * 
+ *
  * [Credits]
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_MAFIA_RUNTIME_API_H
-#define DEF_MAFIA_CORE_MAFIA_RUNTIME_API_H
+#ifndef DEF_MAFIA_CORE_RUNTIME_MAFIA_MODULE_H
+#define DEF_MAFIA_CORE_RUNTIME_MAFIA_MODULE_H
 
-#include "mafia_errors.h"
-
-namespace mafia
+namespace mafia::runtime
 {
-    namespace runtime
-    {
-        class Module; // Defined in ./mafia_module.h
-    }
-
-    class RuntimeAPI
+    class Module
     {
     public:
-        RuntimeAPI() = default;
-        virtual ~RuntimeAPI() = default;
 
-        virtual void initialize() = 0;
-        virtual void shutdown() = 0;
-        virtual runtime::Result load_module(const runtime::Module& module_to_load) = 0;
-        virtual runtime::Result unload_module(const runtime::Module& module_to_unload) = 0;
+        [[nodiscard]] virtual const char* name() const = 0;
+
+        /**
+         * @return A path pointing to the directory containing a module's files.
+         */
+        [[nodiscard]] virtual const char* directory_path() const = 0;
     };
 }
 
-#endif // DEF_MAFIA_CORE_MAFIA_RUNTIME_API_H
+#endif // DEF_MAFIA_CORE_RUNTIME_MAFIA_MODULE_H

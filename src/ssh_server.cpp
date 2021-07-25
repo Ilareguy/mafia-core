@@ -290,9 +290,6 @@ void SSHServer::_ssh_thread(unsigned int port)
                 }
             }
 
-            // Tasks to run?
-            run_tasks();
-
             i = ssh_channel_read_timeout(_channel, buf, 2048, 0, 10);
             if (i > 0)
             {

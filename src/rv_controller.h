@@ -26,7 +26,7 @@
 
 #include "arguments.h"
 #include "game_types/game_data.h"
-#include "runtime/errors.h"
+#include "runtime/mafia_errors.h"
 #include "synchronous_executor.h"
 #include "asynchronous_executor.h"
 #include <functional>
@@ -51,8 +51,8 @@ namespace mafia
     private:
         typedef std::function<std::string(mafia::Arguments& args)> RVCommandHandler_t;
         typedef std::unordered_map<std::string, RVCommandHandler_t> RVCommandHandlers_t;
-        typedef std::function<void(const runtime::Module&, const runtime::Result)> ModuleLoadCompleteFunction_t;
-        typedef std::function<void(const runtime::Module&)> ModuleUnloadCompleteFunction_t;
+        typedef std::function<void(std::shared_ptr<runtime::Module>)> ModuleLoadCompleteFunction_t;
+        typedef std::function<void(std::shared_ptr<runtime::Module>)> ModuleUnloadCompleteFunction_t;
 
     public:
         RVController();
@@ -78,8 +78,11 @@ namespace mafia
 
         // Loading and unloading modules should only be done on a Runtime main thread. These methods should schedule()
         // loading/unloading manually, and report back when the job is done.
-        void load_module(std::string_view name, ModuleLoadCompleteFunction_t&& then, TaskExecutor& then_exec);
-        void unload_module(std::string_view name, ModuleUnloadCompleteFunction_t&& then, TaskExecutor& then_exec);
+        void try_load_module(std::string_view name, ModuleLoadCompleteFunction_t&& then);
+        void try_unload_module(std::string_view name, ModuleUnloadCompleteFunction_t&& then);
+
+    private:
+        void on_game_frame();
 
     private:
         std::shared_ptr<Loader> _loader;
@@ -90,6 +93,9 @@ namespace mafia
         std::unique_ptr<Runtime> _javascript_runtime {nullptr};
         std::unique_ptr<SSHServer> _ssh_server {nullptr};
         AsynchronousTaskExecutor _async_executor;
+
+    private:
+        friend class Invoker;
     };
 }
 

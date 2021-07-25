@@ -43,7 +43,7 @@
 #define MAFIA_API_FUNC DLLEXPORT
 #endif
 
-#include "errors.h"
+#include "mafia_errors.h"
 #include <cstdint>
 #include <string_view>
 #include <fmt/format.h>

@@ -22,6 +22,7 @@
  ********************************************************/
 
 #include "module.h"
+#include "../runtime/mafia_module.h"
 #include "../runtime/mafia_runtime.h"
 #include "../ssh_server.h"
 #include "../mafia.h"
@@ -42,16 +43,24 @@ std::string ssh::ModuleInterface::execute_command(
 {
     if (args.count("load"))
     {
-        // Load a module
         auto module_name = args["load"].as<std::string>();
-        controller()->load_module(
-                module_name,
-                [&ssh_server](const runtime::Module& new_module, const runtime::Result r) {
-                    ssh_server.send("Successfully loaded module `{}`!", new_module.name());
-                },
-                (*controller())
-        );
-        return fmt::format("Loading module \"{}\"...", module_name);
+
+        try
+        {
+            // Load a module
+            controller()->try_load_module(
+                    module_name,
+                    [&ssh_server](std::shared_ptr<runtime::Module> new_module) {
+                        ssh_server.send("Successfully loaded module `{}`!", new_module->name());
+                    }
+            );
+
+            return fmt::format("Loading module \"{}\"...", module_name);
+        }
+        catch (const std::exception& e)
+        {
+            return fmt::format("Could not load module `{}`: {}", module_name, e.what());
+        }
     }
 
     return "<not implemented>";

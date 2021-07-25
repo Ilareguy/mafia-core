@@ -101,15 +101,16 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/loader.cpp
         src/sqf_register_functions.cpp
         src/mission_events.cpp
-        src/runtime/errors.h
-        src/runtime/runtime.cpp
+        src/runtime/mafia_errors.h
+        src/runtime.cpp
         src/ssh_server.cpp
         src/ssh/command.cpp
         src/ssh/module.cpp
         src/task_executor.cpp
         src/synchronous_executor.cpp
         src/asynchronous_executor.cpp
-        src/runtime/mafia_runtime.h)
+        src/runtime/mafia_runtime.h
+        src/runtime/mafia_module.h src/module.cpp src/module.h)
 
 target_compile_definitions(${MAFIA_DLL_NAME} PRIVATE -DMAFIA_CORE)
 

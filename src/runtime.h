@@ -24,16 +24,17 @@
 #ifndef DEF_MAFIA_CORE_RUNTIME_H
 #define DEF_MAFIA_CORE_RUNTIME_H
 
-#include "mafia_runtime.h"
-#include "../shared.h"
-#include "../dll_handle.h"
+#include "runtime/mafia_runtime.h"
+#include "shared.h"
+#include "dll_handle.h"
+#include "asynchronous_executor.h"
 #include <memory>
 
 namespace mafia
 {
     class DLLHandle;
     class RuntimeAPI;
-    class Runtime
+    class Runtime : public AsynchronousTaskExecutor
     {
     public:
         typedef RuntimeAPI* (CDECL* GetRuntimeFunction_t)(void);

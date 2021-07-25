@@ -54,11 +54,10 @@ namespace mafia::runtime
     {
         // Indicate success
         explicit Result() noexcept: ErrorBase(""), ResultBase(true){}
+        static inline Result success() { return Result(); }
 
         // Indicate failure/error
         explicit Result(char const* const m) noexcept: ErrorBase(m), ResultBase(false){}
-
-        static inline Result success() { return Result(); }
         static inline Result error(char const* const message) { return Result(message); }
     };
 }
