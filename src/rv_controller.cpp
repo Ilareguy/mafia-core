@@ -175,13 +175,18 @@ RVController::post_task_async(TaskExecutor::Task_t&& task, TaskExecutor::Task_t&
 
 void RVController::try_load_module(
         std::string_view name,
-        RVController::ModuleLoadCompleteFunction_t&& then
+        RVController::ModuleLoadCompleteFunction_t&& then_
 )
 {
     try
     {
         auto new_module = Module::try_load(std::string {name}, (*_javascript_runtime));
-        _javascript_runtime->post_task([&](){ then(new_module); });
+        _javascript_runtime->loaded_modules.push_back(new_module);
+        _javascript_runtime->post_task(
+                [then = std::forward<RVController::ModuleLoadCompleteFunction_t>(then_), new_module]() {
+                    then(new_module);
+                }
+        );
     }
     catch (const std::exception& e)
     {

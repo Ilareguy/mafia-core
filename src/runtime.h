@@ -28,6 +28,7 @@
 #include "shared.h"
 #include "dll_handle.h"
 #include "asynchronous_executor.h"
+#include "module.h"
 #include <memory>
 
 namespace mafia
@@ -46,13 +47,13 @@ namespace mafia
         /**
          * @return Returns direct access to the RuntimeAPI implemented in the DLL.
          */
-        inline RuntimeAPI& api(){ return *_runtime_api; }
+        inline RuntimeAPI& api() const{ return *runtime_api; }
 
-    private:
-        DLLHandle _dll_handle;
-        GetRuntimeFunction_t _get_runtime_function;
-        RuntimeAPI* _runtime_api;
-        // std::vector<> _loaded_modules;
+    public:
+        DLLHandle dll_handle;
+        GetRuntimeFunction_t get_runtime_function;
+        RuntimeAPI* runtime_api;
+        std::vector<std::shared_ptr<Module>> loaded_modules;
 
     };
 }

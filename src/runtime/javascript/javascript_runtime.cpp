@@ -22,6 +22,7 @@
  ********************************************************/
 
 #include "javascript_runtime.h"
+#include "../mafia_module.h"
 
 using namespace mafia;
 using namespace mafia::runtime;

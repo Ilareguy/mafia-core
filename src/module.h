@@ -28,6 +28,7 @@
 #include "runtime/mafia_module.h"
 #include <string>
 #include <memory>
+#include <nlohmann/json.hpp>
 
 namespace mafia
 {
@@ -39,6 +40,26 @@ namespace mafia
         struct DirectoryNotFoundError: public std::exception
         {
             explicit DirectoryNotFoundError(char const* const m): std::exception(m) {}
+        };
+
+        struct MissingConfigFileError: public std::exception
+        {
+            explicit MissingConfigFileError(char const* const m): std::exception(m) {}
+        };
+
+        struct MissingMetaFileError: public std::exception
+        {
+            explicit MissingMetaFileError(char const* const m): std::exception(m) {}
+        };
+
+        struct InvalidMetaFileError: public std::exception
+        {
+            explicit InvalidMetaFileError(char const* const m): std::exception(m) {}
+        };
+
+        struct RuntimeModuleInitializationError: public std::exception
+        {
+            explicit RuntimeModuleInitializationError(char const* const m): std::exception(m) {}
         };
 
     public:
@@ -58,8 +79,10 @@ namespace mafia
         [[nodiscard]] const char* directory_path() const override;
 
     public:
+        nlohmann::json _config;
         std::string _name;
-        std::string _directory_path;
+        std::string _tag;
+        const std::string _directory_path;
 
     };
 }

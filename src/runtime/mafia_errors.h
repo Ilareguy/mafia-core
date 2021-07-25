@@ -44,7 +44,7 @@ namespace mafia::runtime
 
         // @TODO implicit conversion to bool
 
-        [[nodiscard]] inline bool success() const { return _s; }
+        [[nodiscard]] inline bool is_success() const { return _s; }
 
     private:
         const bool _s;
