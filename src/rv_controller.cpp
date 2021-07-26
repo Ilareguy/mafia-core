@@ -29,7 +29,6 @@
 #include "ssh_server.h"
 #include "runtime.h"
 #include "logging.h"
-#include "module.h"
 
 using namespace mafia;
 using namespace std::literals::string_view_literals;
@@ -201,4 +200,9 @@ void RVController::try_unload_module(
 )
 {
 
+}
+
+RuntimeAPI& RVController::javascript_runtime()
+{
+    return _javascript_runtime->api();
 }

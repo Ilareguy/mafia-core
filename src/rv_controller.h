@@ -39,11 +39,16 @@ namespace mafia
     class SQFFunctions;
     class MissionEvents;
     class Runtime;
+    class RuntimeAPI;
     class SSHServer;
 
     namespace runtime
     {
         class Module;
+        namespace javascript
+        {
+            class JavascriptRuntime;
+        }
     }
 
     class RVController: public SynchronousTaskExecutor
@@ -77,6 +82,8 @@ namespace mafia
         void post_task_async(Task_t&& task, Task_t&& then, TaskExecutor& then_executor);
         void try_load_module(std::string_view name, ModuleLoadCompleteFunction_t&& then);
         void try_unload_module(std::string_view name, ModuleUnloadCompleteFunction_t&& then);
+
+        RuntimeAPI& javascript_runtime();
 
     private:
         void on_game_frame();

@@ -110,7 +110,7 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/synchronous_executor.cpp
         src/asynchronous_executor.cpp
         src/runtime/mafia_runtime.h
-        src/runtime/mafia_module.h src/module.cpp src/module.h)
+        src/runtime/mafia_module.h src/module.cpp src/module.h src/ssh/javascript.cpp src/ssh/javascript.h)
 
 target_compile_definitions(${MAFIA_DLL_NAME} PRIVATE -DMAFIA_CORE)
 

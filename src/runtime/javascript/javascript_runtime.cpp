@@ -26,6 +26,7 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
 #include <sstream>
+#include <cstring>
 
 using namespace mafia;
 using namespace mafia::runtime;
@@ -50,12 +51,14 @@ void javascript::JavascriptRuntime::initialize()
 {
     auto duk_user_ptr = (void*) this;
 
-    javascript_context = duk_create_heap(nullptr, nullptr, nullptr, duk_user_ptr, &JavascriptRuntime::duktape_error);
-    if (!javascript_context)
+    ctx = duk_create_heap(nullptr, nullptr, nullptr, duk_user_ptr, &JavascriptRuntime::duktape_error);
+    if (!ctx)
     {
         log::critical("Duktape initialization failed!");
         return; // @TODO Signal runtime initialization failure somehow (return bool instead of void)
     }
+
+    init_globals();
 
     /**
      * @TODO:
@@ -71,12 +74,50 @@ void javascript::JavascriptRuntime::initialize()
     log::flush();
 }
 
+void javascript::JavascriptRuntime::init_globals()
+{
+    // see https://wiki.duktape.org/howtonativeconstructor
+
+    // Global: ``Mafia``
+    {
+        duk_push_c_function(
+                ctx,
+                [](duk_context* ctx) -> duk_ret_t {
+                    if (duk_is_constructor_call(ctx))
+                    {
+                        return DUK_RET_TYPE_ERROR;
+                    }
+
+                    duk_push_this(ctx);
+
+                    return 0;
+                }, 0
+        );
+
+        /* Push Mafia.prototype object. */
+        duk_push_object(ctx);  /* -> stack: [ Mafia proto ] */
+
+        /* Set Mafia.prototype.version. */
+        duk_push_c_function(
+                ctx, [](duk_context*) -> duk_ret_t {
+                    return 0;
+                }, 0 /*nargs*/);
+        duk_put_prop_string(ctx, -2, "version");
+
+        /* Set Mafia.prototype = proto */
+        duk_put_prop_string(ctx, -2, "prototype");  /* -> stack: [ Mafia ] */
+
+        /* Finally, register Mafia to the global object */
+        duk_put_global_string(ctx, "Mafia");  /* -> stack: [ ] */
+    }
+}
+
 void javascript::JavascriptRuntime::shutdown()
 {
-    if (javascript_context)
+    if (ctx)
     {
-        duk_destroy_heap(javascript_context);
-        javascript_context = nullptr;
+        duk_destroy_heap(ctx);
+        ctx = nullptr;
     }
 }
 
@@ -97,20 +138,18 @@ Result javascript::JavascriptRuntime::load_module(const Module& module_to_load)
         std::ifstream in_file {fs::path {path / main_js_file}.string()};
         std::stringstream in_buf;
         in_buf << in_file.rdbuf();
-        duk_push_string(javascript_context, in_buf.str().c_str());
-        duk_push_string(javascript_context, main_js_file);
-        if (duk_pcompile(javascript_context, DUK_COMPILE_FUNCTION) != 0)
+        duk_push_string(ctx, in_buf.str().c_str());
+        duk_push_string(ctx, main_js_file);
+        if (duk_pcompile(ctx, DUK_COMPILE_FUNCTION) != 0)
         {
-            const auto error_message = std::string{duk_safe_to_string(javascript_context, -1)};
-            return runtime::Result::error(fmt::format("Javascript compilation failed: {}",
-                                                      error_message).c_str());
+            const auto error_message = duk_safe_to_string(ctx, -1);
+            return runtime::Result::error(error_message);
         }
-        // ? duk_pop(javascript_context);
     }
 
     // Execute
-    duk_call(javascript_context, 0);
-    log::info("Compiled main.js evaluates to: {}", duk_get_string(javascript_context, -1));
+    // duk_call(ctx, 0);
+    // log::info("Compiled main.js evaluates to: {}", duk_get_string(ctx, -1));
 
     return runtime::Result::success();
 }
@@ -122,8 +161,24 @@ Result javascript::JavascriptRuntime::unload_module(const Module& module_to_unlo
     return runtime::Result::success();
 }
 
-/*bool javascript::load_module(const ModuleInfo& info, ErrorBase& err)
+char* javascript::JavascriptRuntime::eval(const char* code)
 {
-    log::info("Javascript runtime requested to load module {} at {}", info.name, info.path);
-    return false;
-}*/
+    std::string res {};
+    duk_push_string(ctx, code);
+    auto eval_result = duk_peval(ctx);
+
+    if (eval_result != 0)
+    {
+        res = fmt::format("Javascript error: {}", duk_safe_to_string(ctx, -1));
+    }
+    else
+    {
+        res = duk_safe_to_string(ctx, -1);
+    }
+    duk_pop(ctx);
+
+    auto len = res.length() + 1;
+    char* res_c = new char[res.length() + 1];
+    strncpy_s(res_c, len, res.c_str(), len);
+    return res_c;
+}

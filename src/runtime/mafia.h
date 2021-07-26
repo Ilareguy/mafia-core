@@ -38,7 +38,7 @@
 #endif
 
 #ifdef MAFIA_CORE
-#define MAFIA_API_FUNC test
+#define MAFIA_API_FUNC
 #else
 #define MAFIA_API_FUNC DLLEXPORT
 #endif

@@ -24,7 +24,7 @@
 #include "ssh_server.h"
 #include "logging.h"
 #include "ssh/module.h"
-#include <libssh/libssh.h>
+#include "ssh/javascript.h"
 
 using namespace mafia;
 
@@ -117,6 +117,7 @@ SSHServer::~SSHServer()
 void SSHServer::_init_interfaces()
 {
     _ssh_command_interfaces[SSH_INTERFACE_MODULE] = std::make_unique<ssh::ModuleInterface>();
+    _ssh_command_interfaces[SSH_INTERFACE_JAVASCRIPT] = std::make_unique<ssh::JavascriptInterface>();
 
     for (auto& s : _ssh_command_interfaces)
     {
@@ -331,14 +332,16 @@ std::string SSHServer::_process_message(std::string_view raw_message)
         {
             return "(Not yet implemented)";
         }
-        else if (command_name == "module")
+
+        for (auto& inter : _ssh_command_interfaces)
         {
-            return _ssh_command_interfaces[SSH_INTERFACE_MODULE]->execute(command_name, args->argc, args->argv, *this);
+            if (command_name == inter->getCommandName())
+            {
+                return inter->execute(command_name, args->argc, args->argv, *this);
+            }
         }
-        else
-        {
-            return fmt::format("Unrecognized command \"{}\".", command_name);
-        }
+
+        return fmt::format("Unrecognized command \"{}\".", command_name);
     }
     catch (const cxxopts::OptionParseException& e)
     {

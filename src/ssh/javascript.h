@@ -12,7 +12,7 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 2021-07-22.
+ * File created by Anthony Ilareguy on 2021-07-26.
  * [File Description]
  *
  ********************************************************
@@ -22,18 +22,18 @@
  ********************************************************/
 
 
-#ifndef DEF_MAFIA_CORE_SSH_COMMAND_MODULE_H
-#define DEF_MAFIA_CORE_SSH_COMMAND_MODULE_H
+#ifndef DEF_MAFIA_CORE_SSH_COMMAND_JAVASCRIPT_H
+#define DEF_MAFIA_CORE_SSH_COMMAND_JAVASCRIPT_H
 
 #include "command.h"
 
 namespace mafia::ssh
 {
-    class ModuleInterface: public Command
+    class JavascriptInterface: public Command
     {
     public:
-        ModuleInterface();
-        virtual ~ModuleInterface();
+        JavascriptInterface();
+        virtual ~JavascriptInterface();
 
     protected:
         std::string execute_command(const std::string&, const cxxopts::ParseResult&, ::mafia::SSHServer&) override;
@@ -41,4 +41,4 @@ namespace mafia::ssh
     };
 }
 
-#endif // DEF_MAFIA_CORE_SSH_COMMAND_MODULE_H
+#endif // DEF_MAFIA_CORE_SSH_COMMAND_JAVASCRIPT_H
