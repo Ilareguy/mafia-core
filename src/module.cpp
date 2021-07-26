@@ -25,8 +25,6 @@
 #include "runtime.h"
 #include <utility>
 #include <boost/filesystem.hpp>
-#include <fmt/format.h>
-#include <nlohmann/json.hpp>
 
 std::shared_ptr<mafia::Module> mafia::Module::try_load(std::string dir, mafia::Runtime& runtime)
 {

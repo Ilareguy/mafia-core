@@ -24,23 +24,34 @@
 #ifndef DEF_MAFIA_CORE_RUNTIME_ERRORS_H
 #define DEF_MAFIA_CORE_RUNTIME_ERRORS_H
 
-#include <exception>
+#include <cstring>
 
 namespace mafia::runtime
 {
     // Don't derive from std::exception because these objects will be shared across DLL boundaries.
     struct ErrorBase
     {
-        explicit ErrorBase(char const* const m) noexcept: _m(m){}
+        explicit ErrorBase(char const* const m) noexcept
+        {
+            const auto s = strlen(m) + 1;
+            _m = new char[s];
+            strcpy_s(_m, s, m);
+        }
+
+        ~ErrorBase()
+        {
+            delete[] _m;
+        }
+
         [[nodiscard]] inline const char* what() const { return _m; }
 
     private:
-        char const* const _m;
+        char* _m;
     };
 
     struct ResultBase
     {
-        explicit ResultBase(bool is_successful) noexcept: _s(is_successful){}
+        explicit ResultBase(bool is_successful) noexcept: _s(is_successful) {}
 
         // @TODO implicit conversion to bool
 
@@ -53,11 +64,13 @@ namespace mafia::runtime
     struct Result: public ErrorBase, public ResultBase
     {
         // Indicate success
-        explicit Result() noexcept: ErrorBase(""), ResultBase(true){}
+        explicit Result() noexcept: ErrorBase(""), ResultBase(true) {}
+
         static inline Result success() { return Result(); }
 
         // Indicate failure/error
-        explicit Result(char const* const m) noexcept: ErrorBase(m), ResultBase(false){}
+        explicit Result(char const* const m) noexcept: ErrorBase(m), ResultBase(false) {}
+
         static inline Result error(char const* const message) { return Result(message); }
     };
 }

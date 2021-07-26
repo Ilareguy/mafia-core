@@ -75,9 +75,6 @@ namespace mafia
 
         void post_task_async(Task_t&&);
         void post_task_async(Task_t&& task, Task_t&& then, TaskExecutor& then_executor);
-
-        // Loading and unloading modules should only be done on a Runtime main thread. These methods should schedule()
-        // loading/unloading manually, and report back when the job is done.
         void try_load_module(std::string_view name, ModuleLoadCompleteFunction_t&& then);
         void try_unload_module(std::string_view name, ModuleUnloadCompleteFunction_t&& then);
 

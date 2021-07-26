@@ -1,6 +1,4 @@
-function hello()
+function main()
 {
-    return "Hello dawg";
+    return "Hello, Mafia!";
 }
-
-hello();

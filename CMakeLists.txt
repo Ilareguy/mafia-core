@@ -128,7 +128,9 @@ find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(mafia-runtime-javascript PUBLIC
         mafia-types
         mafia-containers
-        fmt::fmt)
+        fmt::fmt
+        nlohmann_json nlohmann_json::nlohmann_json
+        ${Boost_LIBRARIES})
 
 target_link_libraries(mafia-types PUBLIC
         Taskflow::Taskflow)
