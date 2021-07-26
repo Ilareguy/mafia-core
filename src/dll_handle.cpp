@@ -27,10 +27,10 @@
 
 mafia::DLLHandle::DLLHandle(std::string_view sv)
 {
-    // Open handle
+    // Open dll_handle
     _raw_handle = dlopen(sv.data(), RTLD_NOW | RTLD_GLOBAL);
 
-    // Fail if a handle could not be opened properly
+    // Fail if a dll_handle could not be opened properly
     if (nullptr == _raw_handle)
     {
         throw DLLOpenError {fmt::format("Could not load dynamic library file \"{}\".", sv).c_str()};

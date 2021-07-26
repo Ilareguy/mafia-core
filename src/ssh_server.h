@@ -25,6 +25,7 @@
 #define DEF_MAFIA_CORE_SSH_SERVER_H
 
 #include "asynchronous_executor.h"
+#include <fmt/format.h>
 #include <string_view>
 #include <libssh/server.h>
 #include <thread>
@@ -39,7 +40,7 @@ namespace mafia
         class Command;
     }
 
-    class SSHServer : public AsynchronousTaskExecutor
+    class SSHServer: public AsynchronousTaskExecutor
     {
     private:
         /**
@@ -64,6 +65,12 @@ namespace mafia
          * @param message Message to send.
          */
         void send(std::string_view message);
+
+        template<typename... Args>
+        void send(std::string_view fmt, Args... args)
+        {
+            send(fmt::format(fmt, args...));
+        }
 
     private:
         bool _auth(std::string_view username, std::string_view password);

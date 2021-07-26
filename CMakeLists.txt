@@ -101,17 +101,16 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/loader.cpp
         src/sqf_register_functions.cpp
         src/mission_events.cpp
-        src/runtime/module.cpp
-        src/runtime/errors.h
-        src/runtime/module_info.cpp
-        src/runtime/runtime.cpp
+        src/runtime/mafia_errors.h
+        src/runtime.cpp
         src/ssh_server.cpp
         src/ssh/command.cpp
         src/ssh/module.cpp
         src/task_executor.cpp
         src/synchronous_executor.cpp
         src/asynchronous_executor.cpp
-        )
+        src/runtime/mafia_runtime.h
+        src/runtime/mafia_module.h src/module.cpp src/module.h)
 
 target_compile_definitions(${MAFIA_DLL_NAME} PRIVATE -DMAFIA_CORE)
 
@@ -124,10 +123,14 @@ find_package(dlfcn-win32 CONFIG REQUIRED)
 find_package(libssh CONFIG REQUIRED)
 find_package(cxxopts CONFIG REQUIRED)
 find_package(Taskflow CONFIG REQUIRED)
+find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(mafia-runtime-javascript PUBLIC
         mafia-types
         mafia-containers
-        fmt::fmt)
+        fmt::fmt
+        nlohmann_json nlohmann_json::nlohmann_json
+        ${Boost_LIBRARIES})
 
 target_link_libraries(mafia-types PUBLIC
         Taskflow::Taskflow)
@@ -140,7 +143,9 @@ target_link_libraries(${MAFIA_DLL_NAME} PRIVATE
         dlfcn-win32::dl
         ssh
         cxxopts::cxxopts
-        Taskflow::Taskflow)
+        Taskflow::Taskflow
+        nlohmann_json nlohmann_json::nlohmann_json
+        ${Boost_LIBRARIES})
 
 ########## Misc
 set_target_properties(${MAFIA_DLL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")

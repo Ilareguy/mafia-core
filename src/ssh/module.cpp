@@ -22,8 +22,11 @@
  ********************************************************/
 
 #include "module.h"
+#include "../runtime/mafia_module.h"
+#include "../runtime/mafia_runtime.h"
 #include "../ssh_server.h"
-#include <thread>
+#include "../mafia.h"
+#include "../rv_controller.h"
 
 using namespace mafia;
 
@@ -38,14 +41,29 @@ std::string ssh::ModuleInterface::execute_command(
         ::mafia::SSHServer& ssh_server
 )
 {
-    schedule([&ssh_server](){
-        ssh_server.send("Hello, Task!");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        ssh_server.send("Hello, Task! (2)");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        ssh_server.send("Hello, Task! (3)");
-    }, THREAD_MAIN);
-    return "Tasks scheduled";
+    if (args.count("load"))
+    {
+        auto module_name = args["load"].as<std::string>();
+
+        try
+        {
+            // Load a module
+            controller()->try_load_module(
+                    module_name,
+                    [&ssh_server](std::shared_ptr<runtime::Module> new_module) {
+                        ssh_server.send("Successfully loaded module `{}`!", new_module->name());
+                    }
+            );
+
+            return fmt::format("Loading module \"{}\"...", module_name);
+        }
+        catch (const std::exception& e)
+        {
+            return fmt::format("Could not load module `{}`: {}", module_name, e.what());
+        }
+    }
+
+    return "<not implemented>";
 }
 
 void ssh::ModuleInterface::init_ssh_interface(cxxopts::OptionAdder&& opts)

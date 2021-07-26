@@ -24,39 +24,38 @@
 #ifndef DEF_MAFIA_CORE_RUNTIME_H
 #define DEF_MAFIA_CORE_RUNTIME_H
 
-#include "../shared.h"
-#include <string_view>
+#include "runtime/mafia_runtime.h"
+#include "shared.h"
+#include "dll_handle.h"
+#include "asynchronous_executor.h"
+#include "module.h"
 #include <memory>
 
 namespace mafia
 {
-    namespace runtime
-    {
-        struct ErrorBase;
-    }
-
     class DLLHandle;
-    class ModuleInfo;
-    class Runtime
+    class RuntimeAPI;
+    class Runtime : public AsynchronousTaskExecutor
     {
     public:
-        Runtime(std::string_view dll_path);
-        ~Runtime();
-        void initialize();
-        void shutdown();
-        bool load_module(const ModuleInfo& info, runtime::ErrorBase& err);
+        typedef RuntimeAPI* (CDECL* GetRuntimeFunction_t)(void);
 
     public:
-        typedef void (CDECL *InitializeFunction_t)(void);
-        typedef void (CDECL *ShutdownFunction_t)(void);
-        typedef bool (CDECL* LoadModuleFunction_t)(const ModuleInfo& info, runtime::ErrorBase& err);
+        explicit Runtime(const char* dll_path);
+        ~Runtime();
 
-    private:
-        std::unique_ptr<DLLHandle> _handle {nullptr};
-        InitializeFunction_t _initialize_func = nullptr;
-        ShutdownFunction_t _shutdown_func = nullptr;
-        LoadModuleFunction_t _load_module_func = nullptr;
+        /**
+         * @return Returns direct access to the RuntimeAPI implemented in the DLL.
+         */
+        inline RuntimeAPI& api() const{ return *runtime_api; }
+
+    public:
+        DLLHandle dll_handle;
+        GetRuntimeFunction_t get_runtime_function;
+        RuntimeAPI* runtime_api;
+        std::vector<std::shared_ptr<Module>> loaded_modules;
+
     };
 }
 
-#endif //DEF_MAFIA_CORE_RUNTIME_H
+#endif // DEF_MAFIA_CORE_RUNTIME_H

@@ -12,27 +12,31 @@
  *
  ********************************************************
  *
- * File created by Anthony Ilareguy on 28/03/2021.
+ * File created by Anthony Ilareguy on 2021-07-25.
  * [File Description]
  *
  ********************************************************
- * 
+ *
  * [Credits]
  *
  ********************************************************/
 
-#ifndef DEF_MAFIA_CORE_RUNTIME_MODULE_H
-#define DEF_MAFIA_CORE_RUNTIME_MODULE_H
+#ifndef DEF_MAFIA_CORE_RUNTIME_MAFIA_MODULE_H
+#define DEF_MAFIA_CORE_RUNTIME_MAFIA_MODULE_H
 
-namespace mafia
+namespace mafia::runtime
 {
-    class ModuleInfo;
-
     class Module
     {
     public:
-        virtual const ModuleInfo& info() const = 0;
+
+        [[nodiscard]] virtual const char* name() const = 0;
+
+        /**
+         * @return A path pointing to the directory containing a module's files.
+         */
+        [[nodiscard]] virtual const char* directory_path() const = 0;
     };
 }
 
-#endif // DEF_MAFIA_CORE_RUNTIME_MODULE_H
+#endif // DEF_MAFIA_CORE_RUNTIME_MAFIA_MODULE_H

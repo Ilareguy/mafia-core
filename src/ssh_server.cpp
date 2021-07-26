@@ -24,7 +24,7 @@
 #include "ssh_server.h"
 #include "logging.h"
 #include "ssh/module.h"
-// #include <libssh/libssh.h>
+#include <libssh/libssh.h>
 
 using namespace mafia;
 
@@ -118,7 +118,7 @@ void SSHServer::_init_interfaces()
 {
     _ssh_command_interfaces[SSH_INTERFACE_MODULE] = std::make_unique<ssh::ModuleInterface>();
 
-    for(auto & s : _ssh_command_interfaces)
+    for (auto& s : _ssh_command_interfaces)
     {
         s->init();
     }
@@ -225,7 +225,7 @@ bool SSHServer::_ssh_open_shell_channel()
     {
         _message = ssh_message_get(_session);
         if (_message && ssh_message_type(_message) == SSH_REQUEST_CHANNEL &&
-            ssh_message_subtype(_message) == SSH_CHANNEL_REQUEST_SHELL)
+            ssh_message_subtype(_message) == /*SSH_CHANNEL_REQUEST_PTY*/ SSH_CHANNEL_REQUEST_SHELL)
         {
             ssh_message_channel_request_reply_success(_message);
             return true;
@@ -289,9 +289,6 @@ void SSHServer::_ssh_thread(unsigned int port)
                     _do_send(message);
                 }
             }
-
-            // Tasks to run?
-            run_tasks();
 
             i = ssh_channel_read_timeout(_channel, buf, 2048, 0, 10);
             if (i > 0)

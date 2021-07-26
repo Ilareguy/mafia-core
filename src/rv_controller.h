@@ -26,6 +26,7 @@
 
 #include "arguments.h"
 #include "game_types/game_data.h"
+#include "runtime/mafia_errors.h"
 #include "synchronous_executor.h"
 #include "asynchronous_executor.h"
 #include <functional>
@@ -40,11 +41,18 @@ namespace mafia
     class Runtime;
     class SSHServer;
 
+    namespace runtime
+    {
+        class Module;
+    }
+
     class RVController: public SynchronousTaskExecutor
     {
     private:
         typedef std::function<std::string(mafia::Arguments& args)> RVCommandHandler_t;
         typedef std::unordered_map<std::string, RVCommandHandler_t> RVCommandHandlers_t;
+        typedef std::function<void(std::shared_ptr<runtime::Module>)> ModuleLoadCompleteFunction_t;
+        typedef std::function<void(std::shared_ptr<runtime::Module>)> ModuleUnloadCompleteFunction_t;
 
     public:
         RVController();
@@ -67,6 +75,11 @@ namespace mafia
 
         void post_task_async(Task_t&&);
         void post_task_async(Task_t&& task, Task_t&& then, TaskExecutor& then_executor);
+        void try_load_module(std::string_view name, ModuleLoadCompleteFunction_t&& then);
+        void try_unload_module(std::string_view name, ModuleUnloadCompleteFunction_t&& then);
+
+    private:
+        void on_game_frame();
 
     private:
         std::shared_ptr<Loader> _loader;
@@ -77,6 +90,9 @@ namespace mafia
         std::unique_ptr<Runtime> _javascript_runtime {nullptr};
         std::unique_ptr<SSHServer> _ssh_server {nullptr};
         AsynchronousTaskExecutor _async_executor;
+
+    private:
+        friend class Invoker;
     };
 }
 

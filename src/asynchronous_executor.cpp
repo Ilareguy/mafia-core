@@ -35,8 +35,11 @@ void mafia::AsynchronousTaskExecutor::post_task(mafia::TaskExecutor::Task_t&& t)
 {
     auto new_taskflow = new tf::Taskflow();
     new_taskflow->emplace(t);
-    std::lock_guard _l{_m};
-    _tasks.push(new_taskflow);
+    {
+        std::lock_guard _l {_m};
+        _tasks.push(new_taskflow);
+    }
+    run_tasks();
 }
 
 void mafia::AsynchronousTaskExecutor::post_task(
@@ -54,13 +57,16 @@ void mafia::AsynchronousTaskExecutor::post_task(
     );
     task.precede(then_task);
 
-    std::lock_guard _l{_m};
-    _tasks.push(new_taskflow);
+    {
+        std::lock_guard _l {_m};
+        _tasks.push(new_taskflow);
+    }
+    run_tasks();
 }
 
 void mafia::AsynchronousTaskExecutor::run_tasks()
 {
-    std::lock_guard _l{_m};
+    std::lock_guard _l {_m};
     if (!_tasks.empty())
     {
         auto t = _tasks.front();

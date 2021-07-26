@@ -282,7 +282,7 @@ bool Invoker::do_invoke_period()
         {
             std::this_thread::sleep_for(std::chrono::nanoseconds(10));
         } //Sleep some, to allow other threads to catch the lock
-        controller()->run_tasks();
+        controller()->on_game_frame();
         const long timeout = clock() + 3;
         while (_thread_count > 0 && clock() < timeout)
         { std::this_thread::sleep_for(std::chrono::microseconds(20)); }

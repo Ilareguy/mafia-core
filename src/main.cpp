@@ -105,11 +105,11 @@ void __stdcall RVExtension(char* output, int outputSize, const char* function)
     }
     mafia::Arguments _args(argument_str);
     std::string result = "-1";
-    if (mafia::_private::initialized)
+    /*if (mafia::_private::initialized)
     {
         mafia::log::debug(
                 R"(Mafia received command: "{}" with args: "{}")", command, static_cast<std::string>(argument_str));
-    }
+    }*/
 
     if (command == "init"sv)
     {

@@ -43,7 +43,7 @@
 #define MAFIA_API_FUNC DLLEXPORT
 #endif
 
-#include "errors.h"
+#include "mafia_errors.h"
 #include <cstdint>
 #include <string_view>
 #include <fmt/format.h>
@@ -56,11 +56,6 @@ namespace mafia
         constexpr uint8_t minor = 0;
         constexpr uint8_t revision = 1;
         constexpr const char* suffix = "-alpha";
-    }
-
-    namespace runtime
-    {
-        struct ModuleInfo;
     }
 
     namespace runtime::log

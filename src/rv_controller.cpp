@@ -27,7 +27,9 @@
 #include "invoker.h"
 #include "loader.h"
 #include "ssh_server.h"
-#include "runtime/runtime.h"
+#include "runtime.h"
+#include "logging.h"
+#include "module.h"
 
 using namespace mafia;
 using namespace std::literals::string_view_literals;
@@ -52,14 +54,14 @@ void RVController::initialize(uintptr_t stack_base)
     _javascript_runtime = std::make_unique<Runtime>(
             R"(@mafia\mafia-runtime-javascript.dll)"
     );
-    _javascript_runtime->initialize();
+    _javascript_runtime->api().initialize();
 }
 
 void RVController::shutdown()
 {
     if (_javascript_runtime)
     {
-        _javascript_runtime->shutdown();
+        _javascript_runtime->api().shutdown();
         _javascript_runtime = nullptr;
     }
 
@@ -86,6 +88,11 @@ std::string RVController::rv_call(std::string_view command, Arguments& args)
     return handler_it->second(args);
 }
 
+void RVController::on_game_frame()
+{
+    run_tasks();
+}
+
 bool RVController::rv_signal(
         const std::string& extension_name,
         const std::string& signal_name,
@@ -101,7 +108,7 @@ bool RVController::rv_signal(
     module::on_signal_func signal_func;
     if (signal_func_it == signal_module->second.signal_funcs.end()) {
 
-        signal_func = reinterpret_cast<module::on_signal_func>(GetProcAddress(signal_module->second.handle, signal_name.c_str())); //#TODO why?! The signal module function thingy is commented out.. also has a #TODO with ?! on it
+        signal_func = reinterpret_cast<module::on_signal_func>(GetProcAddress(signal_module->second.dll_handle, signal_name.c_str())); // #TODO why?! The signal module function thingy is commented out.. also has a #TODO with ?! on it
 
         if (!signal_func)
             return false;
@@ -158,12 +165,40 @@ std::shared_ptr<MissionEvents> RVController::get_mission_events()
 void RVController::post_task_async(TaskExecutor::Task_t&& t)
 {
     _async_executor.post_task(std::move(t));
-    _async_executor.run_tasks();
 }
 
 void
 RVController::post_task_async(TaskExecutor::Task_t&& task, TaskExecutor::Task_t&& then, TaskExecutor& then_executor)
 {
     _async_executor.post_task(std::move(task), std::move(then), then_executor);
-    _async_executor.run_tasks();
+}
+
+void RVController::try_load_module(
+        std::string_view name,
+        RVController::ModuleLoadCompleteFunction_t&& then_
+)
+{
+    try
+    {
+        auto new_module = Module::try_load(std::string {name}, (*_javascript_runtime));
+        _javascript_runtime->loaded_modules.push_back(new_module);
+        _javascript_runtime->post_task(
+                [then = std::forward<RVController::ModuleLoadCompleteFunction_t>(then_), new_module]() {
+                    then(new_module);
+                }
+        );
+    }
+    catch (const std::exception& e)
+    {
+        log::warn("Could not load module in directory `{}`: {}", name, e.what());
+        throw e;
+    }
+}
+
+void RVController::try_unload_module(
+        std::string_view name,
+        RVController::ModuleUnloadCompleteFunction_t&& then
+)
+{
+
 }

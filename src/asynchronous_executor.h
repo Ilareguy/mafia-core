@@ -41,8 +41,14 @@ namespace mafia
         explicit AsynchronousTaskExecutor(unsigned short int worker_thread_count = 2);
         virtual ~AsynchronousTaskExecutor();
 
+        /**
+         * Posts a given task to be run on the Executor. This will automatically run the task on another thread; there
+         * is no need to invoke ``run_tasks()``.
+         */
         void post_task(Task_t&&) override;
         void post_task(Task_t&& task, Task_t&& then, TaskExecutor& then_executor) override;
+
+    private:
         void run_tasks() override;
 
     private:
