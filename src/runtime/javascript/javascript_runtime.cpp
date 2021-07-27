@@ -22,6 +22,7 @@
  ********************************************************/
 
 #include "javascript_runtime.h"
+#include "duktape_globals.h"
 #include "../mafia_module.h"
 #include <boost/filesystem.hpp>
 #include <fstream>
@@ -58,7 +59,7 @@ void javascript::JavascriptRuntime::initialize()
         return; // @TODO Signal runtime initialization failure somehow (return bool instead of void)
     }
 
-    init_globals();
+    register_globals(ctx);
 
     /**
      * @TODO:
@@ -68,48 +69,9 @@ void javascript::JavascriptRuntime::initialize()
      * - Write initial Javascript/Typescript interface files, which will be available to third-party modules written
      *      in Javascript/Typescript;
      * - Allow loading, unloading and reloading Javascript modules at runtime;
-     * - Allow sending commands to Mafia from a console or something to control the server;
      */
 
     log::flush();
-}
-
-void javascript::JavascriptRuntime::init_globals()
-{
-    // see https://wiki.duktape.org/howtonativeconstructor
-
-    // Global: ``Mafia``
-    {
-        duk_push_c_function(
-                ctx,
-                [](duk_context* ctx) -> duk_ret_t {
-                    if (duk_is_constructor_call(ctx))
-                    {
-                        return DUK_RET_TYPE_ERROR;
-                    }
-
-                    duk_push_this(ctx);
-
-                    return 0;
-                }, 0
-        );
-
-        /* Push Mafia.prototype object. */
-        duk_push_object(ctx);  /* -> stack: [ Mafia proto ] */
-
-        /* Set Mafia.prototype.version. */
-        duk_push_c_function(
-                ctx, [](duk_context*) -> duk_ret_t {
-                    return 0;
-                }, 0 /*nargs*/);
-        duk_put_prop_string(ctx, -2, "version");
-
-        /* Set Mafia.prototype = proto */
-        duk_put_prop_string(ctx, -2, "prototype");  /* -> stack: [ Mafia ] */
-
-        /* Finally, register Mafia to the global object */
-        duk_put_global_string(ctx, "Mafia");  /* -> stack: [ ] */
-    }
 }
 
 void javascript::JavascriptRuntime::shutdown()

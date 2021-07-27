@@ -50,12 +50,26 @@
 
 namespace mafia
 {
+
+    /**
+     * API version that a DLL module was compiled against. Mafia Core DLL version at runtime may be different.
+     */
     namespace api_version
     {
         constexpr uint8_t major = 0;
         constexpr uint8_t minor = 0;
         constexpr uint8_t revision = 1;
         constexpr const char* suffix = "-alpha";
+    }
+
+    namespace runtime::version
+    {
+        extern "C" {
+        DLLEXPORT uint8_t major;
+        DLLEXPORT uint8_t minor;
+        DLLEXPORT uint8_t revision;
+        DLLEXPORT char* suffix;
+        }
     }
 
     namespace runtime::log

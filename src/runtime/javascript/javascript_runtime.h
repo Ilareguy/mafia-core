@@ -48,7 +48,6 @@ namespace mafia::runtime::javascript
 
     private:
         static void duktape_error(void* user_data, const char* msg);
-        void init_globals();
 
     private:
         duk_context* ctx {nullptr};
