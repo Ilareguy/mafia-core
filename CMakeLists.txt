@@ -74,7 +74,7 @@ add_library(mafia-containers STATIC
 
 add_library(mafia-runtime-javascript MODULE
         src/runtime/javascript/javascript_runtime.cpp
-        src/runtime/javascript/duktape/duktape.c)
+        src/runtime/javascript/duktape/duktape.c src/runtime/javascript/duktape_globals.h)
 
 add_library(${MAFIA_DLL_NAME} MODULE
         src/main.cpp

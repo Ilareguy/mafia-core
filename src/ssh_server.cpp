@@ -258,22 +258,24 @@ void SSHServer::_ssh_thread(unsigned int port)
             log::error("SSH Thread: Error initializing SSH server: {}", ssh_get_error(_ssh_bind));
         }
 
-        log::info("SSH Thread: Waiting for user authentication...");
-        log::flush();
+        /*log::info("SSH Thread: Waiting for user authentication...");
+        log::flush();*/
+
         if (!_ssh_accept_connection())
         {
             log::error("SSH Thread: Authentication error: {}", ssh_get_error(_session));
         }
 
-        log::info("SSH Thread: Authentication successful; opening channel...");
-        log::flush();
+        /*log::info("SSH Thread: Authentication successful; opening channel...");
+        log::flush();*/
+
         if (!_ssh_open_channel() || !_ssh_open_shell_channel())
         {
             log::error("SSH Thread error: {}", ssh_get_error(_session));
         }
 
-        log::info("SSH Thread: Connection established!");
-        log::flush();
+        /*log::info("SSH Thread: Connection established!");
+        log::flush();*/
 
         send("Welcome!");
         bool send_receive_loop {true};
@@ -312,8 +314,7 @@ void SSHServer::_ssh_thread(unsigned int port)
     } while (!_stop_ssh);
 
     ssh_finalize();
-    log::info("Stopping SSH worker thread");
-    log::flush();
+    // log::info("Stopping SSH worker thread");
 }
 
 std::string SSHServer::_process_message(std::string_view raw_message)

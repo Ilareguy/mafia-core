@@ -43,6 +43,28 @@ namespace mafia::runtime::javascript
 
     namespace detail
     {
+        duk_ret_t log(duk_context* ctx, void(* log_func)(const char*))
+        {
+            // Stack entry: [ message ]
+
+            // Disallow new()
+            if (duk_is_constructor_call(ctx))
+            {
+                return DUK_RET_TYPE_ERROR;
+            }
+
+            // Fetch message to log
+            const char* message = duk_safe_to_string(ctx, -1);
+            duk_pop(ctx); // stack: []
+
+            // @TODO: There should be a way of knowing which module invoked the logging function
+
+            // Log
+            log_func(message);
+
+            return 0;
+        }
+
         /*duk_ret_t mafia_global(duk_context* ctx)
         {
             // Stack entry: []
@@ -108,6 +130,54 @@ namespace mafia::runtime::javascript
                     DUK_DEFPROP_HAVE_WRITABLE |
                     DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE);
             // -> [ global ]
+            duk_pop(ctx);
+            // -> []
+        }
+
+        { // Global ``Log``
+            duk_push_global_object(ctx);
+            duk_push_string(ctx, "Log");
+            auto object_idx = duk_push_object(ctx);
+            // -> [ global, "Log", object {} ]
+
+            duk_push_string(ctx, "info");
+            duk_push_c_function(ctx, [](auto* ctx) { return detail::log(ctx, log::_log_info); }, 1);
+            duk_def_prop(
+                    ctx, object_idx,
+                    DUK_DEFPROP_HAVE_VALUE |
+                    DUK_DEFPROP_HAVE_WRITABLE |
+                    DUK_DEFPROP_HAVE_ENUMERABLE);
+
+            duk_push_string(ctx, "warning");
+            duk_push_c_function(ctx, [](auto* ctx) { return detail::log(ctx, log::_log_warning); }, 1);
+            duk_def_prop(
+                    ctx, object_idx,
+                    DUK_DEFPROP_HAVE_VALUE |
+                    DUK_DEFPROP_HAVE_WRITABLE |
+                    DUK_DEFPROP_HAVE_ENUMERABLE);
+
+            duk_push_string(ctx, "error");
+            duk_push_c_function(ctx, [](auto* ctx) { return detail::log(ctx, log::_log_error); }, 1);
+            duk_def_prop(
+                    ctx, object_idx,
+                    DUK_DEFPROP_HAVE_VALUE |
+                    DUK_DEFPROP_HAVE_WRITABLE |
+                    DUK_DEFPROP_HAVE_ENUMERABLE);
+
+            duk_push_string(ctx, "debug");
+            duk_push_c_function(ctx, [](auto* ctx) { return detail::log(ctx, log::_log_debug); }, 1);
+            duk_def_prop(
+                    ctx, object_idx,
+                    DUK_DEFPROP_HAVE_VALUE |
+                    DUK_DEFPROP_HAVE_WRITABLE |
+                    DUK_DEFPROP_HAVE_ENUMERABLE);
+
+            // Finalize Log object
+            duk_def_prop(
+                    ctx, 0,
+                    DUK_DEFPROP_HAVE_VALUE |
+                    DUK_DEFPROP_HAVE_WRITABLE |
+                    DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE);
             duk_pop(ctx);
             // -> []
         }
