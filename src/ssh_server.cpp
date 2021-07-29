@@ -24,7 +24,7 @@
 #include "ssh_server.h"
 #include "logging.h"
 #include "ssh/module.h"
-#include <libssh/libssh.h>
+#include "ssh/javascript.h"
 
 using namespace mafia;
 
@@ -117,6 +117,7 @@ SSHServer::~SSHServer()
 void SSHServer::_init_interfaces()
 {
     _ssh_command_interfaces[SSH_INTERFACE_MODULE] = std::make_unique<ssh::ModuleInterface>();
+    _ssh_command_interfaces[SSH_INTERFACE_JAVASCRIPT] = std::make_unique<ssh::JavascriptInterface>();
 
     for (auto& s : _ssh_command_interfaces)
     {
@@ -257,22 +258,24 @@ void SSHServer::_ssh_thread(unsigned int port)
             log::error("SSH Thread: Error initializing SSH server: {}", ssh_get_error(_ssh_bind));
         }
 
-        log::info("SSH Thread: Waiting for user authentication...");
-        log::flush();
+        /*log::info("SSH Thread: Waiting for user authentication...");
+        log::flush();*/
+
         if (!_ssh_accept_connection())
         {
             log::error("SSH Thread: Authentication error: {}", ssh_get_error(_session));
         }
 
-        log::info("SSH Thread: Authentication successful; opening channel...");
-        log::flush();
+        /*log::info("SSH Thread: Authentication successful; opening channel...");
+        log::flush();*/
+
         if (!_ssh_open_channel() || !_ssh_open_shell_channel())
         {
             log::error("SSH Thread error: {}", ssh_get_error(_session));
         }
 
-        log::info("SSH Thread: Connection established!");
-        log::flush();
+        /*log::info("SSH Thread: Connection established!");
+        log::flush();*/
 
         send("Welcome!");
         bool send_receive_loop {true};
@@ -311,8 +314,7 @@ void SSHServer::_ssh_thread(unsigned int port)
     } while (!_stop_ssh);
 
     ssh_finalize();
-    log::info("Stopping SSH worker thread");
-    log::flush();
+    // log::info("Stopping SSH worker thread");
 }
 
 std::string SSHServer::_process_message(std::string_view raw_message)
@@ -331,14 +333,16 @@ std::string SSHServer::_process_message(std::string_view raw_message)
         {
             return "(Not yet implemented)";
         }
-        else if (command_name == "module")
+
+        for (auto& inter : _ssh_command_interfaces)
         {
-            return _ssh_command_interfaces[SSH_INTERFACE_MODULE]->execute(command_name, args->argc, args->argv, *this);
+            if (command_name == inter->getCommandName())
+            {
+                return inter->execute(command_name, args->argc, args->argv, *this);
+            }
         }
-        else
-        {
-            return fmt::format("Unrecognized command \"{}\".", command_name);
-        }
+
+        return fmt::format("Unrecognized command \"{}\".", command_name);
     }
     catch (const cxxopts::OptionParseException& e)
     {

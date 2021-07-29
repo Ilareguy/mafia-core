@@ -52,7 +52,7 @@ namespace mafia::ssh
         };
 
     public:
-        Command(std::string command_name, std::string command_description);
+        Command(const std::string& command_name, std::string command_description);
         virtual ~Command();
         void init();
         std::string execute(const std::string& command_name, int argc, char** argv, ::mafia::SSHServer&);
@@ -61,6 +61,8 @@ namespace mafia::ssh
          * @return Returns the help string for a command
          */
         std::string help();
+
+        [[nodiscard]] inline std::string getCommandName() const { return _command_name; }
 
     protected:
         static void schedule(ScheduledFunction_t&& function, QueuedFunctionThread target_thread);
@@ -78,10 +80,11 @@ namespace mafia::ssh
         /**
          * Implement this method to add options to your SSH interface.
          */
-        virtual void init_ssh_interface(cxxopts::OptionAdder&&) = 0;
+        virtual void init_ssh_interface(cxxopts::OptionAdder&&, cxxopts::Options& options) = 0;
 
     private:
         cxxopts::Options _ssh_interface;
+        std::string _command_name;
     };
 }
 

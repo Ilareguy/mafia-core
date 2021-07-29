@@ -23,6 +23,7 @@
 
 #include "runtime.h"
 #include "logging.h"
+#include "mafia.h"
 
 using namespace mafia;
 using namespace std::literals::string_view_literals;
@@ -31,6 +32,12 @@ Runtime::Runtime(const char* const dll_path): dll_handle(dll_path)
 {
     get_runtime_function = dll_handle.get<GetRuntimeFunction_t>("get_runtime"sv, true);
     runtime_api = get_runtime_function();
+
+    // Hook Mafia Core DLL runtime version
+    *(dll_handle.get<uint8_t*>("major"sv, true)) = ::mafia::version::major;
+    *(dll_handle.get<uint8_t*>("minor"sv, true)) = ::mafia::version::minor;
+    *(dll_handle.get<uint8_t*>("revision"sv, true)) = ::mafia::version::revision;
+    *(dll_handle.get<const char**>("suffix"sv, true)) = ::mafia::version::suffix;
 
     // Hook logging functions
     *(dll_handle.get < void(CDECL**)(const char*)>("_log_info"sv, true)) = [](const char* c) { log::_info(c); };

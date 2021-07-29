@@ -30,9 +30,11 @@
 
 namespace mafia::runtime::javascript
 {
+#ifndef MAFIA_CORE
     extern "C" {
     MAFIA_API_FUNC ::mafia::RuntimeAPI* CDECL get_runtime();
     }
+#endif
 
     class JavascriptRuntime: public ::mafia::RuntimeAPI
     {
@@ -42,12 +44,13 @@ namespace mafia::runtime::javascript
         void shutdown() override;
         Result load_module(const Module& module_to_load) override;
         Result unload_module(const Module& module_to_unload) override;
+        char* eval(const char* code) override;
 
     private:
         static void duktape_error(void* user_data, const char* msg);
 
     private:
-        duk_context* javascript_context {nullptr};
+        duk_context* ctx {nullptr};
     };
 }
 

@@ -43,6 +43,7 @@ namespace mafia
         virtual void shutdown() = 0;
         virtual runtime::Result load_module(const runtime::Module& module_to_load) = 0;
         virtual runtime::Result unload_module(const runtime::Module& module_to_unload) = 0;
+        virtual char* eval(const char* code) = 0; // Caller responsible for delete[]ing returned pointer
     };
 }
 

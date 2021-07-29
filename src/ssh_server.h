@@ -86,6 +86,7 @@ namespace mafia
         enum SSHCommandInterfaces
         {
             SSH_INTERFACE_MODULE = 0,
+            SSH_INTERFACE_JAVASCRIPT,
             SSH_INTERFACE_COUNT_
         };
 

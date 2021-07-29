@@ -22,15 +22,21 @@
  ********************************************************/
 
 #include "javascript_runtime.h"
+#include "duktape_globals.h"
 #include "../mafia_module.h"
 #include <boost/filesystem.hpp>
 #include <fstream>
 #include <sstream>
+#include <cstring>
 
 using namespace mafia;
 using namespace mafia::runtime;
 
 // https://duktape.org/guide.html#gettingstarted.3
+
+// Connect via SSH to the running game with "test" as username & password, and run:
+//  ``js -c "some_javascript_code()"`` to run code inline
+//  ``module -l test`` to load a Javascript module from ./@mafia/modules/test/
 
 ::mafia::RuntimeAPI* javascript::get_runtime()
 {
@@ -50,12 +56,14 @@ void javascript::JavascriptRuntime::initialize()
 {
     auto duk_user_ptr = (void*) this;
 
-    javascript_context = duk_create_heap(nullptr, nullptr, nullptr, duk_user_ptr, &JavascriptRuntime::duktape_error);
-    if (!javascript_context)
+    ctx = duk_create_heap(nullptr, nullptr, nullptr, duk_user_ptr, &JavascriptRuntime::duktape_error);
+    if (!ctx)
     {
         log::critical("Duktape initialization failed!");
         return; // @TODO Signal runtime initialization failure somehow (return bool instead of void)
     }
+
+    register_globals(ctx);
 
     /**
      * @TODO:
@@ -65,7 +73,6 @@ void javascript::JavascriptRuntime::initialize()
      * - Write initial Javascript/Typescript interface files, which will be available to third-party modules written
      *      in Javascript/Typescript;
      * - Allow loading, unloading and reloading Javascript modules at runtime;
-     * - Allow sending commands to Mafia from a console or something to control the server;
      */
 
     log::flush();
@@ -73,10 +80,10 @@ void javascript::JavascriptRuntime::initialize()
 
 void javascript::JavascriptRuntime::shutdown()
 {
-    if (javascript_context)
+    if (ctx)
     {
-        duk_destroy_heap(javascript_context);
-        javascript_context = nullptr;
+        duk_destroy_heap(ctx);
+        ctx = nullptr;
     }
 }
 
@@ -97,20 +104,18 @@ Result javascript::JavascriptRuntime::load_module(const Module& module_to_load)
         std::ifstream in_file {fs::path {path / main_js_file}.string()};
         std::stringstream in_buf;
         in_buf << in_file.rdbuf();
-        duk_push_string(javascript_context, in_buf.str().c_str());
-        duk_push_string(javascript_context, main_js_file);
-        if (duk_pcompile(javascript_context, DUK_COMPILE_FUNCTION) != 0)
+        duk_push_string(ctx, in_buf.str().c_str());
+        duk_push_string(ctx, main_js_file);
+        if (duk_pcompile(ctx, DUK_COMPILE_FUNCTION) != 0)
         {
-            const auto error_message = std::string{duk_safe_to_string(javascript_context, -1)};
-            return runtime::Result::error(fmt::format("Javascript compilation failed: {}",
-                                                      error_message).c_str());
+            const auto error_message = duk_safe_to_string(ctx, -1);
+            return runtime::Result::error(error_message);
         }
-        // ? duk_pop(javascript_context);
     }
 
     // Execute
-    duk_call(javascript_context, 0);
-    log::info("Compiled main.js evaluates to: {}", duk_get_string(javascript_context, -1));
+    duk_call(ctx, 0);
+    log::info("Compiled main.js evaluates to: {}", duk_get_string(ctx, -1));
 
     return runtime::Result::success();
 }
@@ -122,8 +127,24 @@ Result javascript::JavascriptRuntime::unload_module(const Module& module_to_unlo
     return runtime::Result::success();
 }
 
-/*bool javascript::load_module(const ModuleInfo& info, ErrorBase& err)
+char* javascript::JavascriptRuntime::eval(const char* code)
 {
-    log::info("Javascript runtime requested to load module {} at {}", info.name, info.path);
-    return false;
-}*/
+    std::string res {};
+    duk_push_string(ctx, code);
+    auto eval_result = duk_peval(ctx);
+
+    if (eval_result != 0)
+    {
+        res = fmt::format("Javascript error: {}", duk_safe_to_string(ctx, -1));
+    }
+    else
+    {
+        res = duk_safe_to_string(ctx, -1);
+    }
+    duk_pop(ctx);
+
+    auto len = res.length() + 1;
+    char* res_c = new char[res.length() + 1];
+    strncpy_s(res_c, len, res.c_str(), len);
+    return res_c;
+}

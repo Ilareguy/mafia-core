@@ -28,8 +28,9 @@
 
 using namespace mafia;
 
-ssh::Command::Command(std::string command_name, std::string command_description):
-        _ssh_interface(std::move(command_name), std::move(command_description))
+ssh::Command::Command(const std::string& command_name, std::string command_description):
+        _ssh_interface(command_name, std::move(command_description)),
+        _command_name(command_name)
 {
 }
 
@@ -43,7 +44,7 @@ std::string ssh::Command::execute(const std::string& command_name, int argc, cha
 
 void ssh::Command::init()
 {
-    init_ssh_interface(_ssh_interface.add_options());
+    init_ssh_interface(_ssh_interface.add_options(), _ssh_interface);
 }
 
 std::string ssh::Command::help()

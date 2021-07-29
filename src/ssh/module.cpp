@@ -23,7 +23,6 @@
 
 #include "module.h"
 #include "../runtime/mafia_module.h"
-#include "../runtime/mafia_runtime.h"
 #include "../ssh_server.h"
 #include "../mafia.h"
 #include "../rv_controller.h"
@@ -66,7 +65,7 @@ std::string ssh::ModuleInterface::execute_command(
     return "<not implemented>";
 }
 
-void ssh::ModuleInterface::init_ssh_interface(cxxopts::OptionAdder&& opts)
+void ssh::ModuleInterface::init_ssh_interface(cxxopts::OptionAdder&& opts, cxxopts::Options& options)
 {
     opts
             ("l,load", "Load a module", cxxopts::value<std::string>())
