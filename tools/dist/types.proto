@@ -1,0 +1,233 @@
+syntax = "proto3";
+import "any.proto";
+package mafia.types;
+
+message Argument{
+  mafia.types.RVType type = 1;
+  google.protobuf.Any data = 2;
+};
+
+message NoArgs{};
+message NularArgs{};
+message UnaryArgs{
+  Argument left = 1;
+};
+message BinaryArgs{
+  Argument left = 1;
+  Argument right = 2;
+};
+
+message RVType{
+  RVType rv_type = 1;
+};
+
+// Basic types
+//
+message RVArray{
+  RVType rv_type = 1;
+};
+//
+message RVBoolean{
+  RVType rv_type = 1;
+};
+
+//
+message RVCode{
+  RVType rv_type = 1;
+};
+
+//
+message RVConfig{
+  RVType rv_type = 1;
+};
+
+//
+message RVControl{
+  RVType rv_type = 1;
+};
+
+//
+message RVDisplay{
+  RVType rv_type = 1;
+};
+
+//
+message RVGroup{
+  RVType rv_type = 1;
+};
+
+//
+message RVLocation{
+  RVType rv_type = 1;
+};
+
+//
+message RVNamespace{
+  RVType rv_type = 1;
+};
+
+//
+message RVNothing{
+  RVType rv_type = 1;
+};
+
+//
+message RVNumber{
+  RVType rv_type = 1;
+};
+
+//
+message RVObject{
+  RVType rv_type = 1;
+};
+
+//
+message RVText{
+  RVType rv_type = 1;
+};
+
+//
+message RVScript{
+  RVType rv_type = 1;
+};
+
+//
+message RVSide{
+  RVType rv_type = 1;
+};
+
+//
+message RVString{
+  RVType rv_type = 1;
+};
+
+//
+message RVTeamMember{
+  RVType rv_type = 1;
+};
+
+// Not in C++ code apparently
+//
+message RVPosition{
+  RVType rv_type = 1;
+};
+
+//
+message RVStructured{
+  RVType rv_type = 1;
+};
+
+//
+message RVTask{
+  RVType rv_type = 1;
+};
+
+//
+message RVAnything{
+  RVType rv_type = 1;
+};
+
+//
+message RVDate{
+  RVType rv_type = 1;
+};
+
+//
+message RVWaypoint{
+  RVType rv_type = 1;
+};
+
+//
+message RVTeam{
+  RVType rv_type = 1;
+};
+
+//
+message RVPositionrelative{
+  RVType rv_type = 1;
+};
+
+//
+message RVPositionworld{
+  RVType rv_type = 1;
+};
+
+//
+message RVPositionasl{
+  RVType rv_type = 1;
+};
+
+//
+message RVPositionagl{
+  RVType rv_type = 1;
+};
+
+//
+message RVPositionatl{
+  RVType rv_type = 1;
+};
+
+//
+message RVHashmapkey{
+  RVType rv_type = 1;
+};
+
+//
+message RVHashmap{
+  RVType rv_type = 1;
+};
+
+//
+message RVObjectrtd{
+  RVType rv_type = 1;
+};
+
+//
+message RVColor{
+  RVType rv_type = 1;
+};
+
+//
+message RVScalar{
+  RVType rv_type = 1;
+};
+
+//
+message RVSwitch{
+  RVType rv_type = 1;
+};
+
+//
+message RVEden{
+  RVType rv_type = 1;
+};
+
+//
+message RVDiary{
+  RVType rv_type = 1;
+};
+
+//
+message RVFor{
+  RVType rv_type = 1;
+};
+
+//
+message RVWhile{
+  RVType rv_type = 1;
+};
+
+//
+message RVWith{
+  RVType rv_type = 1;
+};
+
+//
+message RVget3DENLayerEntities{
+  RVType rv_type = 1;
+};
+
+//
+message RVgetDLCs{
+  RVType rv_type = 1;
+};

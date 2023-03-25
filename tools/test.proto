@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message Null{};
+
+service SQF{
+  rpc Test (Null) returns (Null);
+}

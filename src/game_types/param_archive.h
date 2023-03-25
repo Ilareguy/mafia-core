@@ -35,6 +35,72 @@ namespace mafia::game_types
     class ParamArchiveEntry;
     class ParamArchiveArrayEntry;
 
+    class ParamArchiveEntry
+    {
+    public:
+        virtual ~ParamArchiveEntry();
+
+        // Number of entries. count for array and number of class entries otherwise
+        virtual int entry_count() const;
+
+        // Don't know what that's used for.
+        virtual ParamArchiveEntry* get_entry_by_index(int index_) const;
+
+        //Dunno exactly what this is. on GameData serialize it returns "data"
+        virtual String current_entry_name();
+
+        virtual ParamArchiveEntry* get_entry_by_name(const mafia::game_types::String& name) const;
+
+        //Normal Entry. Contains a single value of a single type
+        virtual operator float() const;
+        virtual operator int() const;
+        virtual operator int64_t() const;
+
+    private:
+        struct rv_string_dummy: public mafia::game_types::String
+        {
+            rv_string_dummy(const mafia::game_types::String& o);
+        };
+
+        virtual operator const rv_string_dummy() const;
+
+    public:
+        virtual operator mafia::game_types::String() const;
+        virtual operator bool() const;
+        virtual mafia::game_types::String _placeholder1(uint32_t) const;
+
+        //Array entry
+        virtual void reserve(int count_) {}
+
+        virtual void add_array_entry(float value_) {}
+
+        virtual void add_array_entry(int value_) {}
+
+        virtual void add_array_entry(int64_t value_) {}
+
+        virtual void add_array_entry(const mafia::game_types::String& value_) {}
+
+        virtual int count() const;
+
+        virtual ParamArchiveArrayEntry* operator[](int index_) const;
+
+        //Class entry (contains named values)
+        virtual ParamArchiveEntry* add_entry_array(const mafia::game_types::String& name_);
+        virtual ParamArchiveEntry* add_entry_class(const String& name_, bool unknown_ = false);
+
+        virtual void add_entry(const mafia::game_types::String& name_, const mafia::game_types::String& value_) {}
+
+        virtual void add_entry(const mafia::game_types::String& name_, float value_) {}
+
+        virtual void add_entry(const mafia::game_types::String& name_, int value_) {}
+
+        virtual void add_entry(const mafia::game_types::String& name_, int64_t value_) {}
+
+        virtual void compress() {}
+
+        virtual void _placeholder(const mafia::game_types::String& name_) {}
+    };
+
     class ParamArchive
     {
     public:
@@ -150,72 +216,6 @@ namespace mafia::game_types
         virtual explicit operator const mafia::game_types::String() const;
         virtual operator mafia::game_types::String() const;
         virtual operator bool() const;
-    };
-
-    class ParamArchiveEntry
-    {
-    public:
-        virtual ~ParamArchiveEntry();
-
-        // Number of entries. count for array and number of class entries otherwise
-        virtual int entry_count() const;
-
-        // Don't know what that's used for.
-        virtual ParamArchiveEntry* get_entry_by_index(int index_) const;
-
-        //Dunno exactly what this is. on GameData serialize it returns "data"
-        virtual String current_entry_name();
-
-        virtual ParamArchiveEntry* get_entry_by_name(const mafia::game_types::String& name) const;
-
-        //Normal Entry. Contains a single value of a single type
-        virtual operator float() const;
-        virtual operator int() const;
-        virtual operator int64_t() const;
-
-    private:
-        struct rv_string_dummy: public mafia::game_types::String
-        {
-            rv_string_dummy(const mafia::game_types::String& o);
-        };
-
-        virtual operator const rv_string_dummy() const;
-
-    public:
-        virtual operator mafia::game_types::String() const;
-        virtual operator bool() const;
-        virtual mafia::game_types::String _placeholder1(uint32_t) const;
-
-        //Array entry
-        virtual void reserve(int count_) {}
-
-        virtual void add_array_entry(float value_) {}
-
-        virtual void add_array_entry(int value_) {}
-
-        virtual void add_array_entry(int64_t value_) {}
-
-        virtual void add_array_entry(const mafia::game_types::String& value_) {}
-
-        virtual int count() const;
-
-        virtual ParamArchiveArrayEntry* operator[](int index_) const;
-
-        //Class entry (contains named values)
-        virtual ParamArchiveEntry* add_entry_array(const mafia::game_types::String& name_);
-        virtual ParamArchiveEntry* add_entry_class(const String& name_, bool unknown_ = false);
-
-        virtual void add_entry(const mafia::game_types::String& name_, const mafia::game_types::String& value_) {}
-
-        virtual void add_entry(const mafia::game_types::String& name_, float value_) {}
-
-        virtual void add_entry(const mafia::game_types::String& name_, int value_) {}
-
-        virtual void add_entry(const mafia::game_types::String& name_, int64_t value_) {}
-
-        virtual void compress() {}
-
-        virtual void _placeholder(const mafia::game_types::String& name_) {}
     };
 }
 

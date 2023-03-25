@@ -50,3 +50,6 @@ arma/@mafia/*.exp
 # Misc
 .idea/deployment.xml
 .vs/
+cmake-build-release/
+cmake-build-debug/
+tools/dist/sqf.proto

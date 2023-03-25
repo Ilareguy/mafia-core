@@ -24,6 +24,7 @@
 #ifndef DEF_MAFIA_CORE_CONTAINERS_CompactArray_H
 #define DEF_MAFIA_CORE_CONTAINERS_CompactArray_H
 
+#include <algorithm>
 #include "../game_types/rv_allocator.h"
 #include "../ref_count.h"
 

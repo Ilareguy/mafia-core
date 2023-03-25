@@ -19,13 +19,13 @@
 #
 #########################################################
 
-from .sqf_utils import SQFCommand, fetch_sqf_commands
+from .sqf_utils import SQFCommand, gen_sqf_commands
 import urllib.request
 import json
 
 
 if __name__ == '__main__':
-    functions = fetch_sqf_commands()
+    functions = gen_sqf_commands()
     exit(0)
 
     # https://community.bistudio.com/wiki/Category:Arma_3:_Scripting_Commands

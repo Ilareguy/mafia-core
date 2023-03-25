@@ -26,6 +26,7 @@
 
 #include "../ref_count.h"
 #include <cstddef>
+#include <cstdint>
 
 namespace mafia
 {

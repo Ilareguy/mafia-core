@@ -23,6 +23,7 @@ import urllib.request
 import json
 from json import JSONEncoder
 from os.path import isfile
+from typing import Optional, Generator, List
 from urllib.error import URLError
 from lxml import etree
 from io import StringIO
@@ -46,25 +47,35 @@ with open('command_ignores.json') as ignores_file:
     COMMAND_IGNORES = json.load(ignores_file)
     COMMAND_IGNORES = [x.upper() for x in COMMAND_IGNORES]
 
-##################################################
-# Lazy-init
-##################################################
-SQF_COMMAND_PARAM_REGEX = None
-SQF_COMMAND_RETURNS_REGEX = None
+SQF_COMMAND_PARAM_REGEX = re.compile(
+    r"^(?P<name>[a-zA-B0-9]+): *\[*(?P<type>[a-zA-Z]+)\]+ *(- ){0,1}(?P<description>.*)$",
+    re.IGNORECASE
+)
+SQF_COMMAND_RETURNS_REGEX = re.compile(
+    r"^\[{0,2}(?P<type>[a-zA-B0-9]+)\]{0,2}",
+    re.IGNORECASE
+)
 
 
 ##################################################
 # Classes
 ##################################################
 class SQFCommand(object):
-    def __init__(self, name=None, description=None, introduced_version=None, syntax=None, parameters=None,
-                 returns=None):
+    def __init__(
+            self,
+            name=None,
+            description=None,
+            introduced_version=None,
+            syntax=None,
+            parameters=None,
+            returns=None
+    ):
         self.name = name
         self.description = description
         self.introduced_version = introduced_version
         self.syntax = syntax
-        self.parameters = parameters
-        self.returns = returns
+        self.parameters: List[SQFCommandParameter] = parameters
+        self.returns: SQFCommandReturn = returns
 
         # Fill overridden data, if any
         self._find_overrides()
@@ -132,6 +143,15 @@ class SQFCommandReturn(object):
     def __init__(self, description=None, sqf_type="Nothing"):
         self.description = description
         self.sqf_type = sqf_type
+        if self.sqf_type is not None:
+            if self.sqf_type.casefold() == "bool":
+                self.sqf_type = "Boolean"
+            elif self.sqf_type.casefold().startswith("position"):
+                self.sqf_type = self.sqf_type.capitalize()  # Just make sure the case is correct
+            elif self.sqf_type.casefold().startswith("hashmap"):
+                self.sqf_type = self.sqf_type.capitalize()  # Just make sure the case is correct
+        else:
+            self.sqf_type = "Nothing"
 
     class JSONEncoder(JSONEncoder):
         def __init__(self, *args, **kwargs):
@@ -146,9 +166,22 @@ class SQFCommandReturn(object):
 
 class SQFCommandParameter(object):
     def __init__(self, name=None, description=None, sqf_type=None):
-        self.name = name
-        self.description = description
-        self.sqf_type = sqf_type
+        self._name: str = name
+        self.description: str = description
+        self.sqf_type: str = sqf_type
+
+        if self.sqf_type.casefold() == "bool":
+            self.sqf_type = "Boolean"
+        elif self.sqf_type.casefold().startswith("position"):
+            self.sqf_type = self.sqf_type.capitalize()  # Just make sure the case is correct
+        elif self.sqf_type.casefold().startswith("hashmap"):
+            self.sqf_type = self.sqf_type.capitalize()  # Just make sure the case is correct
+
+    @property
+    def name(self) -> str:
+        if self._name.casefold().startswith('2'):
+            return "mode"
+        return self._name
 
     class JSONEncoder(JSONEncoder):
         def __init__(self, *args, **kwargs):
@@ -175,27 +208,27 @@ class UnknownSQFCommand(SQFCommand):
         super().__init__(name)
 
 
-class SQFCommands(JSONEncoder):
-    def __init__(self):
-        super().__init__()
-        self.commands = {}
-
-    def get(self, name):
-        return self.commands[name]
-
-    def add(self, name, command):
-        self.commands[name] = command
-
-    class JSONEncoder(JSONEncoder):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-
-        def default(self, obj):
-            out = []
-            encoder = SQFCommand.JSONEncoder()
-            for f in obj.commands.values():
-                out.append(encoder.default(f))
-            return out
+# class SQFCommands(JSONEncoder):
+#     def __init__(self):
+#         super().__init__()
+#         self.commands = {}
+#
+#     def get(self, name):
+#         return self.commands[name]
+#
+#     def add(self, name, command):
+#         self.commands[name] = command
+#
+#     class JSONEncoder(JSONEncoder):
+#         def __init__(self, *args, **kwargs):
+#             super().__init__(*args, **kwargs)
+#
+#         def default(self, obj):
+#             out = []
+#             encoder = SQFCommand.JSONEncoder()
+#             for f in obj.commands.values():
+#                 out.append(encoder.default(f))
+#             return out
 
 
 ##################################################
@@ -209,7 +242,7 @@ class NoWikiEntryError(Exception):
     pass
 
 
-def fetch_sqf_commands():
+def gen_sqf_commands() -> Generator[SQFCommand, None, None]:
     """
     Retrieves an SQFCommands instance containing structured data about all known SQF commands.
     On first runs, or after the cache is cleared, this function will make numerous web requests to retrieve fresh data
@@ -230,7 +263,6 @@ def fetch_sqf_commands():
     """
 
     raw_commands = []
-    structured_commands = SQFCommands()
 
     ##################################################
     # Fetch a list of command names
@@ -275,7 +307,7 @@ def fetch_sqf_commands():
 
         except URLError as e:
             print(f'Could not fetch commands list from wiki. Exception: {e}')
-            return
+            return None
 
     try:
         # Get a handle to cached data
@@ -284,7 +316,7 @@ def fetch_sqf_commands():
 
     except OSError as e:
         print(f'Could not open "{SQF_COMMANDS_RAW_CACHED_FILE}" for reading. Exception: {e}')
-        return
+        return None
 
     # Parse command names
     for link in data:
@@ -334,8 +366,9 @@ def fetch_sqf_commands():
         # We have raw data. Now build something useful
         try:
             with open(command_raw_cache_path) as command_raw_cache_file_handle:
-                structured_commands.add(command_name,
-                                        _parse_command_data(command_name, command_raw_cache_file_handle))
+                # structured_commands.add(command_name,
+                #                        _parse_command_data(command_name, command_raw_cache_file_handle))
+                yield _parse_command_data(command_name, command_raw_cache_file_handle)
 
         except OSError as e:
             print(f'Could not open "{command_raw_cache_path}" for reading. Exception: {e}')
@@ -347,10 +380,10 @@ def fetch_sqf_commands():
             # structured_commands.add(command_name, UnknownSQFCommand(command_name))
             continue
 
-    with open(SQF_COMMANDS_STRUCTURE_CACHED_FILE, "w") as out:
-        json.dump(structured_commands, out, cls=SQFCommands.JSONEncoder, indent=4)
-
-    return structured_commands
+    # with open(SQF_COMMANDS_STRUCTURE_CACHED_FILE, "w") as out:
+    #     json.dump(structured_commands, out, cls=SQFCommands.JSONEncoder, indent=4)
+    #
+    # return structured_commands
 
 
 def _parse_command_data(name, file):
@@ -365,11 +398,13 @@ def _parse_command_data(name, file):
     xtree = etree.parse(StringIO(command_raw_data['parse']['parsetree']['*']))
     returns = _parse_return_details(xtree)
 
-    return SQFCommand(name=name,
-                      description=_parse_description(xtree),
-                      syntax=_parse_syntax(xtree),
-                      parameters=_parse_parameters(xtree),
-                      returns=returns)
+    return SQFCommand(
+        name=name,
+        description=_parse_description(xtree),
+        syntax=_parse_syntax(xtree),
+        parameters=_parse_parameters(xtree),
+        returns=returns
+    )
 
 
 def _parse_description(xtree):
@@ -416,10 +451,6 @@ def _parse_parameters(xtree):
 
     # Compile regex if necessary
     global SQF_COMMAND_PARAM_REGEX
-    if SQF_COMMAND_PARAM_REGEX is None:
-        SQF_COMMAND_PARAM_REGEX = \
-            re.compile(r"^(?P<name>[a-zA-B0-9]+): *\[*(?P<type>[a-zA-Z]+)\]+ *(- ){0,1}(?P<description>.*)$",
-                       re.IGNORECASE)
 
     # Acquire raw data from XPath
     try:
@@ -434,10 +465,19 @@ def _parse_parameters(xtree):
     params = []
     for raw_param in params_raw:
         data = SQF_COMMAND_PARAM_REGEX.search(raw_param)
+
+        # No data?
         if data is None:
             continue
+
+        param_name: str = str(data.group("name"))
+
+        # Duplicate param?
+        if param_name.casefold() in [c.name.casefold() for c in params]:
+            continue
+
         params.append(SQFCommandParameter(
-            name=data.group("name"),
+            name=param_name,
             description=data.group("description"),
             sqf_type=data.group("type")
         ))
@@ -471,10 +511,6 @@ def _parse_return_details(xtree):
 
     # Compile regex if necessary
     global SQF_COMMAND_RETURNS_REGEX
-    if SQF_COMMAND_RETURNS_REGEX is None:
-        SQF_COMMAND_RETURNS_REGEX = \
-            re.compile(r"^\[{0,2}(?P<type>[a-zA-B0-9]+)\]{0,2}",
-                       re.IGNORECASE)
 
     # Acquire raw data from XPath
     try:
@@ -490,7 +526,7 @@ def _parse_return_details(xtree):
 
 
 def validate_sqf_command_name(name):
-    # Evaluates whether or not the given name is a valid SQF command name.
+    # Evaluates whether the given name is a valid SQF command name.
     return re.match(SQF_COMMAND_NAME_REGEX, name) is not None
 
 

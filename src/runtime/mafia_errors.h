@@ -35,7 +35,8 @@ namespace mafia::runtime
         {
             const auto s = strlen(m) + 1;
             _m = new char[s];
-            strcpy_s(_m, s, m);
+            strcpy(_m, m);
+            // strcpy_s(_m, s, m);
         }
 
         ~ErrorBase()

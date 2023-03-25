@@ -76,6 +76,9 @@ add_library(mafia-runtime-javascript MODULE
         src/runtime/javascript/javascript_runtime.cpp
         src/runtime/javascript/duktape/duktape.c src/runtime/javascript/duktape_globals.h)
 
+add_library(mafia-runtime-grpc MODULE
+        src/runtime/grpc/grpc_runtime.cpp)
+
 add_library(${MAFIA_DLL_NAME} MODULE
         src/main.cpp
         src/mafia.cpp
@@ -110,22 +113,40 @@ add_library(${MAFIA_DLL_NAME} MODULE
         src/synchronous_executor.cpp
         src/asynchronous_executor.cpp
         src/runtime/mafia_runtime.h
-        src/runtime/mafia_module.h src/module.cpp src/module.h src/ssh/javascript.cpp src/ssh/javascript.h)
+        src/runtime/mafia_module.h
+        src/module.cpp
+        src/module.h
+        src/ssh/javascript.cpp
+        src/ssh/javascript.h
+        src/runtime/grpc/grpc_runtime.cpp
+        src/runtime/grpc/grpc_runtime.h
+        )
 
 target_compile_definitions(${MAFIA_DLL_NAME} PRIVATE -DMAFIA_CORE)
+
+add_executable(
+        dummy-host
+        src/dummy_host.cpp
+)
 
 ########## Dependencies
 # NOTE: Linked-to library DLLs need to be in Arma's *root directory*, and not in @mafia/.
 # If you get a "module could not be found"/"not found"/"module not found", this might be why.
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
-find_package(dlfcn-win32 CONFIG REQUIRED)
+# find_package(dlfcn-win32 CONFIG REQUIRED)
 find_package(libssh CONFIG REQUIRED)
 find_package(cxxopts CONFIG REQUIRED)
 find_package(Taskflow CONFIG REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-target_link_libraries(mafia-runtime-javascript PUBLIC
+#target_link_libraries(mafia-runtime-javascript PUBLIC
+#        mafia-types
+#        mafia-containers
+#        fmt::fmt
+#        nlohmann_json nlohmann_json::nlohmann_json
+#        ${Boost_LIBRARIES})
+target_link_libraries(mafia-runtime-grpc PUBLIC
         mafia-types
         mafia-containers
         fmt::fmt
@@ -135,20 +156,30 @@ target_link_libraries(mafia-runtime-javascript PUBLIC
 target_link_libraries(mafia-types PUBLIC
         Taskflow::Taskflow)
 
-target_link_libraries(${MAFIA_DLL_NAME} PRIVATE
+target_link_libraries(
+        dummy-host PUBLIC
+        Taskflow::Taskflow
         mafia-types
         mafia-containers
         fmt::fmt
-        spdlog::spdlog
-        dlfcn-win32::dl
-        ssh
-        cxxopts::cxxopts
-        Taskflow::Taskflow
         nlohmann_json nlohmann_json::nlohmann_json
-        ${Boost_LIBRARIES})
+        ${Boost_LIBRARIES}
+)
+
+#target_link_libraries(${MAFIA_DLL_NAME} PRIVATE
+#        mafia-types
+#        mafia-containers
+#        fmt::fmt
+#        spdlog::spdlog
+#        dlfcn-win32::dl
+#        ssh
+#        cxxopts::cxxopts
+#        Taskflow::Taskflow
+#        nlohmann_json nlohmann_json::nlohmann_json
+#        ${Boost_LIBRARIES})
 
 ########## Misc
-set_target_properties(${MAFIA_DLL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
-set_target_properties(mafia-runtime-javascript PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+# set_target_properties(${MAFIA_DLL_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
+# set_target_properties(mafia-runtime-javascript PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/arma/@mafia")
+# set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")

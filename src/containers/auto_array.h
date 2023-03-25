@@ -38,9 +38,9 @@ namespace mafia::containers
     template<class Type, class Allocator = mafia::game_types::RVAllocator<Type>, size_t growthFactor = 32>
     class
 #ifdef _MSC_VER
-            __declspec(empty_bases)
+        __declspec(empty_bases)
 #endif
-    //#TODO try GCC maybe __attribute__((__packed__)) or #pragma pack. But be careful of the bool in local alloc
+        //#TODO try GCC maybe __attribute__((__packed__)) or #pragma pack. But be careful of the bool in local alloc
     AutoArray: public RVArray<Type>,
                private Allocator
     {
@@ -79,7 +79,7 @@ namespace mafia::containers
             if (base::_data)
             {
 #ifdef __GNUC__
-                memmove(newData, base::_data, base::_n * sizeof(Type));
+                memmove((void*) newData, base::_data, base::_n * sizeof(Type));
 #else
                 //std::uninitialized_move(begin(), end(), newData); //This might be cleaner. But still causes a move construct call where memmove just moves bytes.
                 memmove_s(newData, size_ * sizeof(Type), base::_data, base::_n * sizeof(Type));
@@ -428,7 +428,7 @@ namespace mafia::containers
                 return false;
             }
             auto index = 0;
-            for (auto& it : other_)
+            for (auto& it: other_)
             {
                 if ((*this[index]) != it)
                 {
